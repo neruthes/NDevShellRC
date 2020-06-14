@@ -188,5 +188,5 @@ function openDropbox() {
     sudo echo "First, let the following sudo operations be smooth";
     nvdp0n1-vdisk-s1-map
     nvdp0n1-vdisk-s3-combine
-    sudo mount /dev/mapper/nvdp0n1x-nvdp0n1z ~/mnt/Dropbox;
+    sudo mount /dev/mapper/nvdp0n1x-nvdp0n1z /mnt/Dropbox;
 }
