@@ -3,7 +3,6 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p2.bin nvdp0n1p2 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p3.bin nvdp0n1p3 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p4.bin nvdp0n1p4 --key-file ~/.Dropbox_LUKS_Keyfile.bin
-    # ---
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p5.bin nvdp0n1p5 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p6.bin nvdp0n1p6 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p7.bin nvdp0n1p7 --key-file ~/.Dropbox_LUKS_Keyfile.bin
@@ -12,7 +11,6 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p10.bin nvdp0n1p10 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p11.bin nvdp0n1p11 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p12.bin nvdp0n1p12 --key-file ~/.Dropbox_LUKS_Keyfile.bin
-    # ---
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p13.bin nvdp0n1p13 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p14.bin nvdp0n1p14 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p15.bin nvdp0n1p15 --key-file ~/.Dropbox_LUKS_Keyfile.bin
@@ -21,6 +19,7 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p18.bin nvdp0n1p18 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p19.bin nvdp0n1p19 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p20.bin nvdp0n1p20 --key-file ~/.Dropbox_LUKS_Keyfile.bin
+    echo "cryptsetup open (20/80)"
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p21.bin nvdp0n1p21 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p22.bin nvdp0n1p22 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p23.bin nvdp0n1p23 --key-file ~/.Dropbox_LUKS_Keyfile.bin
@@ -41,6 +40,7 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p38.bin nvdp0n1p38 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p39.bin nvdp0n1p39 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p40.bin nvdp0n1p40 --key-file ~/.Dropbox_LUKS_Keyfile.bin
+    echo "cryptsetup open (40/80)"
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p41.bin nvdp0n1p41 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p42.bin nvdp0n1p42 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p43.bin nvdp0n1p43 --key-file ~/.Dropbox_LUKS_Keyfile.bin
@@ -61,6 +61,7 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p58.bin nvdp0n1p58 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p59.bin nvdp0n1p59 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p60.bin nvdp0n1p60 --key-file ~/.Dropbox_LUKS_Keyfile.bin
+    echo "cryptsetup open (60/80)"
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p61.bin nvdp0n1p61 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p62.bin nvdp0n1p62 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p63.bin nvdp0n1p63 --key-file ~/.Dropbox_LUKS_Keyfile.bin
@@ -81,6 +82,7 @@ function nvdp0n1-vdisk-s1-map() {
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p78.bin nvdp0n1p78 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p79.bin nvdp0n1p79 --key-file ~/.Dropbox_LUKS_Keyfile.bin
     sudo cryptsetup open ~/.Dropbox_Encrypted/nvdp0n1p80.bin nvdp0n1p80 --key-file ~/.Dropbox_LUKS_Keyfile.bin
+    echo "cryptsetup open (80/80)"
     # Current top: 80
 }
 
@@ -104,6 +106,7 @@ function nvdp0n1-vdisk-s3-combine() {
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p18;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p19;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p20;
+    echo "vgextend (20/80)"
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p21;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p22;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p23;
@@ -124,6 +127,7 @@ function nvdp0n1-vdisk-s3-combine() {
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p38;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p39;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p40;
+    echo "vgextend (40/80)"
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p41;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p42;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p43;
@@ -144,6 +148,7 @@ function nvdp0n1-vdisk-s3-combine() {
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p58;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p59;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p60;
+    echo "vgextend (60/80)"
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p61;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p62;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p63;
@@ -164,6 +169,7 @@ function nvdp0n1-vdisk-s3-combine() {
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p78;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p79;
     sudo vgextend nvdp0n1x /dev/mapper/nvdp0n1p80;
+    echo "vgextend (80/80)"
 
     # Create logical volume
     sudo lvcreate -L 5120M nvdp0n1x -n nvdp0n1z;
@@ -185,8 +191,10 @@ function nvdp0n1-vdisk-add-extra-block() {
     fi;
 }
 function openDropbox() {
-    sudo echo "First, let the following sudo operations be smooth";
+    echo "First, let the following sudo operations be smooth...";
+    sudo echo " "
     nvdp0n1-vdisk-s1-map
     nvdp0n1-vdisk-s3-combine
     sudo mount /dev/mapper/nvdp0n1x-nvdp0n1z /mnt/Dropbox;
+    echo "Dropbox directory is now ready at </mnt/Dropbox>. Exit 0."
 }
