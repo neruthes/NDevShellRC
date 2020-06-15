@@ -4,7 +4,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 # Drives
 source $DEV_HOME_DIR/NDevShellRC/components/mountExtArcher.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
-source $DEV_HOME_DIR/NDevShellRC/components/dropbox-nvdp0n1.sh
+source $DEV_HOME_DIR/NDevShellRC/components/dropbox-encfs.sh
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/rust.sh
