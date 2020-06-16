@@ -1,3 +1,5 @@
+export NDEV_OS_TYPE="linux"
+
 # Productivity
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 

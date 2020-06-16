@@ -11,5 +11,14 @@ function gitnuke() {
     rm .gitconf
     echo "Git history nuked"
 }
-alias u="git add .; git commit -m 'Regular update `date -Is`'; git push;"
+
+unalias g
 alias g="git add .; git commit -m '$1'; git push;"
+
+if [[ $NDEV_OS_TYPE == 'linux' ]]; then
+    alias u="git add .; git commit -m 'Regular update `date -Is`'; git push;"
+fi
+
+if [[ $NDEV_OS_TYPE == 'macosx' ]]; then
+    alias u="git add .; git commit -m 'Regular update `date`'; git push;"
+fi
