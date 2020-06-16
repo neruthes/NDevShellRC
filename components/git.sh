@@ -13,7 +13,11 @@ function gitnuke() {
 }
 
 unalias g
-alias g="git add .; git commit -m '$1'; git push;"
+function g() {
+    git add .
+    git commit -m '$1'
+    git push
+}
 
 if [[ $NDEV_OS_TYPE == 'linux' ]]; then
     alias u="git add .; git commit -m 'Regular update `date -Is`'; git push;"
