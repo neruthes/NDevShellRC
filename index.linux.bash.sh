@@ -9,6 +9,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/scrot.sh
 source $DEV_HOME_DIR/NDevShellRC/components/mountExtArcher.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
 source $DEV_HOME_DIR/NDevShellRC/components/dropbox-encfs.sh
+source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/rust.sh
