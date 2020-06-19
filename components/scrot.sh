@@ -1,5 +1,12 @@
 # Screenshot manager
 
 function scrot-take() {
-    date -Is > ~/TMP/date114514.tmp && scrot -ub "scrot_`sed -i 's/:/./g' ~/TMP/date114514.tmp && sed -i 's/+00.00//g' ~/TMP/date114514.tmp && sed -i 's/T/_/g' ~/TMP/date114514.tmp && cat ~/TMP/date114514.tmp `.png" -e 'mv ~/scrot_*.png ~/NET/Syncthing/Neruthes-Syncthing-N1/Screenshots/' && rm ~/TMP/date114514.tmp
+    date -Is > ~/TMP/date114514.tmp;
+    sed -i 's/:/./g' ~/TMP/date114514.tmp
+    sed -i 's/+00.00//g' ~/TMP/date114514.tmp
+    sed -i 's/T/_/g' ~/TMP/date114514.tmp
+    export SCROT_LATEST="~/scrot_`cat ~/TMP/date114514.tmp`.png"
+    scrot -ub $SCROT_LATEST
+    mv ~/scrot_*.png ~/PIC/Screenshots/
+    rm ~/TMP/date114514.tmp
 }
