@@ -13,6 +13,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/rust.sh
+export PATH="$PATH:$HOME/.local/bin"
 
 # Network
 source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
