@@ -1,0 +1,22 @@
+#!/bin/node
+
+const fs = require('fs');
+const child_process = require('child_process');
+
+child_process.exec('xrandr', function (err, stdin, stderr) {
+    var dp1status = stdin.split('\n').slice(2);
+    var dp1lineIndex = -1;
+    for (var i = 0; i < dp1status.length; i++) {
+        if (dp1status[i].match('DP1 connected')) {
+            dp1lineIndex = i;
+        };
+    };
+
+    var bestResolutionLine = dp1status[dp1lineIndex+1];
+    var matchResult = bestResolutionLine.match(/\d+x\d+/);
+
+    if (matchResult) {
+        console.log(`Mounting DP1 (${matchResult[0]})...`);
+        child_process.exec(`xrandr --output eDP1 --primary --mode 1920x1080 --pos 0x0 --rotate normal --output DP1 --mode ${matchResult[0]} --pos 1920x0 --rotate normal --output HDMI1 --off --output HDMI2 --off --output VIRTUAL1 --off`);
+    };
+});
