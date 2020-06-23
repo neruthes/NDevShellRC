@@ -5,6 +5,9 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/clipass.sh
 source $DEV_HOME_DIR/NDevShellRC/components/scrot.sh
 
+# Device
+source $DEV_HOME_DIR/NDevShellRC/components/scrmgr.sh
+
 # Drives
 source $DEV_HOME_DIR/NDevShellRC/components/NDevExtPd2-Archer.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
@@ -18,7 +21,7 @@ export PATH="$PATH:$HOME/.local/bin"
 # Network
 source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
 
-# Terminal
+# Terminal Hacks
 source $DEV_HOME_DIR/NDevShellRC/components/tty.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
