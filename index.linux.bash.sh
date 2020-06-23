@@ -24,3 +24,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 # NDev-Sync
 source $DEV_HOME_DIR/NDevShellRC/components/NDev-Sync.sh
+
+# Misc
+source $DEV_HOME_DIR/NDevShellRC/components/select-random-file-in-dir.sh
