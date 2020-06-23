@@ -30,3 +30,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/NDev-Sync.sh
 
 # Misc
 source $DEV_HOME_DIR/NDevShellRC/components/select-random-file-in-dir.sh
+
+########## END ##########
+source $DEV_HOME_DIR/NDevShellRC/_version.sh
+echo "NDevShellRC version: $NDEVSHELLRC_VERSION"
