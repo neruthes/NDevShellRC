@@ -21,3 +21,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
 # Terminal
 source $DEV_HOME_DIR/NDevShellRC/components/tty.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
+
+# NDev-Sync
+source $DEV_HOME_DIR/NDevShellRC/components/NDev-all.sh
