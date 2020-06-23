@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 var mydir = process.argv[2];
-var llfile = fs.readFileSync('/home/neruthes/TMP/select-random-file-in-dir__ll.txt').toString();
+var llfile = fs.readFileSync('/tmp/select-random-file-in-dir__ll.txt').toString();
 var files = llfile.split('\n').slice(1).map(function (line) {
     return line.slice(49).replace(/\*$/, '');
 }).filter(function (line) {
