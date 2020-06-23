@@ -1,0 +1,20 @@
+#!/bin/node
+
+const fs = require('fs');
+const child_process = require('child_process');
+
+var filePath = '$HOME/TMP/NDevSyncHelper-LastSyncTimestamp.txt';
+
+var shouldSyncNow = true;
+
+if (fs.existsSync(filePath) && fs.readFileSync(filePath).toString().trim().match(/^\d+$/)) {
+    var lastSyncTimestamp = fs.readFileSync(filePath).toString();
+    if (parseInt(lastSyncTimestamp) + 1000*1800 < Date.now()) {
+        // Interval: 1800 s
+        shouldSyncNow = false;
+    };
+};
+
+if (shouldSyncNow) {
+    child_process.exec('nohup NDev-Sync > /dev/null');
+};
