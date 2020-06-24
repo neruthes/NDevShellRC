@@ -1,4 +1,5 @@
 export NDEV_OS_TYPE="linux"
+rm -r ~/Desktop
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/rust.sh
