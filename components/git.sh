@@ -6,9 +6,9 @@ function gitnuke() {
     rm -rf .git
     git init
     cat .gitconf > .git/config
+    rm .gitconf
     git add .
     git commit -m "GITNUKE"
-    rm .gitconf
     echo "Git history nuked"
 }
 
