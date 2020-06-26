@@ -1,5 +1,5 @@
 function gitclone() {
-    git clone "https://neruthes:$(pas p token.github.ndlt7-sirius)@github.com/$1.git"
+    git clone "https://neruthes:$(pas p token.github.clipass-synced)@github.com/$1.git"
 }
 function gitnuke() {
     cp .git/config .gitconf
