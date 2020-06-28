@@ -1,8 +1,7 @@
 export NDEV_OS_TYPE="macosx"
 
 # PATH
-source $DEV_HOME_DIR/NDevShellRC/components/rust.sh
-export PATH="$PATH:$HOME/.local/bin"
+source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 
 # Productivity
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh
