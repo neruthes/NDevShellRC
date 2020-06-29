@@ -12,6 +12,6 @@ function NDev-Sync() {
     cd $DEV_HOME_DIR/NDevShellRC && git pull && u
     cd $DEV_HOME_DIR/NDevMsgInbox && git pull && u
     clipass-sync
-    NDev-Sync--ifconfisg
+    NDev-Sync--ifconfig
     cd $mypwd
 }
