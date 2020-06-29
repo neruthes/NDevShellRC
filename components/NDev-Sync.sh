@@ -10,6 +10,7 @@ function NDev-Sync--ifconfig() {
 function NDev-Sync() {
     node -e "fs.writeFileSync('/tmp/NDevSyncHelper-LastSyncTimestamp.txt', Date.now().toString())"
     mypwd=$PWD
+    cd $DEV_HOME_DIR/NDevMgr && git pull && u
     cd $DEV_HOME_DIR/NDevShellRC && git pull && u
     cd $DEV_HOME_DIR/NDevMsgInbox && git pull && u
     clipass-sync
