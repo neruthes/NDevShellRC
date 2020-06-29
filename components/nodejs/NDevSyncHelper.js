@@ -8,8 +8,8 @@ var shouldSyncNow = true;
 
 if (fs.existsSync(filePath) && fs.readFileSync(filePath).toString().trim().match(/^\d+$/)) {
     var lastSyncTimestamp = fs.readFileSync(filePath).toString();
-    if (parseInt(lastSyncTimestamp) + 1000*3600*2 > Date.now()) {
-        // Interval: 2 hr
+    if (parseInt(lastSyncTimestamp) + 1000*60*15 > Date.now()) {
+        // Interval: 15 min
         shouldSyncNow = false;
     };
 };
