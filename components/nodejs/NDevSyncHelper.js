@@ -12,12 +12,13 @@ if (fs.existsSync(filePath) && fs.readFileSync(filePath).toString().trim().match
         // Interval: 15 min
         shouldSyncNow = false;
     };
-};
 
-if (shouldSyncNow) {
-    fs.writeFileSync(filePath, Date.now().toString());
-    child_process.exec('NDev-Sync');
-};
+    if (shouldSyncNow) {
+        fs.writeFileSync(filePath, Date.now().toString());
+        child_process.exec('NDev-Sync');
+    };
 
-var lastSyncTimestamp2 = parseInt(fs.readFileSync(filePath).toString());
-console.log(`NDevSyncHelper: Last sync ${(new Date(lastSyncTimestamp2)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')}`);
+    var lastSyncTimestamp2 = parseInt(fs.readFileSync(filePath).toString());
+    console.log(`NDevSyncHelper: Last sync ${(new Date(lastSyncTimestamp2)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')}`);
+
+};
