@@ -1,7 +1,8 @@
 # Pull personal shell utils
 
 function NDev-Sync--ifconfig() {
-    ifconfig | grep inet > /tmp/latest-ifconfig.txt
+    date > /tmp/latest-ifconfig.txt
+    ifconfig | grep inet >> /tmp/latest-ifconfig.txt
     ntge encrypt -r NDLT6 -r NDLT7 -r NDLT7W -o "$DEV_HOME_DIR/NDevMgr/ifconfig/$(hostname).ntge.txt" -p /tmp/latest-ifconfig.txt
     rm /tmp/latest-ifconfig.txt
 }
