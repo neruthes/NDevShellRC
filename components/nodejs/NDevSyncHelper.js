@@ -14,7 +14,6 @@ var doSyncNow = function (lastSyncTimestamp) {
             console.log(stdin);
         };
     });
-    // var lastSyncTimestamp2 = parseInt(fs.readFileSync(filePath).toString());
     console.log(`NDevSyncHelper: Last sync ${(new Date(lastSyncTimestamp)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')}` + ' (' + Math.floor( (Date.now()-(new Date(lastSyncTimestamp)))/1000/60 ) + ' min ago). Need to sync now.');
 }
 
