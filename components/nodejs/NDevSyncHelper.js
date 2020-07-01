@@ -19,7 +19,7 @@ var doSyncNow = function (lastSyncTimestamp) {
 
 if (fs.existsSync(filePath) && fs.readFileSync(filePath).toString().trim().match(/^\d+$/)) {
     var lastSyncTimestamp = parseInt(fs.readFileSync(filePath).toString());
-    if (lastSyncTimestamp + 1000*60*15 < Date.now()) {
+    if (lastSyncTimestamp + 1000*60*7 < Date.now()) {
         // Interval: 15 min
         doSyncNow(lastSyncTimestamp);
     } else {
