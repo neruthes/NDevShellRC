@@ -20,13 +20,17 @@ function NDev-Sync--landdns() {
 }
 
 function NDev-Sync() {
-    node -e "fs.writeFileSync('/tmp/NDevSyncHelper-LastSyncTimestamp.txt', Date.now().toString())"
+    LASTSYNC=`cat /tmp/NDev-Sync--LastSyncTimestamp.txt`
+    node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
+    date +%s > /tmp/NDev-Sync--LastSyncTimestamp.txt
     NDev-Sync--landdns
-    mypwd=$PWD
 
+    mypwd=$PWD
     cd $DEV_HOME_DIR/NDevMgr && git pull && u
     cd $DEV_HOME_DIR/NDevShellRC && git pull && u
     cd $DEV_HOME_DIR/NDevMsgInbox && git pull && u
     clipass-sync
+    [[ "$0" = *bash* ]] && source ~/.bashrc || source ~/.zshrc
+    [[ "$0" = *bash* ]] && echo 'I am bash' || 'I am not bash'
     cd $mypwd
 }
