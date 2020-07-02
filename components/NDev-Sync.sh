@@ -1,12 +1,5 @@
 # Pull personal shell utils
 
-function NDev-Sync--ifconfig() {
-    date +"%Y-%m-%d %H:%M:%S UTC" > /tmp/latest-ifconfig.txt
-    ifconfig | grep "inet " >> /tmp/latest-ifconfig.txt
-    ntge encrypt -r NDLT6 -r NDLT7 -r NDLT7W -o "$DEV_HOME_DIR/NDevMgr/ifconfig/$(hostname).ntge.txt" -p /tmp/latest-ifconfig.txt
-    rm /tmp/latest-ifconfig.txt
-}
-
 function NDev-Sync--landdns() {
     node -e "process.stdout.write('Publishing LAN DDNS... ')"
     DOMAIN_NAME="$(hostname).$(pas p NDev-cloudflare-ddns-midfix).neruthes.xyz"
@@ -31,6 +24,5 @@ function NDev-Sync() {
     cd $DEV_HOME_DIR/NDevMsgInbox && git pull && u
     clipass-sync
     [[ "$0" = *bash* ]] && source ~/.bashrc || source ~/.zshrc
-    [[ "$0" = *bash* ]] && echo 'I am bash' || 'I am not bash'
     cd $mypwd
 }
