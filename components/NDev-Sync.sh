@@ -21,7 +21,7 @@ function NDev-Sync--landdns() {
 
 function NDev-Sync() {
     node -e "fs.writeFileSync('/tmp/NDevSyncHelper-LastSyncTimestamp.txt', Date.now().toString())"
-    NDev-Sync--ifconfig
+    NDev-Sync--landdns
     mypwd=$PWD
 
     cd $DEV_HOME_DIR/NDevMgr && git pull && u
