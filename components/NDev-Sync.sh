@@ -10,7 +10,7 @@ function NDev-Sync--ifconfig() {
 function NDev-Sync--landdns() {
     echo 'Publishing LAN DDNS...'
     DOMAIN_NAME="$(hostname).$(pas p NDev-cloudflare-ddns-midfix).neruthes.xyz"
-    MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep "0xffffff00" | xargs node -e "console.log(process.argv[2])"`
+    MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
 
     curl -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/$(pas p oid.cloudflare.xyz.neruthes.ndev-`hostname`)" \
         -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
