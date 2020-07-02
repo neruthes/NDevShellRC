@@ -1,3 +1,0 @@
-#!/bin/sh
-
-node $DEV_HOME_DIR/NDevShellRC/components/nodejs/NDevSyncHelper.js
