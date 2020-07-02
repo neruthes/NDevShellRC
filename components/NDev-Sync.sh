@@ -8,7 +8,7 @@ function NDev-Sync--ifconfig() {
 }
 
 function NDev-Sync--landdns() {
-    # LAN DDNS
+    echo 'Publishing LAN DDNS...'
     DOMAIN_NAME="$(hostname).$(pas p NDev-cloudflare-ddns-midfix).neruthes.xyz"
     MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep "0xffffff00" | xargs node -e "console.log(process.argv[2])"`
 
