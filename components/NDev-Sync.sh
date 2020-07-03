@@ -15,7 +15,7 @@ function NDev-Sync--landdns() {
 function NDev-Sync() {
     LASTSYNC=`cat /tmp/NDev-Sync--LastSyncTimestamp.txt`
     node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
-    date +%s > /tmp/NDev-Sync--LastSyncTimestamp.txt
+    echo "`date +%s`000" > /tmp/NDev-Sync--LastSyncTimestamp.txt
     NDev-Sync--landdns
 
     mypwd=$PWD
