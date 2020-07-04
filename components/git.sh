@@ -1,3 +1,6 @@
+function gitsetremote() {
+    git remote add origin "https://neruthes:$(pas p token.github.clipass-synced)@github.com/$1.git"
+}
 function gitclone() {
     git clone "https://neruthes:$(pas p token.github.clipass-synced)@github.com/$1.git"
 }
