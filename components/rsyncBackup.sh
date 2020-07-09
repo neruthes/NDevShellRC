@@ -1,5 +1,5 @@
 function rsyncBackup() {
-    ~/DEV/rsync-time-backup/rsync_tmbackup.sh /home/neruthes /mnt/NEPd2_Archer/Archer_LS/RsyncTimeMachine/home-neruthes
+    sudo ~/DEV/rsync-time-backup/rsync_tmbackup.sh /home/neruthes /mnt/NEPd2_Archer/Archer_LS/RsyncTimeMachine/home-neruthes
 }
 function rsyncBackup--full() {
     rsyncBackup
