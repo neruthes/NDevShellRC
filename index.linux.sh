@@ -16,6 +16,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # Network
 source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
+source $DEV_HOME_DIR/NDevShellRC/components/cfrpip.sh
 
 # Terminal Hacks
 source $DEV_HOME_DIR/NDevShellRC/components/tty.sh
