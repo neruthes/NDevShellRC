@@ -15,7 +15,7 @@ function gitnuke() {
     echo "Git history nuked"
 }
 
-unalias g
+unalias g &> /dev/null
 function g() {
     git add .
     git commit -m "$1"
