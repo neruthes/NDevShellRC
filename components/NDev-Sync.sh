@@ -1,6 +1,7 @@
 # Pull personal shell utils
 
-function NDev-Sync--landdns() {
+function NDevSync_landdns() {
+    mkdir ~/.tmp
     node -e "process.stdout.write('Publishing LAN DDNS... ')"
     DOMAIN_NAME="$(hostname).$(pas p NDev-cloudflare-ddns-midfix).neruthes.xyz"
     MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
@@ -12,11 +13,12 @@ function NDev-Sync--landdns() {
     # rm ~/.tmp/6508d65e-8da7-441f-b371-b77d2a621859.txt
 }
 
-function NDev-Sync() {
+function NDevSync() {
+    mkdir ~/.tmp
     LASTSYNC=`cat ~/.tmp/NDev-Sync--LastSyncTimestamp.txt`
     node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
     echo "`date +%s`000" > ~/.tmp/NDev-Sync--LastSyncTimestamp.txt
-    NDev-Sync--landdns
+    NDevSync_landdns
 
     mypwd=$PWD
     cd $DEV_HOME_DIR/NDevMgr && git pull && u
