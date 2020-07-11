@@ -8,7 +8,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/clipass.sh
 
 # NDev
-source $DEV_HOME_DIR/NDevShellRC/components/NDev-Sync.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NDev-SSH.sh
 
 ########## END ##########

@@ -23,7 +23,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/tty.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 # NDev
-source $DEV_HOME_DIR/NDevShellRC/components/NDev-Sync.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NDev-SSH.sh
 
 ########## END ##########
