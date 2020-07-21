@@ -6,7 +6,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 
 # Productivity
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh
-source $DEV_HOME_DIR/NDevShellRC/components/clipass.sh
 
 # Drives
 source $DEV_HOME_DIR/NDevShellRC/components/NDevExtPd2-Archer.sh
