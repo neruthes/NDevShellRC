@@ -1,11 +1,11 @@
 mkdir ~/.tmp &> /dev/null
 node -e "process.stdout.write('Publishing LAN DDNS... ')"
 DOMAIN_NAME="$(hostname).$(pas p NDev-cloudflare-ddns-midfix).neruthes.xyz"
-MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
+#MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
 curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/$(pas p oid.cloudflare.xyz.neruthes.ndev-`hostname`)" \
     -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
-    --data "{\"type\":\"A\",\"name\":\"${DOMAIN_NAME}\",\"content\":\"${MY_LAN_IP_ADDR}\",\"ttl\":120,\"proxied\":false}" > ~/.tmp/6508d65e-8da7-441f-b371-b77d2a621859.txt
+    --data "{\"type\":\"A\",\"name\":\"${DOMAIN_NAME}\",\"content\":\"$1\",\"ttl\":120,\"proxied\":false}" > ~/.tmp/6508d65e-8da7-441f-b371-b77d2a621859.txt
 node -e "JSON.parse(fs.readFileSync('$HOME/.tmp/6508d65e-8da7-441f-b371-b77d2a621859.txt').toString()).success ? console.log('Success.') : console.log('Failed.')"
 echo "NDevSync_landdns: Last operation: $(date)" > ~/.tmp/6508d65e-8da7-441f-b371-b77d2a621859-ts.txt
 # rm ~/.tmp/6508d65e-8da7-441f-b371-b77d2a621859.txt
