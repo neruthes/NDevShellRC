@@ -1,15 +1,4 @@
-if [[ "$0" = *bash* ]]; then
-    source ~/.bashrc
-fi
-
-if [[ "$0" = "-bash" ]]; then
-    source ~/.bashrc
-fi
-
-if [[ "$0" = "zsh" ]]; then
-    source ~/.zshrc
-fi
-
+source $MY_SHELL_RC_PATH
 mkdir ~/.tmp &> /dev/null
 LASTSYNC=`cat ~/.tmp/NDev-Sync--LastSyncTimestamp.txt`
 node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
@@ -21,5 +10,5 @@ cd $DEV_HOME_DIR/NDevMgr && git pull && git add . && git commit -m "NDevSync: `d
 cd $DEV_HOME_DIR/NDevShellRC && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevMsgInbox && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 clipass-sync
-[[ "$0" = *bash* ]] && source ~/.bashrc || source ~/.zshrc
+source $MY_SHELL_RC_PATH
 cd $mypwd
