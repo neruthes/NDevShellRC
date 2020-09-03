@@ -1,0 +1,26 @@
+#!/bin/bash
+
+echo "Switching native screen";
+CurrentCase=`NDevVar get switch-display--currentCase`;
+
+if [[ $1 = "reset" ]]; then
+    CurrentCase="Native_Only";
+    bash $HOME/.screenlayout/$CurrentCase.sh;
+    NDevVar set switch-display--currentCase $CurrentCase;
+    exit 0;
+fi
+
+case $CurrentCase in
+    "Native_Only")
+        CurrentCase="Mirror"
+        ;;
+    "Mirror")
+        CurrentCase="DP1_Only"
+        ;;
+    *)
+        CurrentCase="Native_Only"
+        ;;
+esac
+
+bash "$HOME/.screenlayout/base-$CurrentCase.sh";
+NDevVar set switch-display--currentCase $CurrentCase;

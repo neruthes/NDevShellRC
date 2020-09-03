@@ -1,0 +1,11 @@
+#!/bin/sh
+
+mkdir /tmp/NDev-Vars/ 2> /dev/null;
+
+if [[ $1 = "get" ]]; then
+    echo `cat /tmp/NDev-Vars/$2`;
+fi
+
+if [[ $1 = "set" ]]; then
+    echo "$3" > /tmp/NDev-Vars/$2;
+fi
