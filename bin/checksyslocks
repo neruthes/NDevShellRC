@@ -11,7 +11,8 @@ const vardirtmpl = function (lockname) {
 };
 
 const possibleLocks = [
-    'rsyncBackup'
+    'rsyncBackup',
+    'NDevSync'
 ];
 
 possibleLocks.map(function (lockname) {
