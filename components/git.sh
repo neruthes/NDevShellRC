@@ -15,8 +15,18 @@ function gitnuke() {
     echo "Git history nuked"
 }
 function gitbranchshowcurrent() {
-    ISGITREPO=`git branch --show-current | xargs node -e "process.stdout.write(process.argv[1].indexOf('fatal: not a git') !== 0 ? ':'+process.argv[1] : '')"`
-    printf "$ISGITREPO"
+    MYGB="gitbranchshowcurrent--mygb"
+    L_GBSC="`git branch --show-current 2> /tmp/GBSC & cat /tmp/GBSC`"
+    rm /tmp/GBSC
+#    echo "$L_GBSC"
+    if [[ ${L_GBSC::5} == 'fatal' ]]; then
+#        echo 'Fatal detected'
+#        printf ""
+        touch /tmp/GBSC
+        rm /tmp/GBSC
+    else
+        printf ":$L_GBSC"
+    fi
 }
 
 unalias g &> /dev/null
