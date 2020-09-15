@@ -15,17 +15,16 @@ function gitnuke() {
     echo "Git history nuked"
 }
 function gitbranchshowcurrent() {
-    MYGB="gitbranchshowcurrent--mygb"
-    L_GBSC="`git branch --show-current 2> /tmp/GBSC & cat /tmp/GBSC`"
-    rm /tmp/GBSC
+    git branch --show-current 2> /tmp/L_GBSC
+    L_GBSC="`cat /tmp/L_GBSC`"
 #    echo "$L_GBSC"
     if [[ ${L_GBSC::5} == 'fatal' ]]; then
 #        echo 'Fatal detected'
-#        printf ""
-        touch /tmp/GBSC
-        rm /tmp/GBSC
+        rm /tmp/L_GBSC
+        uuidgen > /dev/null
     else
         printf ":$L_GBSC"
+        rm /tmp/L_GBSC
     fi
 }
 
