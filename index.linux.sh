@@ -19,6 +19,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/cfrpip.sh
 
 # Terminal Hacks
 source $DEV_HOME_DIR/NDevShellRC/components/tty.sh
+source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 # NDev

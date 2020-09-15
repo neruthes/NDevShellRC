@@ -6,6 +6,9 @@ source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 # Productivity
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 
+# Terminal Hacks
+source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
+
 # NDev
 source $DEV_HOME_DIR/NDevShellRC/components/NDev-SSH.sh
 
