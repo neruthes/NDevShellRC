@@ -1,0 +1,21 @@
+#!/bin/node
+
+const fs = require('fs');
+
+const printmsg = function (lockname) {
+    return `Lock Active: ${lockname}`;
+};
+
+const vardirtmpl = function (lockname) {
+    return `/tmp/NDev-Vars/syslock-${lockname}`
+};
+
+const possibleLocks = [
+    'rsyncBackup'
+];
+
+possibleLocks.map(function (lockname) {
+    if (fs.readFileSync(vardirtmpl(lockname)).toString() === 'LOCKED') {
+        printmsg(lockname);
+    };
+});
