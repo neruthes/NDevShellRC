@@ -1,0 +1,11 @@
+mkdir ~/.tmp > /dev/null 2>&1
+node -e "process.stdout.write('Publishing WAN DDNS... ')"
+DOMAIN_NAME="$(hostname).`pas p NDev-cloudflare-ddns-midfix`.neruthes.xyz"
+MY_WAN_IP_ADDR=`curl https://ifconfig.co`
+curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/cb2ed02f28b363fef832ae12d7350b88" \
+    -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
+    -H "Content-Type: application/json" \
+    --data "{\"type\":\"A\",\"name\":\"home1ip\",\"content\":\"$MY_WAN_IP_ADDR\",\"ttl\":120,\"proxied\":true}" > ~/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860.txt
+node -e "JSON.parse(fs.readFileSync('$HOME/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860.txt').toString()).success ? console.log('Success.') : console.log('Failed.')"
+echo "NDevSync_landdns: Last operation: $(date)" > ~/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860-ts.txt
+# rm ~/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860.txt
