@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# arg1: Target Device
+TargetDevice=$1
+ssh -i "~/.ssh/$(hostname)" "neruthes@$(cat $DEV_HOME_DIR/NDevMgr/LanDDNS/$(TargetDevice).txt)"

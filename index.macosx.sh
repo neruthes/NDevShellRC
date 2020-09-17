@@ -10,7 +10,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
 
 # NDev
-source $DEV_HOME_DIR/NDevShellRC/components/NDev-SSH.sh
+# source $DEV_HOME_DIR/NDevShellRC/components/NDevSSH.sh
 
 ########## END ##########
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
