@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 const printmsg = function (lockname) {
-    return `Lock Active: ${lockname}`;
+    console.log(`Lock Active: ${lockname}`);
 };
 
 const vardirtmpl = function (lockname) {
@@ -15,8 +15,17 @@ const possibleLocks = [
     'NDevSync'
 ];
 
+var locksCount = 0;
+
 possibleLocks.map(function (lockname) {
-    if (fs.readFileSync(vardirtmpl(lockname)).toString() === 'LOCKED') {
-        printmsg(lockname);
-    };
+    try {
+        if (fs.readFileSync(vardirtmpl(lockname)).toString().indexOf('LOCKED') === 0) {
+            printmsg(lockname);
+            locksCount += 1;
+        };
+    } catch (e) {};
 });
+
+if (locksCount === 0) {
+    console.log('No locks active.');
+};
