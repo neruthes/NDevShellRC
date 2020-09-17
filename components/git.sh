@@ -15,8 +15,8 @@ function gitnuke() {
     echo "Git history nuked"
 }
 function gitbranchshowcurrent() {
-    git branch --show-current > /tmp/L_GBSC 2>&1
-    L_GBSC="`cat /tmp/L_GBSC`"
+    git branch --show-current > /tmp/L_GBSC_`whoami` 2>&1
+    L_GBSC=`cat /tmp/L_GBSC_$(whoami)`
 #    echo "$L_GBSC"
     if [[ ${L_GBSC::5} == 'fatal' ]]; then
 #        echo 'Fatal detected'

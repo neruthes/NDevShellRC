@@ -1,1 +1,1 @@
-gimp ~/PIC/Screenshots/latest.png
+i3 exec prime-run gimp ~/PIC/Screenshots/latest.png
