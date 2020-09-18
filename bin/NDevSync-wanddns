@@ -1,6 +1,5 @@
 mkdir ~/.tmp > /dev/null 2>&1
 node -e "process.stdout.write('Publishing WAN DDNS... ')"
-DOMAIN_NAME="$(hostname).`pas p NDev-cloudflare-ddns-midfix`.neruthes.xyz"
 MY_WAN_IP_ADDR=`curl https://ifconfig.co`
 curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/cb2ed02f28b363fef832ae12d7350b88" \
     -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
