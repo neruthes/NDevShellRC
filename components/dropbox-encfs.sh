@@ -7,7 +7,8 @@ function dropbox-free() {
 }
 
 function dropbox-home-backup() {
-    cp -R /home/neruthes/DEV/* /mnt/Dropbox/NDLT7-backup-home/DEV/
-    cp -R /home/neruthes/DOC/* /mnt/Dropbox/NDLT7-backup-home/DOC/
-    cp -R /home/neruthes/AUD/* /mnt/Dropbox/NDLT7-backup-home/AUD/
+    #rsync -av /home/neruthes/DEV /mnt/Dropbox/NDLT7-backup-home/
+    #rsync -av /home/neruthes/DOC /mnt/Dropbox/NDLT7-backup-home/
+    #rsync -av /home/neruthes/AUD /mnt/Dropbox/NDLT7-backup-home/
+    rsync -av /home/neruthes/{DEV,DOC,AUD} /mnt/Dropbox/NDLT7-backup-home/ --delete
 }
