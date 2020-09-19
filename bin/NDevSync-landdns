@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo 'Publishing LAN DDNS...'
-MY_LAN_IP_ADDR=`ifconfig | grep "inet " | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
+MY_LAN_IP_ADDR=`ifconfig | grep "inet 192.168.1." | grep -e "\(0xffffff00\|255.255.255.0\)" | xargs node -e "console.log(process.argv[2])"`
 echo $MY_LAN_IP_ADDR > $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt
 cd $DEV_HOME_DIR/NDevMgr
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh > /dev/null 2>&1
