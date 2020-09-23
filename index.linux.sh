@@ -1,5 +1,5 @@
 export NDEV_OS_TYPE="linux"
-rm -r ~/Desktop &> /dev/null
+rm -r ~/Desktop > /dev/null 2>&1
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
@@ -10,7 +10,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 # Drives
 source $DEV_HOME_DIR/NDevShellRC/components/NDevExtPd2-Archer.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
-source $DEV_HOME_DIR/NDevShellRC/components/dropbox-encfs.sh
 source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # Network

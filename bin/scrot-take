@@ -1,13 +1,13 @@
 #!/bin/sh
 
-date -Is > ~/TMP/SCROT_LATEST.tmp
-sed -i 's/:/./g' ~/TMP/SCROT_LATEST.tmp
-sed -i 's/+00.00//g' ~/TMP/SCROT_LATEST.tmp
-sed -i 's/T/_/g' ~/TMP/SCROT_LATEST.tmp
-SCROT_LATEST_INNER=`cat ~/TMP/SCROT_LATEST.tmp`
+date -Is > /tmp/SCROT_LATEST.tmp
+sed -i 's/:/./g' /tmp/SCROT_LATEST.tmp
+sed -i 's/+00.00//g' /tmp/SCROT_LATEST.tmp
+sed -i 's/T/_/g' /tmp/SCROT_LATEST.tmp
+SCROT_LATEST_INNER=`cat /tmp/SCROT_LATEST.tmp`
 scrot -ub "$HOME/scrot_$SCROT_LATEST_INNER.png"
 mv $HOME/scrot_*.png $HOME/PIC/Screenshots/
 export SCROT_LATEST="$HOME/PIC/Screenshots/scrot_$(echo $SCROT_LATEST_INNER).png"
 rm $HOME/PIC/Screenshots/latest.png
-ln -s "$HOME/PIC/Screenshots/scrot_`cat ~/TMP/SCROT_LATEST.tmp`.png" "$HOME/PIC/Screenshots/latest.png"
-rm ~/TMP/SCROT_LATEST.tmp
+ln -s "$HOME/PIC/Screenshots/scrot_`cat /tmp/SCROT_LATEST.tmp`.png" "$HOME/PIC/Screenshots/latest.png"
+rm /tmp/SCROT_LATEST.tmp
