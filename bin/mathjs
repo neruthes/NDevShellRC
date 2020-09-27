@@ -1,0 +1,16 @@
+#!/bin/node
+
+(function (str) {
+    if (str.match(/[^\dbxe\.\(\)\+\-\*\/\%\^]/)) {
+        console.log('NaN');
+        console.error('Invalid input.');
+        process.exit(1);
+    };
+    if (!isNaN(Number(eval(str)))) {
+        console.log(Number(eval(str)).toString());
+    } else {
+        console.log('NaN');
+        console.error('Bad expression.');
+    };
+
+})(process.argv[2]);
