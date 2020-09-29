@@ -1,5 +1,6 @@
 export NDEV_OS_TYPE="linux"
 rm -r ~/Desktop > /dev/null 2>&1
+rm -r ~/Downloads > /dev/null 2>&1
 
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
