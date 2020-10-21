@@ -1,0 +1,4 @@
+#!/bin/bash
+
+HTTP_PROXY=socks5h://127.0.0.1:3389
+i3 exec $1 $2 $3 > /dev/null 2>&1
