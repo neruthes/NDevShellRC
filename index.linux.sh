@@ -9,7 +9,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 
 # Drives
-source $DEV_HOME_DIR/NDevShellRC/components/NDevExtPd2-Archer.sh
+source $DEV_HOME_DIR/NDevShellRC/components/NEPd2-Archer.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
 source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 

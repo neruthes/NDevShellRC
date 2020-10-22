@@ -1,3 +1,3 @@
 - /home/neruthes/.Dropbox_EncFS/*
-- /home/.cache/mozilla
-- /home/.cache/pip
+- /home/neruthes/.cache/mozilla
+- /home/neruthes/.cache/pip

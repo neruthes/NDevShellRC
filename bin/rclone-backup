@@ -7,6 +7,6 @@
 # - Dropbox-Crypt
 
 echo "Backing up '/home/neruthes/$1'..."
-NDevVar set syslock-rclone-backup LOCKED
-rclone sync -P -L /home/neruthes/$1 $2:$1
+NDevVar set syslock-rclone-backup
+rclone sync -P -L /home/neruthes/$1 Dropbox-Crypt:$1
 NDevVar del syslock-rclone-backup
