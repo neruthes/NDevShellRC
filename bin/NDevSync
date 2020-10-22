@@ -1,3 +1,20 @@
+# Check hostname
+
+GOOD_DEVICES=(NDLT6 NDLT7 NDLT7W NEPd2E NEPd2U)
+IS_GOOD_DEVICE=false
+for i in $GOOD_DEVICES; do
+    if [[ $GOOD_DEVICES[$i] == `hostname` ]]; then
+        IS_GOOD_DEVICE=true
+    fi
+done
+
+if [[ IS_GOOD_DEVICE == false ]]; then
+    echo "This device `hostname` is not accepted."
+    exit 1
+fi
+
+# Start
+
 NDevVar set syslock-NDevSync LOCKED
 
 source $MY_SHELL_RC_PATH
