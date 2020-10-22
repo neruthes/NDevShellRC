@@ -1,3 +1,7 @@
+if [[ `uname` == Darwin ]]; then
+    exit 1
+fi
+
 function mountExtArcher() {
     lsblk
     echo "--------------------------"

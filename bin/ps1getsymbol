@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [[ `whoami` == 'root' ]]; then
-    printf "\e[38;5;196m#\e[0m"
-    exit 0
-fi
-
-printf "$"

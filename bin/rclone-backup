@@ -1,12 +1,17 @@
 #!/bin/bash
 
+if [[ `uname` == Darwin ]]; then
+    exit 1
+fi
+
 # $1: Home Dir
 # $2: Remote
 
 # List of remotes:
 # - Dropbox-Crypt
 
-echo "Backing up '/home/neruthes/$1'..."
+echo "Creating backup for '/home/neruthes/$1'..."
+
 NDevVar set syslock-rclone-backup
 rclone sync -P -L /home/neruthes/$1 Dropbox-Crypt:$1
 NDevVar del syslock-rclone-backup

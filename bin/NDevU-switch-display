@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ `uname` == Darwin ]]; then
+    exit 1
+fi
+
 echo "Switching native screen";
 CurrentCase=`NDevVar get switch-display--currentCase`;
 
