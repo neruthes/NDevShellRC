@@ -18,5 +18,5 @@ if [[ `hostname` == 'NDVM1-AOSC' ]]; then
     echo "<html><head><style>body{font-family:sans-serif;font-size:20px;}</style></head><body>Download <a href=\"$HREF\">$1</a></body></html>" > index.html
 
     git push origin master -f
-    echo href
+    echo $HREF
 fi
