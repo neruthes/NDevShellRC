@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [[ `hostname` == 'NDVM1-AOSC' ]]; then
+    cp $1 $DEV_HOME_DIR/dpkgtmp/
+    echo "https://neruthes.xyz/dpkgtmp/$1"
+fi

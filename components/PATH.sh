@@ -8,4 +8,4 @@ export PATH="$PATH:$HOME/.cargo/bin"
 #eval "$(pyenv virtualenv-init -)"
 
 #NDev
-export PATH="$PATH:$DEV_HOME_DIR/NDevShellRC/bin"
+export PATH="$DEV_HOME_DIR/NDevShellRC/bin:$PATH"
