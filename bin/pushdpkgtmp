@@ -1,6 +1,9 @@
 #!/bin/bash
 
 if [[ `hostname` == 'NDVM1-AOSC' ]]; then
-    cp $1 $DEV_HOME_DIR/dpkgtmp/
+    cp $1 $$DEV_HOME_DIR/dpkgtmp/
+    cd $DEV_HOME_DIR/dpkgtmp
+    gitnuke
+    git push origin master -f
     echo "https://neruthes.xyz/dpkgtmp/$1"
 fi
