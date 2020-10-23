@@ -3,7 +3,16 @@
 if [[ `hostname` == 'NDVM1-AOSC' ]]; then
     cp $1 $$DEV_HOME_DIR/dpkgtmp/
     cd $DEV_HOME_DIR/dpkgtmp
-    gitnuke
+
+    cp --reflink=auto --sparse=always .git/config .gitconf;
+    rm -rf .git;
+    git init;
+    cat .gitconf > .git/config;
+    rm .gitconf;
+    git add .;
+    git commit -m "GITNUKE";
+    echo "Git history nuked"
+
     git push origin master -f
     echo "https://neruthes.xyz/dpkgtmp/$1"
 fi
