@@ -4,4 +4,4 @@ if [[ `uname` == Darwin ]]; then
     exit 1
 fi
 
-daemonize /opt/discord/Discord '--proxy-server="socks5://127.0.0.1:3389"'
+/opt/discord/Discord --proxy-server="socks5://127.0.0.1:3389"
