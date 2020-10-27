@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ `uname` == Linux ]]; then
+    d7e firefox
+    d7e telegram-desktop
+    d7e discord
+    sudo virt-manager
+fi
