@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [[ `uname` == Linux ]]; then
-    d7e firefox
-    d7e telegram-desktop
-    d7e discord
+    ir firefox
+    ir telegram-desktop
+    ir discord
     sudo virt-manager
 fi

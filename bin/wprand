@@ -1,0 +1,3 @@
+#!/bin/bash
+
+feh --bg-fill "/home/neruthes/PIC/My_Wallpapers/$( select-random-file-in-dir ~/PIC/My_Wallpapers )"
