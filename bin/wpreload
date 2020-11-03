@@ -1,0 +1,4 @@
+#!/bin/bash
+
+WPPATH=$(cat /tmp/wppath.$USER)
+feh --bg-fill "$WPPATH"
