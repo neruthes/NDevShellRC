@@ -4,5 +4,4 @@ if [[ `uname` == Linux ]]; then
     ir firefox
     ir telegram-desktop
     ir discord
-    sudo virt-manager
 fi
