@@ -23,6 +23,8 @@ function NEPd3-mount() {
     # sudo lvcreate -l 100%FREE -n NEPd3Lv1 NEPd3Vg1
 
     sudo mount /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
+    sudo mount /dev/disk/by-partlabel/NEPd3_Win /mnt/NEPd3_Caster/Win
+    sudo mount /dev/disk/by-partlabel/NEPd3_Shared /mnt/NEPd3_Caster/Shared
 }
 
 function NEPd3-umount() {
