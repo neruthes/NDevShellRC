@@ -5,4 +5,4 @@ if [[ `hostname` != NDPS1 ]]; then
     exit 1
 fi
 
-source $DEV_HOME_DIR/NDevShellRC/components/{git,PATH,pbcopy}.sh
+source $DEV_HOME_DIR/NDevShellRC/components/{cli,git,PATH,pbcopy}.sh
