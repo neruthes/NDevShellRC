@@ -37,8 +37,8 @@ function ps1getsymbol() {
     if [[ `whoami` == 'root' ]]; then
         printf "\e[38;5;196m#\e[0m"
     else
-        printf "$"        
+        printf "$"
     fi
 }
 
-export PS1="\e[38;5;118m\u\e[0m@\h`ps1devnickname` \e[38;5;81m\W\e[0m\`ps1gitbr\` \`ps1getsymbol\` "
+export PS1="\e[38;5;118m\u\e[0m \h`ps1devnickname` \e[38;5;81m\W\e[0m\`ps1gitbr\` \`ps1getsymbol\` "
