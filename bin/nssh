@@ -23,7 +23,7 @@ else
 fi
 
 if [[ -r "~/.ssh/$(hostname)" ]]; then
-    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${IPAddr}"
+    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${TargetDevice}.lan.neruthes.xyz"
 else
-    ssh "${SSHUsername}@${IPAddr}"
+    ssh "${SSHUsername}@${TargetDevice}.lan.neruthes.xyz"
 fi
