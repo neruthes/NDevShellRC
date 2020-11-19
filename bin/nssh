@@ -9,10 +9,21 @@ else
     DEV_HOME_DIR=/Users/Neruthes/Developer
 fi
 
-IPAddr=$(cat ${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt)
+if [[ ${TargetDevice:0:4} == "NDPS" ]]; then
+    SSHUsername=root
+else
+    SSHUsername=neruthes
+fi
+
+IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
+if [[ -r $IPAddrFile ]]; then
+    IPAddr=$(cat $IPAddrFile)
+else
+    echo "ERROR: Cannot find IP address of ${TargetDevice} in 'NDevMgr/LanDDNS'"
+fi
 
 if [[ -r "~/.ssh/$(hostname)" ]]; then
-    ssh -i "~/.ssh/$(hostname)" neruthes@${IPAddr}
+    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${IPAddr}"
 else
-    ssh neruthes@${IPAddr}
+    ssh "${SSHUsername}@${IPAddr}"
 fi
