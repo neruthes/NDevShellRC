@@ -25,14 +25,16 @@ MY_LAN_IP_ADDR=`cat $TMP`
 
 
 ### Push to GitHub
-echo "Pushing to GitHub..."
-echo $MY_LAN_IP_ADDR > $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt
-cd $DEV_HOME_DIR/NDevMgr
-source $DEV_HOME_DIR/NDevShellRC/components/git.sh > /dev/null 2>&1
-git pull origin master
-git add .
-git commit -m "LAN DDNS Update: $(hostname) @ $(date)"
-git push origin master
+if [[ -r $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt ]]; then
+    echo "Pushing to GitHub..."
+    echo $MY_LAN_IP_ADDR > $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt
+    cd $DEV_HOME_DIR/NDevMgr
+    source $DEV_HOME_DIR/NDevShellRC/components/git.sh > /dev/null 2>&1
+    git pull origin master
+    git add .
+    git commit -m "LAN DDNS Update: $(hostname) @ $(date)"
+    git push origin master
+fi
 
 
 ### Push to Cloudflare
@@ -43,7 +45,8 @@ curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400
     --data "{\"type\":\"A\",\"name\":\"$(hostname).lan\",\"content\":\"$MY_LAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > $TMP.2
 cat $TMP.2
 echo ""
+echo ""
 
 ### End
 echo "Done"
-rm $TMP $TMP.1 $TMP.2
+rm $TMP $TMP.1 $TMP.2 2> /dev/null
