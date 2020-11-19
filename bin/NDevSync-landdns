@@ -36,7 +36,7 @@ git push origin master
 
 
 ### Push to Cloudflare
-echo "Pushing to Cloudflare...
+echo "Pushing to Cloudflare..."
 curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/${MYDEVCFID}" \
     -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
@@ -45,5 +45,5 @@ cat $TMP.2
 echo ""
 
 ### End
-echo "Done
+echo "Done"
 rm $TMP $TMP.1 $TMP.2
