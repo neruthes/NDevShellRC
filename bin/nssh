@@ -2,6 +2,7 @@
 
 # arg1: Target Device
 TargetDevice=$1
+TargetUsername=$2
 
 if [[ `uname` == "Linux" ]]; then
     DEV_HOME_DIR=/home/neruthes/DEV
@@ -15,12 +16,22 @@ else
     SSHUsername=neruthes
 fi
 
-IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
-if [[ -r $IPAddrFile ]]; then
-    IPAddr=$(cat $IPAddrFile)
+if [ -z "$TargetUsername" ]; then
+    SSHUsername="neruthes"
 else
-    echo "ERROR: Cannot find IP address of ${TargetDevice} in 'NDevMgr/LanDDNS'"
+    SSHUsername=$TargetUsername
 fi
+
+# IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
+# if [[ -r $IPAddrFile ]]; then
+#     IPAddr=$(cat $IPAddrFile)
+# else
+#     printf ""
+# fi
+
+echo "SSH User:  $SSHUsername"
+echo "SSH Host:  $TargetDevice"
+echo ""
 
 if [[ -r "~/.ssh/$(hostname)" ]]; then
     ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${TargetDevice}.lan.neruthes.xyz"
