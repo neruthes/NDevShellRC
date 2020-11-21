@@ -91,6 +91,7 @@ exec --no-startup-id nm-applet
 exec_always --no-startup-id xinput set-prop "ELAN2303:00 04F3:3083 Touchpad" "libinput Natural Scrolling Enabled" 1
 exec_always --no-startup-id xinput set-prop "ELAN2303:00 04F3:3083 Touchpad" "libinput Tapping Enabled" 1
 exec_always --no-startup-id xinput set-prop "SteelSeries SteelSeries Rival 310 eSports Mouse" "libinput Natural Scrolling Enabled" 1
+exec_always --no-startup-id xinput set-prop "MOSART Semi. Mi Wireless Combo Mouse" "libinput Natural Scrolling Enabled" 1
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status

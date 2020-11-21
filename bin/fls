@@ -1,0 +1,106 @@
+#!/bin/bash
+
+####################################################################################
+#
+# FLS: File Logical Spliter (Version 0.1.0)
+# Copyright (c) 2020 Neruthes <i@neruthes.xyz>
+# Published under GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+# Invoke this program via "fls" command.
+#
+####################################################################################
+
+
+### Internal Functions
+### -------------------------------------------
+function getFileSize() {
+    FilePath="$1"
+    TMP="/tmp/fls-getFileSize-$(uuidgen)"
+    du --bytes "$FilePath" > $TMP
+    FileName="$(basename $FilePath)"
+    sed -i "s/\s${FileName}//g" $TMP
+    echo "$(cat $TMP)"
+    rm $TMP
+}
+function fdiv_ceil() {
+    CalcFctr=$(($1/$2))
+    CalcRmnt=$(($1%$2))
+    if [[ $CalcRamt == 0 ]]; then
+        printf $CalcFctr
+    else
+        printf $(($CalcFctr+1))
+    fi
+}
+if [[ $(fdiv_ceil 100 70) == 2 ]]; then
+    printf ""
+else
+    echo "WARNING: A bug is detected in fdiv_ceil!"
+fi
+function mkSparseSlices() {
+    echo "TEST: ChunkSize=$ChunkSize"
+    TotalChunks=$(fdiv_ceil $(getFileSize $InputPath) $ChunkSize)
+    echo "INFO: Will create ${TotalChunks} chunks in total."
+    MetaFile="${TargetDir}/fls_metadata.txt"
+    echo "FLSMetadataFile FormatVer1" > $MetaFile
+    echo "FileName=${InputName}" >> $MetaFile
+    echo "Chunks=${TotalChunks}" >> $MetaFile
+    echo "ChunkSize=${ChunkSize}" >> $MetaFile
+    echo "INFO: Created metadata file at $MetaFile"
+    echo "-------------------------------------------------"
+    cat $MetaFile
+    echo "-------------------------------------------------"
+    for (( i = 0; i < $TotalChunks; i++ )); do
+        ChunkFileName="fls.chunk-${i}"
+        echo "INFO: Creating chunk ${i} at $ChunkFileName"
+        dd oflag=seek_bytes if=${InputPath} of="${TargetDir}/${ChunkFileName}" seek=$(($i*$ChunkSize)) bs=${ChunkSize} count=1
+    done
+}
+
+
+### Arguments
+### -------------------------------------------
+SUBCOMMAND=$1
+
+
+### Constants
+### -------------------------------------------
+DistDirName=flsdist
+DefaultChunkSize=$((8*1024*1024))
+# DefaultChunkSize=$((8*1024))
+
+
+### Main Logic
+### -------------------------------------------
+case $SUBCOMMAND in
+    "split" | "s" )
+        export InputPath="$2"
+        export InputName="$(basename $InputPath)"
+        export ChunkSize="$DefaultChunkSize"
+        export TargetDir="$PWD/${InputName}.chunks"
+        export FileSize="$(getFileSize $InputPath)"
+        mkdir -p "$TargetDir"
+        echo "INFO: Starting..."
+        echo "INFO: Created directory '${TargetDir}'."
+        echo "INFO: ChunkSize $(($ChunkSize/1024)) KiB"
+        mkSparseSlices
+        ;;
+    "merge" | "m" )
+        echo "FLS: Merge"
+        echo "Feature not implemented yet."
+        ;;
+    "test" )
+        # echo "Running test..."
+        echo "Feature not implemented yet."
+        # TMP="/tmp/fls-test-$(date +%s)"
+        # mkdir -p $TMP/dist
+        # dd if=/dev/urandom of=$TMP/test.img bs=1MiB count=33
+        # HASH_tmp=$(sha256sum $TMP/test.img)
+        # HashOriginal=${HASH_tmp:0:64}
+        # echo "INFO: You can safely delete '$TMP' now."
+        ;;
+    "help" | "h" )
+        echo "FLS: Help"
+        echo "Synopsis:"
+        echo "    fls  split  /path/to/file  /target/dir"
+        echo "    fls  merge  /path/to/dor  /target/file"
+        ;;
+esac

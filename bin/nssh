@@ -10,6 +10,7 @@ else
     DEV_HOME_DIR=/Users/Neruthes/Developer
 fi
 
+### Decide Username
 if [[ ${TargetDevice:0:4} == "NDPS" ]]; then
     SSHUsername=root
 else
@@ -20,6 +21,13 @@ if [ -z "$TargetUsername" ]; then
     SSHUsername="neruthes"
 else
     SSHUsername=$TargetUsername
+fi
+
+### Decide Address Scope
+if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
+    AddrScope=wan
+else
+    AddrScope=lan
 fi
 
 # IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
@@ -34,7 +42,8 @@ echo "SSH Host:  $TargetDevice"
 echo ""
 
 if [[ -r "~/.ssh/$(hostname)" ]]; then
-    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${TargetDevice}.lan.neruthes.xyz"
+    ### Prefer the keypair which is named after the hostname
+    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@${TargetDevice}.${AddrScope}.neruthes.xyz"
 else
-    ssh "${SSHUsername}@${TargetDevice}.lan.neruthes.xyz"
+    ssh "${SSHUsername}@${TargetDevice}.${AddrScope}.neruthes.xyz"
 fi
