@@ -1,13 +1,13 @@
 #!/bin/bash
 
-####################################################################################
+################################################################################
 #
 # FLS: File Logical Spliter (Version 0.1.0)
 # Copyright (c) 2020 Neruthes <i@neruthes.xyz>
-# Published under GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+# Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
 # Invoke this program via "fls" command.
 #
-####################################################################################
+################################################################################
 
 
 ### Internal Functions
@@ -30,39 +30,79 @@ function fdiv_ceil() {
         printf $(($CalcFctr+1))
     fi
 }
-if [[ $(fdiv_ceil 100 70) == 2 ]]; then
+if [[ $(fdiv_ceil 10001 10000) == 2 ]]; then
     printf ""
 else
     echo "WARNING: A bug is detected in fdiv_ceil!"
 fi
 function mkSparseSlices() {
     echo "TEST: ChunkSize=$ChunkSize"
-    TotalChunks=$(fdiv_ceil $(getFileSize $InputPath) $ChunkSize)
+    TotalChunks=$(fdiv_ceil $FileSize $ChunkSize)
     echo "INFO: Will create ${TotalChunks} chunks in total."
     MetaFile="${TargetDir}/fls_metadata.txt"
     echo "FLSMetadataFile FormatVer1" > $MetaFile
     echo "FileName=${InputName}" >> $MetaFile
     echo "Chunks=${TotalChunks}" >> $MetaFile
     echo "ChunkSize=${ChunkSize}" >> $MetaFile
+    # echo "FileSize=${FileSize}" >> $MetaFile
     echo "INFO: Created metadata file at $MetaFile"
     echo "-------------------------------------------------"
     cat $MetaFile
     echo "-------------------------------------------------"
     for (( i = 0; i < $TotalChunks; i++ )); do
         ChunkFileName="fls.chunk-${i}"
-        echo "INFO: Creating chunk ${i} at $ChunkFileName"
-        dd oflag=seek_bytes if=${InputPath} of="${TargetDir}/${ChunkFileName}" seek=$(($i*$ChunkSize)) bs=${ChunkSize} count=1
+        echo "INFO: Creating chunk $ChunkFileName"
+        if [[ $(($i+1)) == $TotalChunks ]]; then
+            # This is the last write
+            ThisChunkSize=$(($FileSize % $ChunkSize))
+        else
+            ThisChunkSize=$ChunkSize
+        fi
+        TmpErrLog=/tmp/fls-tmp-error-log.txt
+        dd iflag=skip_bytes if=${InputPath} of="${TargetDir}/${ChunkFileName}" skip=$(($i*$ChunkSize)) bs=${ThisChunkSize} count=1 > $TmpErrLog 2>&1
+        if [[ $? == 0 ]]; then
+            printf ""
+        else
+            echo "Error: Something happened."
+            echo "-------------------------------------------"
+            cat $TmpErrLog
+            rm $TmpErrLog
+            exit 1
+        fi
     done
+    echo "Done."
+}
+function aggregateChunks() {
+    echo "INFO: Starting aggregation..."
+    OutputPath="$PWD/fls_merged--$MD_FileName-$(date +%s)"
+    for (( i = 0; i < $MD_Chunks; i++ )); do
+        echo "INFO: Emerging chunk ${i}..."
+        TmpErrLog=/tmp/fls-tmp-error-log.txt
+        dd oflag=seek_bytes if="$ContentDir/fls.chunk-${i}" of="$OutputPath" seek=$(($i*$MD_ChunkSize)) bs=${MD_ChunkSize} count=1 > $TmpErrLog 2>&1
+        if [[ $? == 0 ]]; then
+            printf ""
+        else
+            echo "Error: Something happened."
+            echo "-------------------------------------------"
+            cat $TmpErrLog
+            rm $TmpErrLog
+            exit 1
+        fi
+    done
+    du -h $OutputPath
+    echo "Done."
 }
 
 
 ### Arguments
 ### -------------------------------------------
+
 SUBCOMMAND=$1
 
 
 ### Constants
 ### -------------------------------------------
+
 DistDirName=flsdist
 DefaultChunkSize=$((8*1024*1024))
 # DefaultChunkSize=$((8*1024))
@@ -70,6 +110,12 @@ DefaultChunkSize=$((8*1024*1024))
 
 ### Main Logic
 ### -------------------------------------------
+
+if [[ x$SUBCOMMAND == 'x' ]]; then
+    $0 help
+    exit 0
+fi
+
 case $SUBCOMMAND in
     "split" | "s" )
         export InputPath="$2"
@@ -85,22 +131,37 @@ case $SUBCOMMAND in
         ;;
     "merge" | "m" )
         echo "FLS: Merge"
-        echo "Feature not implemented yet."
-        ;;
-    "test" )
-        # echo "Running test..."
-        echo "Feature not implemented yet."
-        # TMP="/tmp/fls-test-$(date +%s)"
-        # mkdir -p $TMP/dist
-        # dd if=/dev/urandom of=$TMP/test.img bs=1MiB count=33
-        # HASH_tmp=$(sha256sum $TMP/test.img)
-        # HashOriginal=${HASH_tmp:0:64}
-        # echo "INFO: You can safely delete '$TMP' now."
+        # echo "Feature not implemented yet."
+        export ContentDir="$2"
+        export MetaFile="$ContentDir/fls_metadata.txt"
+        # Get FileName
+        MD_FileName=$(cat $MetaFile | grep "FileName=")
+        MD_FileName=${MD_FileName:9}
+        echo "INFO: FileName is '$MD_FileName'..."
+        # Get Chunks
+        MD_Chunks=$(cat $MetaFile | grep "Chunks=")
+        MD_Chunks=${MD_Chunks:7}
+        echo "INFO: Aggregating $MD_Chunks chunks..."
+        # Get ChunkSize
+        MD_ChunkSize=$(cat $MetaFile | grep "ChunkSize=")
+        MD_ChunkSize=${MD_ChunkSize:10}
+        echo "INFO: ChunkSize is $MD_ChunkSize bytes..."
+        # Start actual aggretation
+        aggregateChunks
         ;;
     "help" | "h" )
-        echo "FLS: Help"
-        echo "Synopsis:"
-        echo "    fls  split  /path/to/file  /target/dir"
-        echo "    fls  merge  /path/to/dor  /target/file"
+        echo ' '
+        echo 'FLS (File Logical Spliter) | Version 0.1.0'
+        echo ' '
+        echo 'Copyright (c) 2020 Neruthes. Free software. Published under GNU GPLv2.'
+        echo ' '
+        # echo 'Synopsis:'
+        # echo '    fls split /path/to/file'
+        # echo '    fls merge /path/to/dir'
+        # echo '
+        echo 'Usage:'
+        echo '    fls split /path/to/file           Split the file to $PWD/$FileName.chunks/'
+        echo '    fls merge /path/to/dir            Merge the chunks to $PWD/fls_merged--$FileName-$Timestamp'
+        echo '        '
         ;;
 esac

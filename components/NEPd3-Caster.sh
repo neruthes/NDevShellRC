@@ -23,6 +23,13 @@ function NEPd3-mount() {
 
         ### Shared: FAT32
         sudo mount /dev/disk/by-partlabel/NEPd3_Shared /mnt/NEPd3_Caster/Shared
+
+        ### Test Case
+        if [[ -e /mnt/NEPd3_Caster/LS/.IAmMounted ]]; then
+            echo "Successfully mounted NEPd3."
+        else
+            echo "Error: Failed mounting NEPd3."
+        fi
     else
         echo "Error: Disk is not connected."
     fi
