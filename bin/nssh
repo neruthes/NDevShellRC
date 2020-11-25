@@ -2,7 +2,7 @@
 
 # arg1: Target Device
 TargetDevice=$1
-TargetUsername=$2
+TargetScope=$2
 
 if [[ `uname` == "Linux" ]]; then
     DEV_HOME_DIR=/home/neruthes/DEV
@@ -11,23 +11,23 @@ else
 fi
 
 ### Decide Username
+SSHUsername=neruthes
 if [[ ${TargetDevice:0:4} == "NDPS" ]]; then
     SSHUsername=root
-else
-    SSHUsername=neruthes
 fi
-
-if [ -z "$TargetUsername" ]; then
-    SSHUsername="neruthes"
-else
-    SSHUsername=$TargetUsername
+if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
+    SSHUsername=root
 fi
 
 ### Decide Address Scope
-if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
-    AddrScope=wan
+
+if [[ $TargetScope == '' ]]; then
+    AddrScope="lan"
 else
-    AddrScope=lan
+    AddrScope="$TargetScope"
+fi
+if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
+    AddrScope="wan"
 fi
 
 # IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
@@ -37,8 +37,8 @@ fi
 #     printf ""
 # fi
 
-echo "SSH User:  $SSHUsername"
-echo "SSH Host:  $TargetDevice"
+echo ""
+echo -e "Outgoing SSH connection: \e[38;5;118m${SSHUsername}\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m.neruthes.xyz"
 echo ""
 
 if [[ -r "~/.ssh/$(hostname)" ]]; then
