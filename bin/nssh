@@ -38,7 +38,7 @@ fi
 # fi
 
 echo ""
-printf "Outgoing SSH connection: \e[38;5;118m${SSHUsername}\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m.neruthes.xyz"
+printf "Establishing SSH connection: \e[38;5;118m${SSHUsername}\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m.neruthes.xyz"
 echo ""
 echo ""
 

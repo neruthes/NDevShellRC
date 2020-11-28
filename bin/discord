@@ -1,5 +1,0 @@
-#!/bin/bash
-
-if [[ `uname` == Linux ]]; then
-    /opt/discord/Discord --proxy-server="socks5://127.0.0.1:3389"
-fi

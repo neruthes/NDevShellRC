@@ -4,6 +4,8 @@ fi
 
 
 function borgBackup() {
+    # $1 = system|neruthes
+
     if [[ -r /mnt/NEPd3_Caster/LS/BorgHome/NDLT7 ]]; then
         echo ""
         echo "Borg backup starting..."
@@ -21,31 +23,31 @@ function borgBackup() {
         export REPO_PREFIX="/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"
 
         NDevVar set syslock-borgBackup LOCKED
-
-        if [[ $1 == 'system' ]]; then
-            sudo borg create --stats \
-                --list \
-                --exclude '/etc/mtab' \
-                --exclude '/usr/tmp' \
-                --exclude '/var/lock' \
-                --exclude '/var/run' \
-                --exclude '/var/tmp' \
-                --compression zstd,22 \
-                --one-file-system \
-                ${REPO_PREFIX}/system::$(stddatetime) \
-                /etc /usr /var /boot
-        fi
-
-        if [[ $1 == 'neruthes' ]]; then
-            borg create --stats \
-                --list \
-                --exclude '/home/neruthes/.cache' \
-                --exclude '/home/neruthes/*/.cache' \
-                --compression zstd,22 \
-                --one-file-system \
-                ${REPO_PREFIX}/neruthes::$(stddatetime) \
-                /home/neruthes
-        fi
+        case "$1" in
+            system )
+                sudo borg create --stats \
+                    --list \
+                    --exclude '/etc/mtab' \
+                    --exclude '/usr/tmp' \
+                    --exclude '/var/lock' \
+                    --exclude '/var/run' \
+                    --exclude '/var/tmp' \
+                    --compression zstd,22 \
+                    --one-file-system \
+                    ${REPO_PREFIX}/system::$(stddatetime) \
+                    /etc /usr /var /boot
+                ;;
+            neruthes )
+                borg create --stats \
+                    --list \
+                    --exclude '/home/neruthes/.cache' \
+                    --exclude '/home/neruthes/*/.cache' \
+                    --compression zstd,22 \
+                    --one-file-system \
+                    ${REPO_PREFIX}/neruthes::$(stddatetime) \
+                    /home/neruthes
+                ;;
+        esac
 
         NDevVar del syslock-borgBackup
 

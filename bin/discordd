@@ -1,7 +1,5 @@
 #!/bin/bash
 
-if [[ `uname` == Darwin ]]; then
-    exit 1
+if [[ `uname` == Linux ]]; then
+    daemonize /opt/discord/Discord '--proxy-server=socks5://10.104.22.2:8080'
 fi
-
-daemonize $DEV_HOME_DIR/NDevShellRC/bin/discord
