@@ -194,7 +194,7 @@ function UPI_github() {
 ### Main Controller
 SUBCOMMAND=$1
 
-if [[ x$SUBCOMMAND == 'x' ]]; then
+if [[ "x$SUBCOMMAND" == 'x' ]]; then
     _showhelp
     exit 0
 fi
