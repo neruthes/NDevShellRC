@@ -10,7 +10,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
 
 # Network
-source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
+source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
 ########## END ##########
 source $DEV_HOME_DIR/NDevShellRC/_version.sh

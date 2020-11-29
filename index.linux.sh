@@ -15,7 +15,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
 source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # Network
-source $DEV_HOME_DIR/NDevShellRC/components/ssmgr.sh
+source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
 # Terminal Hacks
 source $DEV_HOME_DIR/NDevShellRC/components/tty.sh

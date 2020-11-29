@@ -1,0 +1,197 @@
+#!/bin/bash
+
+################################################################################
+#
+# Saturation-Git-Keeper (Version 0.1.0)
+# Copyright (c) 2020 Neruthes <i@neruthes.xyz>
+# Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
+# Invoke this program via "saturation-git-keeper" command.
+#
+################################################################################
+
+### Constants
+APPVER=0.1.0
+LOCKPREFIX=/var/run/saturation-git-keeper
+CONFPREFIX=/etc/saturation-git-keeper
+CACHEPREFIX=/var/cache/saturation-git-keeper
+SAVEPREFIX=/var/db/saturation-git-keeper--saves
+
+### Execute pre-run script
+if [[ "x$SGKPreRunScriptPath" == 'x' ]]; then
+    # No custom script path specified; run default
+    if [[ -r $CONFPREFIX/pre-run.sh ]]; then
+        source $CONFPREFIX/pre-run.sh
+    else
+        echo "ERROR: Cannot find '$CONFPREFIX/pre-run.sh'. Aborting."
+        exit 1
+    fi
+else
+    if [[ -r $SGKPreRunScriptPath ]]; then
+        source $SGKPreRunScriptPath
+    else
+        echo "ERROR: Cannot find custom pre-run script '$SGKPreRunScriptPath'. Aborting."
+        exit 1
+    fi
+fi
+
+
+
+### Make Directories
+mkdir -p $CONFPREFIX $CACHEPREFIX $SAVEPREFIX
+
+### Internal Functions
+function _logINFO() {
+    printf "\e[34m[INFO]\e[0m $1\n"
+}
+function _logWARN() {
+    printf "\e[31m[WARN]\e[0m $1\n"
+}
+function _showhelp() {
+    echo "
+Saturation-Git-Keeper (Version 0.1.0)
+
+Copyright (c) 2020 Neruthes <i@neruthes.xyz>.
+This is a free software. Published under GNU GPLv2.
+
+Usage:
+    saturation-git-keeper help                      Show this help message.
+    saturation-git-keeper version                   Show version.
+    saturation-git-keeper conf                      Show paths of config files.
+    saturation-git-keeper mkconf                    Initialize conf files.
+    saturation-git-keeper pull-users                Pull metadata of users. // TODO
+    saturation-git-keeper pull-repos                Pull repos.
+
+Notes:
+    - Set env var SGKPreRunScriptPath to skip default 'pre-run.sh' script.
+"
+}
+function _showver() {
+    echo $APPVER
+}
+function _mkconf() {
+    mkdir -p $CONFPREFIX
+    echo -e "#!/bin/bash" > $CONFPREFIX/pre-run.sh
+    echo -e "# List of users. \n# Each line is a site:username." > $CONFPREFIX/users
+    echo -e "# List of repos. \n# Each line is a repo URL like 'https://github.com/neruthes/NDevShellRC'." > $CONFPREFIX/repos
+    echo -e "# List of excluded repos. \n# Each line is a repo URL like 'https://github.com/neruthes/NDevShellRC'." > $CONFPREFIX/no-repos
+}
+function _showconfpaths() {
+    echo "You have 4 config files:
+    $CONFPREFIX/pre-run.sh                  Set some variables here.
+    $CONFPREFIX/users                       Repos, under which users, to pull. // TODO
+    $CONFPREFIX/repos                       Which repos to pull.
+    $CONFPREFIX/no-repos                    Which repos to ignore. // TODO
+
+All repos under specified users will be pulled.
+All specified repos will be pulled.
+Excluding the repos specified in '$CONFPREFIX/no-repos'.
+
+Now only 'pre-run.sh' and 'repos' are supported.
+"
+}
+function _checkconfs() {
+    FOUNDFILES=0
+    CONFS="pre-run.sh users repos no-repos"
+    for i in $CONFS; do
+        if [[ -r $CONFPREFIX/$i ]]; then
+            FOUNDFILES=$(($FOUNDFILES + 1))
+        fi
+    done
+    if [[ $FOUNDFILES == 4 ]]; then
+        printf "true"
+    else
+        printf "false"
+    fi
+}
+function _repourltopath() {
+    REPOURL=$1
+    echo "$SAVEPREFIX/${REPOURL/https:\/\//}"
+}
+function _getfullreposlist() {
+    RAWLIST="$(cat $CONFPREFIX/repos)"
+    REPOSLIST=$(echo "$RAWLIST" | grep ^https)
+    echo $REPOSLIST
+}
+function _gitclone() {
+    REPOURL=$1
+    GITDIR=$(_repourltopath $REPOURL)
+    _logINFO "Cloning '$REPOURL' into '$GITDIR'."
+    git clone $REPOURL $GITDIR
+}
+function _gitpull() {
+    GITDIR=$1
+    cd $GITDIR
+    _logINFO "Pulling '$GITDIR' from upstream."
+    git pull -f
+}
+function _updategitrepo() {
+    REPOURL=$1
+    GITDIR=$(_repourltopath $REPOURL)
+    if [[ -r $GITDIR/.git/config ]]; then
+        _gitpull $GITDIR
+    else
+        _gitclone $REPOURL
+    fi
+}
+
+### Major Logic Entries
+function _pullrepos() {
+    _logINFO "Pulling repositories..."
+    # TMP=/tmp/sgk-pullrepos--$(uuidgen)
+    # REPOSLIST=$(_getfullreposlist)
+    for i in $(_getfullreposlist); do
+        _updategitrepo "$i"
+    done
+    # rm $TMP
+}
+
+### User Page Interpreters
+function UPI_github() {
+    echo "Feature not implemented yet."
+    echo "Feature not implemented yet." > /dev/stderr
+}
+
+
+### Main Controller
+SUBCOMMAND=$1
+
+if [[ x$SUBCOMMAND == 'x' ]]; then
+    _showhelp
+fi
+
+case $SUBCOMMAND in
+    help )
+        _showhelp
+        ;;
+    version )
+        _showver
+        ;;
+    conf )
+        if [[ `_checkconfs` == false ]]; then
+            echo "Config files are missing."
+            echo "Run '$(basename $0) mkconfig' to create them."
+            echo ""
+        fi
+        _showconfpaths
+        ;;
+    mkconf )
+        echo ""
+        echo "WARNING!"
+        echo ""
+        echo "You are going to ERASE all exisiting config files. This is DANGEROUS!"
+        echo "If you are sure, type 'YES' to proceed."
+        printf "> "
+        read AREYOUSURE
+        if [[ "x$AREYOUSURE" == "xYES" ]]; then
+            _mkconf
+        else
+            "Operation aborted."
+        fi
+        ;;
+    pull-repos )
+        _pullrepos
+        ;;
+    * )
+        echo "ERROR: Unknown subcommand."
+        ;;
+esac

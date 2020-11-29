@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Check hostname
 
 GOOD_DEVICES=(NDLT6 NDLT7 NDLT7W NEPd2E NEPd2U)
