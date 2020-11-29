@@ -2,15 +2,17 @@
 
 ################################################################################
 #
-# Saturation-Git-Keeper (Version 0.1.0)
+# Saturation-Git-Keeper (Version 0.1.1)
 # Copyright (c) 2020 Neruthes <i@neruthes.xyz>
 # Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
 # Invoke this program via "saturation-git-keeper" command.
 #
+# Contributors:
+#   - Neruthes <i@neruthes.xyz>
+#
 ################################################################################
 
 ### Constants
-APPVER=0.1.0
 LOCKPREFIX=/var/run/saturation-git-keeper
 CONFPREFIX=/etc/saturation-git-keeper
 CACHEPREFIX=/var/cache/saturation-git-keeper
@@ -34,17 +36,28 @@ else
     fi
 fi
 
-
+### Enforced Constants
+APPVER=0.1.1
+CONFPREFIX_DEFAULT=/etc/saturation-git-keeper
+LOCKPREFIX_DEFAULT=/var/run/saturation-git-keeper
+CONFPREFIX_DEFAULT=/etc/saturation-git-keeper
+CACHEPREFIX_DEFAULT=/var/cache/saturation-git-keeper
+SAVEPREFIX_DEFAULT=/var/db/saturation-git-keeper--saves
 
 ### Make Directories
-mkdir -p $CONFPREFIX $CACHEPREFIX $SAVEPREFIX
+mkdir -p $CONFPREFIX $CACHEPREFIX $SAVEPREFIX $CONFPREFIX_DEFAULT $LOCKPREFIX
 
 ### Internal Functions
+function _chalk() {
+    COLOR=$1
+    MSG=$2
+    printf "\e[${COLOR}m${MSG}\e[0m"
+}
 function _logINFO() {
-    printf "\e[34m[INFO]\e[0m $1\n"
+    printf "$(_chalk 34 '[INFO]') $1\n"
 }
 function _logWARN() {
-    printf "\e[31m[WARN]\e[0m $1\n"
+    printf "$(_chalk 31 '[WARN]') $1\n"
 }
 function _showhelp() {
     echo "
@@ -62,25 +75,29 @@ Usage:
     saturation-git-keeper pull-repos                Pull repos.
 
 Notes:
-    - Set env var SGKPreRunScriptPath to skip default 'pre-run.sh' script.
+    - You may set custom pre-run script as env var SGKPreRunScriptPath to skip
+        default 'pre-run.sh' script.
 "
 }
 function _showver() {
     echo $APPVER
 }
 function _mkconf() {
-    mkdir -p $CONFPREFIX
+    mkdir -p $CONFPREFIX/repos.d
     echo -e "#!/bin/bash" > $CONFPREFIX/pre-run.sh
     echo -e "# List of users. \n# Each line is a site:username." > $CONFPREFIX/users
     echo -e "# List of repos. \n# Each line is a repo URL like 'https://github.com/neruthes/NDevShellRC'." > $CONFPREFIX/repos
+    cat $CONFPREFIX/repos > $CONFPREFIX/repos.d/default
     echo -e "# List of excluded repos. \n# Each line is a repo URL like 'https://github.com/neruthes/NDevShellRC'." > $CONFPREFIX/no-repos
 }
 function _showconfpaths() {
-    echo "You have 4 config files:
-    $CONFPREFIX/pre-run.sh                  Set some variables here.
-    $CONFPREFIX/users                       Repos, under which users, to pull. // TODO
-    $CONFPREFIX/repos                       Which repos to pull.
-    $CONFPREFIX/no-repos                    Which repos to ignore. // TODO
+    echo "
+You have 4 config files:
+    $CONFPREFIX_DEFAULT/pre-run.sh                  Set some variables here.
+    $CONFPREFIX_DEFAULT/users                       Repos, under which users, to pull. // TODO
+    $CONFPREFIX_DEFAULT/repos                       Which repos to pull.
+    $CONFPREFIX_DEFAULT/repos.d/*                   Which repos to pull.
+    $CONFPREFIX_DEFAULT/no-repos                    Which repos to ignore. // TODO
 
 All repos under specified users will be pulled.
 All specified repos will be pulled.
@@ -91,13 +108,13 @@ Now only 'pre-run.sh' and 'repos' are supported.
 }
 function _checkconfs() {
     FOUNDFILES=0
-    CONFS="pre-run.sh users repos no-repos"
+    CONFS="pre-run.sh users repos repos.d no-repos"
     for i in $CONFS; do
         if [[ -r $CONFPREFIX/$i ]]; then
             FOUNDFILES=$(($FOUNDFILES + 1))
         fi
     done
-    if [[ $FOUNDFILES == 4 ]]; then
+    if [[ $FOUNDFILES == 5 ]]; then
         printf "true"
     else
         printf "false"
@@ -108,8 +125,11 @@ function _repourltopath() {
     echo "$SAVEPREFIX/${REPOURL/https:\/\//}"
 }
 function _getfullreposlist() {
-    RAWLIST="$(cat $CONFPREFIX/repos)"
-    REPOSLIST=$(echo "$RAWLIST" | grep ^https)
+    TMP=/tmp/_getfullreposlist-$(uuidgen)
+    cat $CONFPREFIX/repos > $TMP
+    cat $CONFPREFIX/repos.d/* >> $TMP
+    REPOSLIST=$(cat "$TMP" | grep ^https)
+    rm $TMP
     echo $REPOSLIST
 }
 function _gitclone() {
@@ -133,16 +153,35 @@ function _updategitrepo() {
         _gitclone $REPOURL
     fi
 }
+function _lock() {
+    LOCKNAME=$1
+    echo "LOCKED" > $LOCKPREFIX/$LOCKNAME.lock
+}
+function _unlock() {
+    LOCKNAME=$1
+    rm $LOCKPREFIX/$LOCKNAME.lock
+}
+function _cklock() {
+    LOCKNAME=$1
+    if [[ -r $LOCKPREFIX/$LOCKNAME.lock ]]; then
+        printf "LOCKED"
+    else
+        printf "FREE"
+    fi
+}
 
 ### Major Logic Entries
-function _pullrepos() {
-    _logINFO "Pulling repositories..."
-    # TMP=/tmp/sgk-pullrepos--$(uuidgen)
-    # REPOSLIST=$(_getfullreposlist)
-    for i in $(_getfullreposlist); do
-        _updategitrepo "$i"
-    done
-    # rm $TMP
+function OP_pullrepos() {
+    if [[ $(_cklock pullrepos) == 'FREE' ]]; then
+        _lock pullrepos
+        _logINFO "Pulling repositories..."
+        for i in $(_getfullreposlist); do
+            _updategitrepo "$i"
+        done
+        _unlock pullrepos
+    else
+        _logWARN "A job is already running."
+    fi
 }
 
 ### User Page Interpreters
@@ -157,6 +196,7 @@ SUBCOMMAND=$1
 
 if [[ x$SUBCOMMAND == 'x' ]]; then
     _showhelp
+    exit 0
 fi
 
 case $SUBCOMMAND in
@@ -172,7 +212,7 @@ case $SUBCOMMAND in
             echo "Run '$(basename $0) mkconfig' to create them."
             echo ""
         fi
-        _showconfpaths
+        _fpaths
         ;;
     mkconf )
         echo ""
@@ -189,7 +229,7 @@ case $SUBCOMMAND in
         fi
         ;;
     pull-repos )
-        _pullrepos
+        OP_pullrepos
         ;;
     * )
         echo "ERROR: Unknown subcommand."
