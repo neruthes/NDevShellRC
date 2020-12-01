@@ -30,13 +30,6 @@ if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
     AddrScope="wan"
 fi
 
-# IPAddrFile="${DEV_HOME_DIR}/NDevMgr/LanDDNS/${TargetDevice}.txt"
-# if [[ -r $IPAddrFile ]]; then
-#     IPAddr=$(cat $IPAddrFile)
-# else
-#     printf ""
-# fi
-
 echo ""
 printf "Establishing SSH connection: \e[38;5;118m${SSHUsername}\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m.neruthes.xyz"
 echo ""

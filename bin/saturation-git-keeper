@@ -12,6 +12,11 @@
 #
 ################################################################################
 
+### DOCUMENTATION
+# Prferrable variable names:
+#   REPOURL, GITDIR
+################################################################################
+
 ### Constants
 LOCKPREFIX=/var/run/saturation-git-keeper
 CONFPREFIX=/etc/saturation-git-keeper
@@ -45,7 +50,7 @@ CACHEPREFIX_DEFAULT=/var/cache/saturation-git-keeper
 SAVEPREFIX_DEFAULT=/var/db/saturation-git-keeper--saves
 
 ### Make Directories
-mkdir -p $CONFPREFIX $CACHEPREFIX $SAVEPREFIX $CONFPREFIX_DEFAULT $LOCKPREFIX
+mkdir -p $CONFPREFIX/repos.d $CACHEPREFIX $SAVEPREFIX $CONFPREFIX_DEFAULT $LOCKPREFIX
 
 ### Internal Functions
 function _chalk() {
@@ -73,6 +78,7 @@ Usage:
     saturation-git-keeper mkconf                    Initialize conf files.
     saturation-git-keeper pull-users                Pull metadata of users. // TODO
     saturation-git-keeper pull-repos                Pull repos.
+    saturation-git-keeper add Arg0 Arg1             Add a repo Arg0 to list '$CONFPREFIX/repos.d/Arg1'.
 
 Notes:
     - You may set custom pre-run script as env var SGKPreRunScriptPath to skip
@@ -125,9 +131,17 @@ function _repourltopath() {
     echo "$SAVEPREFIX/${REPOURL/https:\/\//}"
 }
 function _getfullreposlist() {
-    TMP=/tmp/_getfullreposlist-$(uuidgen)
+    TMP="/tmp/_getfullreposlist-$(uuidgen)"
     cat $CONFPREFIX/repos > $TMP
     cat $CONFPREFIX/repos.d/* >> $TMP
+    REPOSLIST=$(cat "$TMP" | grep ^https)
+    rm $TMP
+    echo $REPOSLIST
+}
+function _getreposlist() {
+    LISTNAME=$1
+    TMP="/tmp/_getfullreposlist-$(uuidgen)"
+    cat "$CONFPREFIX/repos.d/$LISTNAME" > $TMP
     REPOSLIST=$(cat "$TMP" | grep ^https)
     rm $TMP
     echo $REPOSLIST
@@ -183,16 +197,40 @@ function OP_pullrepos() {
         _logWARN "A job is already running."
     fi
 }
+function OP_addrepo() {
+    REPOURLRAW=$1
+    LISTNAME=$2
+    if [[ "x$LISTNAME" == 'x' ]]; then
+        LISTNAME="added"
+    fi
+    REPOURL="https://${REPOURLRAW/https:\/\//}"
+
+    ALREADYADDED="false"
+    CURRENTLIST="$(_getreposlist $LISTNAME)"
+    for i in $CURRENTLIST; do
+        if [[ "$i" == "$REPOURL" ]]; then
+            ALREADYADDED="true"
+        fi
+    done
+    if [[ $ALREADYADDED == "true" ]]; then
+        _logWARN "Repo '$REPOURL' is already added in list '$LISTNAME'."
+    else
+        echo "$REPOURL" >> "$CONFPREFIX/repos.d/$LISTNAME"
+        _logINFO "Added repo '$REPOURL' in '$CONFPREFIX/repos.d/$LISTNAME'."
+    fi
+
+}
 
 ### User Page Interpreters
 function UPI_github() {
     echo "Feature not implemented yet."
-    echo "Feature not implemented yet." > /dev/stderr
 }
 
 
 ### Main Controller
 SUBCOMMAND=$1
+ARG0=$2
+ARG1=$3
 
 if [[ "x$SUBCOMMAND" == 'x' ]]; then
     _showhelp
@@ -230,6 +268,9 @@ case $SUBCOMMAND in
         ;;
     pull-repos )
         OP_pullrepos
+        ;;
+    add|a )
+        OP_addrepo "$ARG0" "$ARG1"
         ;;
     * )
         echo "ERROR: Unknown subcommand."
