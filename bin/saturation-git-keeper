@@ -2,7 +2,7 @@
 
 ################################################################################
 #
-# Saturation-Git-Keeper (Version 0.1.1)
+# Saturation-Git-Keeper (Version 0.1.2)
 # Copyright (c) 2020 Neruthes <i@neruthes.xyz>
 # Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
 # Invoke this program via "saturation-git-keeper" command.
@@ -28,9 +28,6 @@ if [[ "x$SGKPreRunScriptPath" == 'x' ]]; then
     # No custom script path specified; run default
     if [[ -r $CONFPREFIX/pre-run.sh ]]; then
         source $CONFPREFIX/pre-run.sh
-    else
-        echo "ERROR: Cannot find '$CONFPREFIX/pre-run.sh'. Aborting."
-        exit 1
     fi
 else
     if [[ -r $SGKPreRunScriptPath ]]; then
