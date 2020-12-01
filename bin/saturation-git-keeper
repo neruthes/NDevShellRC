@@ -2,7 +2,7 @@
 
 ################################################################################
 #
-# Saturation-Git-Keeper (Version 0.1.2)
+# Saturation-Git-Keeper (Version 0.1.2-1)
 # Copyright (c) 2020 Neruthes <i@neruthes.xyz>
 # Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
 # Invoke this program via "saturation-git-keeper" command.
@@ -129,18 +129,20 @@ function _repourltopath() {
 }
 function _getfullreposlist() {
     TMP="/tmp/_getfullreposlist-$(uuidgen)"
-    cat $CONFPREFIX/repos > $TMP
-    cat $CONFPREFIX/repos.d/* >> $TMP
+    touch "$CONFPREFIX/repos"
+    cat "$CONFPREFIX/repos" > $TMP
+    cat "$CONFPREFIX/repos.d/*" >> $TMP
     REPOSLIST=$(cat "$TMP" | grep ^https)
-    rm $TMP
+    rm "$TMP"
     echo $REPOSLIST
 }
 function _getreposlist() {
     LISTNAME=$1
     TMP="/tmp/_getfullreposlist-$(uuidgen)"
+    touch "$CONFPREFIX/repos.d/$LISTNAME"
     cat "$CONFPREFIX/repos.d/$LISTNAME" > $TMP
     REPOSLIST=$(cat "$TMP" | grep ^https)
-    rm $TMP
+    rm "$TMP"
     echo $REPOSLIST
 }
 function _gitclone() {
