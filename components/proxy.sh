@@ -9,5 +9,5 @@ function tcprpserver() {
     LOCAL_PORT=$1
     REMOTE_ADDR=$2
     REMOTE_PORT=$3
-    daemonize $(which gost) -L=tcp://:$LOCAL_PORT:/$REMOTE_ADDR:$REMOTE_PORT
+    daemonize "$(which gost)" "-L=tcp://:$LOCAL_PORT:/$REMOTE_ADDR:$REMOTE_PORT"
 }

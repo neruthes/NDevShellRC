@@ -8,4 +8,5 @@ fi
 if [[ ! -r /tmp/NDVS1-extra-initsh.done ]]; then
     tcprpserver 22081 10.104.22.81 22
     touch /tmp/NDVS1-extra-initsh.done
+    echo "Proxying localhost:22081 -> 10.104.22.81:22"
 fi
