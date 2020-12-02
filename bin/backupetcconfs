@@ -1,6 +1,10 @@
 #!/bin/bash
 
 WORKDIR=$DEV_HOME_DIR/NDevEtcConfBackup
+if [[ ! -r $WORKDIR/dirs/$(hostname) ]]; then
+    echo "This deivce $(hostname) does not have a backup list."
+    exit 0
+fi
 DIRS=$(cat $WORKDIR/dirs/$(hostname))
 
 for i in $DIRS; do
