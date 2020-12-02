@@ -1,4 +1,3 @@
-export NDEV_OS_TYPE="linux"
 rm -r ~/Desktop > /dev/null 2>&1
 rm -r ~/Downloads > /dev/null 2>&1
 
@@ -26,5 +25,8 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 # source $DEV_HOME_DIR/NDevShellRC/components/NDevSSH.sh
 
 ########## END ##########
+if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
+    source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
+fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
 echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"

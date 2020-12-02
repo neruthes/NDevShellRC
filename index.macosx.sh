@@ -1,5 +1,3 @@
-export NDEV_OS_TYPE="macosx"
-
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 

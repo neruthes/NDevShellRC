@@ -11,6 +11,8 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
+tcprpserver 8080 10.104.22.2 8080
+
 function NDPS1-system-mount() {
     isQUIET=$1
 

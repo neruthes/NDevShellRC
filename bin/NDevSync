@@ -20,7 +20,7 @@ fi
 NDevVar set syslock-NDevSync LOCKED
 
 source $MY_SHELL_RC_PATH
-mkdir ~/.tmp &> /dev/null
+mkdir -p ~/.tmp
 LASTSYNC=`cat ~/.tmp/NDev-Sync--LastSyncTimestamp.txt`
 node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
 echo "`date +%s`000" > ~/.tmp/NDev-Sync--LastSyncTimestamp.txt
