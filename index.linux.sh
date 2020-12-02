@@ -8,7 +8,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NEPd3-Caster.sh
 source $DEV_HOME_DIR/NDevShellRC/components/borgBackup.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
-source $DEV_HOME_DIR/NDevShellRC/components/encfs-home.sh
 
 # Network
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PORT=$1
+if [[ "x$PORT" == "x" ]]; then
+    PORT=8000
+fi
+
+python3 -m http.server $PORT

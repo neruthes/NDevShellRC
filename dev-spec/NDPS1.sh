@@ -41,3 +41,14 @@ function NDPS1-system-mount() {
     fi
 }
 NDPS1-system-mount q
+
+function dockerstart-nextcloud() {
+    # docker run -d \
+    #     --mount src=/mnt/NEPd2/Data/WWW/xyz.neruthes.nextcloud/var,target=/var,type=bind \
+    #     --name n.nextcloud \
+    #     -p 16001:80 \
+    #     nextcloud
+    # docker exec -it \
+    #     -v /mnt/NEPd2/Data/WWW/xyz.neruthes.nextcloud/var:/var \
+    #     xyz.neruthes.nextcloud bash
+}

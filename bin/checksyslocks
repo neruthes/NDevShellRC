@@ -11,7 +11,6 @@ const vardirtmpl = function (lockname) {
 };
 
 const possibleLocks = [
-    'encfs-myhome-mount',
     'rclone-backup',
     'rsyncBackup',
     'borgBackup',
