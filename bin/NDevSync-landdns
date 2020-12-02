@@ -40,10 +40,10 @@ MY_LAN_IP_ADDR=`cat $TMP`
 ### Push to Cloudflare
 echo "Pushing to Cloudflare..."
 curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/${MYDEVCFID}" \
-    -H "Authorization: Bearer `pas p token.cloudflare.OmniDnsToken`" \
+    -H "Authorization: Bearer `pasm p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
     --data "{\"type\":\"A\",\"name\":\"$(hostname).lan\",\"content\":\"$MY_LAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > $TMP.2
-    # -H "X-Auth-Key: `pas p token.cloudflare.OmniDnsToken`" \
+    # -H "X-Auth-Key: `pasm p token.cloudflare.OmniDnsToken`" \
     # -H "X-Auth-Email: joyneop@gmail.com" \
 cat $TMP.2
 echo ""
