@@ -1,2 +1,2 @@
-export NDEVSHELLRC_VERSION="1.0.19-3"
-export NDEVSHELLRC_VERSION_MSGLOG="More device specific scripts"
+export NDEVSHELLRC_VERSION="1.0.19-4"
+export NDEVSHELLRC_VERSION_MSGLOG="Added backupetconfs"

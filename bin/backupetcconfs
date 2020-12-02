@@ -1,0 +1,8 @@
+#!/bin/bash
+
+WORKDIR=$DEV_HOME_DIR/NDevEtcConfBackup
+DIRS=$(cat $WORKDIR/dirs/$(hostname))
+
+for i in $DIRS; do
+    rsync -av /etc/$i/ $WORKDIR/backups/$(hostname)/$i/
+done

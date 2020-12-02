@@ -4,10 +4,12 @@ alias s5poff="unset ALL_PROXY; unset HTTP_PROXY"
 function s5pserver() {
     LOCAL_PORT=$1
     daemonize $(which gost) -L=:$LOCAL_PORT
+    echo "Created SOCKS5 proxy at 'localhost:$LOCAL_PORT'"
 }
 function tcprpserver() {
     LOCAL_PORT=$1
     REMOTE_ADDR=$2
     REMOTE_PORT=$3
     daemonize "$(which gost)" "-L=tcp://:$LOCAL_PORT:/$REMOTE_ADDR:$REMOTE_PORT"
+    echo "Proxying 'localhost:$LOCAL_PORT' -> '$REMOTE_ADDR:$REMOTE_PORT'"
 }

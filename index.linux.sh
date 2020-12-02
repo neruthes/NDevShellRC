@@ -1,6 +1,3 @@
-rm -r ~/Desktop > /dev/null 2>&1
-rm -r ~/Downloads > /dev/null 2>&1
-
 # PATH
 source $DEV_HOME_DIR/NDevShellRC/components/PATH.sh
 
@@ -27,6 +24,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 ########## END ##########
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     echo "--------------------------------------------------------------"
+    echo "Executing the device-specific script for $(hostname)..."
     source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
     echo "--------------------------------------------------------------"
 fi
