@@ -27,4 +27,4 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 ########## END ##########
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
-echo "NDevShellRC version: $NDEVSHELLRC_VERSION"
+echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"

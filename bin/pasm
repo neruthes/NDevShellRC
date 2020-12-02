@@ -1,0 +1,364 @@
+#!/bin/bash
+
+################################################################################
+#
+# Password Manager (pasm) (Version 0.1.0)
+# Copyright (c) 2020 Neruthes <i@neruthes.xyz>
+# Published under GNU GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>.
+# Invoke this program via "pasm" command.
+#
+# Contributors:
+#   - Neruthes <i@neruthes.xyz>
+#
+################################################################################
+
+### DOCUMENTATION
+# Prferrable variable names:
+#   CONFPREFIX, PWDIR, EncPWDIR, PWLIST
+#
+# Dependencies:
+#   openssl xxd uuidgen
+################################################################################
+
+
+
+### Constants
+CONFPREFIX="$HOME/.config/password-manager"
+
+
+### Execute pre-run script
+if [[ "x$PWMANPreRunScriptPath" == 'x' ]]; then
+    # No custom script path specified; run default
+    if [[ -r $CONFPREFIX/pre-run.sh ]]; then
+        source $CONFPREFIX/pre-run.sh
+    fi
+else
+    if [[ -r $PWMANPreRunScriptPath ]]; then
+        source $PWMANPreRunScriptPath
+    else
+        echo "ERROR: Cannot find custom pre-run script '$PWMANPreRunScriptPath'. Aborting."
+        exit 1
+    fi
+fi
+
+### Enforced Constants
+APPVER=0.1.0
+PWDIR="$CONFPREFIX/passwords"
+EncPWDIR="$CONFPREFIX/repo/passwords"
+
+
+### Internal Functions
+function _chalk() {
+    COLOR=$1
+    MSG=$2
+    printf "\e[${COLOR}m${MSG}\e[0m"
+}
+function _logINFO() {
+    printf "$(_chalk 34 '[INFO]') $1\n"
+}
+function _logWARN() {
+    printf "$(_chalk 31 '[WARN]') $1\n"
+}
+function _showhelp() {
+    echo "
+Password-Manager (pasm) (Version $APPVER)
+
+Copyright (c) 2020 Neruthes <i@neruthes.xyz>.
+This is a free software. Published under GNU GPLv2.
+
+Usage:
+    pasm help               Show this help message.
+    pasm version            Show version.
+    pasm ls                 List the names of all passwords.
+    pasm s NAME VAL         Set password of {NAME} as {VAL}.
+    pasm p NAME             Print password of {NAME} to stdout.
+    pasm rm NAME            Delete the password entry. // TODO
+    pasm syncout            Encrypt passwords and write into the portable
+                                directory for further synchronization. Amend
+                                'noautocommit' to avoid auto git commit.
+    pasm syncin             Decrypt passwords from the portable directory to
+                                receive updates. Amend 'noautopull' to avoid
+                                auto git pull.
+"
+}
+function _showver() {
+    echo $APPVER
+}
+function _genkey() {
+    _logINFO "Generating AES key at '$CONFPREFIX/key'..."
+    xxd -c 999 -p -l 32 /dev/urandom | tr -d '\n' > "$CONFPREFIX/key"
+    _logINFO "Generated AES key."
+}
+function _touchkey() {
+    if [[ ! -r "$CONFPREFIX/key" ]]; then
+        _logINFO "No AES key found. Generate one now? (y/N)"
+        printf "> "
+        read YESORNO
+        YESORNO="${YESORNO:0:1}"
+        YESORNO="${YESORNO,,}"
+        if [[ "x$YESORNO" == "xy" ]]; then
+            _genkey
+        else
+            _logINFO "Exiting." > /dev/stderr
+        fi
+    fi
+}
+function _logmsgset() {
+    NAME=$1
+    if [[ -r "$PWDIR/$NAME" ]]; then
+        _logINFO "Updated password entry for '$NAME'."
+    else
+        _logINFO "Created password entry for '$NAME'."
+    fi
+}
+function _setpw() {
+    NAME=$1
+    VAL=$2
+    echo "$VAL" > "$PWDIR/$NAME"
+    _logmsgset "$NAME"
+}
+function _rmpw() {
+    NAME=$1
+    if [[ -r "$PWDIR/$NAME" ]]; then
+        rm "$PWDIR/$NAME"
+        _logINFO "Successfully deleted entry '$NAME'."
+    else
+        _logWARN "Password entry '$NAME' does not exist."
+    fi
+}
+function _repocommit() {
+    exit 0
+    cd $EncPWDIR
+    git add $EncPWDIR
+    git commit -m "[AUTOCOMMIT] $(date)"
+}
+function _repopull() {
+    exit 0
+    cd $EncPWDIR
+    git pull
+}
+function _difflsmore() {
+    # Files in DIR1 but not in DIR2
+    DIRLS1=$(ls $1)
+    DIRLS2=$(ls $2)
+    DIFFLS=""
+    ANYDIFF=0
+    for i in $DIRLS1; do
+        FOUND=false
+        for j in $DIRLS2; do
+            if [[ "$i" == "$j" ]]; then
+                FOUND=true
+            fi
+        done
+        if [[ "$FOUND" == "false" ]]; then
+            DIFFLS="$DIFFLS $i"
+            ANYDIFF=1
+        fi
+    done
+    echo -e "$ANYDIFF:$DIFFLS"
+}
+
+### Check dependencies
+DEPS="openssl xxd uuidgen"
+DEPSMET=true
+UNMETDEPS=""
+for i in $DEPS; do
+    BINPATH=$(which $i)
+    if [[ "${BINPATH:0:1}" == "/" ]]; then
+        printf ""
+    else
+        DEPSMET=false
+        UNMETDEPS="$UNMETDEPS $i"
+    fi
+done
+if [[ "$DEPSMET" == "false" ]]; then
+    _logWARN "Some dependencies are not satisfied: $UNMETDEPS"
+    exit 1
+fi
+
+### Make Directories
+mkdir -p "$PWDIR" "$EncPWDIR"
+touch "$CONFPREFIX/conf"
+
+### Major Logic Entries
+function OP_list() {
+    ls $PWDIR
+    if [[ $(ls $PWDIR) == "" ]]; then
+        _logINFO "No password entry found." > /dev/stderr
+    fi
+}
+function OP_set() {
+    NAME=$1
+    VAL=$2
+    if [[ -r $PWDIR/$NAME ]]; then
+        _logINFO "Entry '$NAME' already exists. Overwrite? (y/N)"
+        printf "> "
+        read YESORNO
+        YESORNO="${YESORNO:0:1}"
+        YESORNO="${YESORNO,,}"
+        if [[ "x$YESORNO" == "xy" ]]; then
+            _setpw "$NAME" "$VAL"
+        else
+            _logINFO "Exiting." > /dev/stderr
+        fi
+    else
+        _setpw "$NAME" "$VAL"
+    fi
+}
+function OP_setforce() {
+    NAME=$1
+    VAL=$2
+    _setpw "$NAME" "$VAL"
+}
+function OP_print() {
+    NAME=$1
+    if [[ -r "$PWDIR/$NAME" ]]; then
+        cat "$PWDIR/$NAME"
+    else
+        _logWARN "No such password." > /dev/stderr
+    fi
+}
+function OP_remove() {
+    NAME=$1
+    _rmpw "$NAME"
+}
+function OP_syncout() {
+    FALG_AUTOCI=$1
+    PWLIST=$(ls $PWDIR)
+    LSDIFF=$(_difflsmore $EncPWDIR $PWDIR)
+    COUNT_ADD=0
+    COUNT_EDIT=0
+    if [[ "${LSDIFF:0:1}" == "1" ]]; then
+        # DIFF FOUND
+        DIFFLIST=${LSDIFF:2}
+        _logINFO "These passwords are not found locally."
+        echo "    $DIFFLIST"
+        _logINFO "Please either delete them in '$EncPWDIR' or run 'pasm syncin' to import them."
+        exit 1
+    fi
+    for NAME in $PWLIST; do
+        # _logINFO "Encrypting '$NAME'..."
+        if [[ -r $EncPWDIR/$NAME ]]; then
+            # Already added entry
+            NEWPW="$(cat "$PWDIR/$NAME")"
+            OLDPW=$(openssl enc -aes-256-cbc -d \
+                -in "$EncPWDIR/$NAME" \
+                -pass "file:$CONFPREFIX/key" \
+                -pbkdf2)
+            if [[ "$OLDPW" != "$NEWPW" ]]; then
+                _logINFO "Sent the updated '$NAME' to the remote source."
+                COUNT_EDIT=$(($COUNT_EDIT + 1))
+                openssl enc -aes-256-cbc -e \
+                    -in "$PWDIR/$NAME" \
+                    -pass "file:$CONFPREFIX/key" \
+                    -pbkdf2 > "$EncPWDIR/$NAME"
+            fi
+        else
+            # New entry
+            _logINFO "Sent new password '$NAME' to the remote source."
+            COUNT_ADD=$(($COUNT_ADD + 1))
+            openssl enc -aes-256-cbc -e \
+                -in "$PWDIR/$NAME" \
+                -pass "file:$CONFPREFIX/key" \
+                -pbkdf2 > "$EncPWDIR/$NAME"
+        fi
+
+    done
+    _logINFO "Done. Sent $COUNT_ADD additions and $COUNT_EDIT updates."
+    if [[ "${FALG_AUTOCI:0:6}" != "noauto" ]]; then
+        _repocommit
+    fi
+}
+function OP_syncin() {
+    FALG_AUTOPL=$1
+    PWLIST=$(ls $PWDIR)
+    EncPWLIST=$(ls $EncPWDIR)
+    LSDIFF=$(_difflsmore $PWDIR $EncPWDIR)
+    COUNT_ADD=0
+    COUNT_EDIT=0
+    if [[ "${LSDIFF:0:1}" == "1" ]]; then
+        # DIFF FOUND
+        DIFFLIST=${LSDIFF:2}
+        _logINFO "These passwords are not included in the remote source:"
+        for i in $DIFFLIST; do
+            echo "    $i"
+        done
+        _logINFO "So they will not be updated locally"
+    fi
+    for NAME in $EncPWLIST; do
+        if [[ -r $PWDIR/$NAME ]]; then
+            # Found loaclly
+            OLDPW=$(cat "$PWDIR/$NAME")
+            NEWPW=$(openssl enc -aes-256-cbc -d \
+                -in "$EncPWDIR/$NAME" \
+                -pass "file:$CONFPREFIX/key" \
+                -pbkdf2)
+            if [[ "$OLDPW" != "$NEWPW" ]]; then
+                COUNT_EDIT=$(($COUNT_EDIT + 1))
+                _logINFO "Received the updated '$NAME' from the remote source."
+                echo "$NEWPW" > "$PWDIR/$NAME"
+            fi
+        else
+            # New incoming
+            COUNT_ADD=$(($COUNT_ADD + 1))
+            _logINFO "Received new password '$NAME' from the remote source."
+            echo "$NEWPW" > "$PWDIR/$NAME"
+        fi
+
+    done
+    _logINFO "Done. Received $COUNT_ADD additions and $COUNT_EDIT updates."
+    if [[ "${FALG_AUTOPL:0:6}" != "noauto" ]]; then
+        _repocommit
+    fi
+}
+
+### Main Controller
+SUBCOMMAND=$1
+ARG0=$2
+ARG1=$3
+ARG2=$4
+
+if [[ "x$SUBCOMMAND" == "x" ]]; then
+    _showhelp
+    exit 0
+fi
+
+case $SUBCOMMAND in
+    help )
+        _showhelp
+        exit 0
+        ;;
+    version )
+        _showver
+        exit 0
+        ;;
+esac
+
+_touchkey
+case $SUBCOMMAND in
+    ls )
+        OP_list
+        ;;
+    s|set )
+        # 0:NAME 1:VAL
+        OP_set $ARG0 $ARG1
+        ;;
+    sf|set-force )
+        # 0:NAME 1:VAL
+        OP_setforce $ARG0 $ARG1
+        ;;
+    p|print )
+        OP_print $ARG0
+        ;;
+    so|syncout )
+        # 0:FLAG_AUTOCI
+        OP_syncout $ARG0
+        ;;
+    si|syncin )
+        # 0:FLAG_AUTOPL
+        OP_syncin $ARG0
+        ;;
+    * )
+        echo "ERROR: Unknown subcommand."
+        ;;
+esac

@@ -15,7 +15,7 @@ function NDPS1-system-mount() {
     isQUIET=$1
 
     function qecho() {
-        if [[ "x$isQUIET" == 'xq' ]]; then
+        if [[ "x$isQUIET" == 'x' ]]; then
             echo $1
         fi
     }
