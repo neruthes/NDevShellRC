@@ -26,7 +26,9 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 ########## END ##########
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
+    echo "--------------------------------------------------------------"
     source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
+    echo "--------------------------------------------------------------"
 fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
 echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"
