@@ -18,7 +18,7 @@ function NEPd3-mount() {
         sudo mount /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
 
         ### AOSC: NEPd3A Root
-        sudo cryptsetup open /dev/disk/by-partlabel/NEPd3_AOSC NEPd3_AOSC --key-file ~/.MyLuksKey
+        sudo cryptsetup open /dev/disk/by-partlabel/NEPd3_AOSC NEPd3_AOSC --key-file /home/neruthes/.MyLuksKey
         sudo mount /dev/mapper/NEPd3_AOSC /mnt/NEPd3_Caster/AOSC
 
         ### Shared: FAT32

@@ -44,11 +44,15 @@ NDPS1-system-mount q
 
 function dockerstart-nextcloud() {
     # docker run -d \
-    #     --mount src=/mnt/NEPd2/Data/WWW/xyz.neruthes.nextcloud/var,target=/var,type=bind \
-    #     --name n.nextcloud \
-    #     -p 16001:80 \
+    #     --mount src=/mnt/NEPd2/Data/WWW/n.nextcloud1/var/www/html,target=/var/www/html,type=bind \
+    #     --name n.nextcloud1 \
     #     nextcloud
     # docker exec -it \
     #     -v /mnt/NEPd2/Data/WWW/xyz.neruthes.nextcloud/var:/var \
     #     xyz.neruthes.nextcloud bash
+    # docker run -d \
+    #     --mount src=/mnt/NEPd2/Data/WWW/n.mariadb2/var/lib/mysql,target=/var/lib/mysql,type=bind \
+    #     --name n.mariadb2 \
+    #     -e MYSQL_ROOT_PASSWORD=$(pasm p n.mariadb2) \
+    #     mariadb
 }

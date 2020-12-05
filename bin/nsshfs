@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# arg1: Target Device
+TargetDevice=$1
+
+### Decide Address Scope
+if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
+    AddrScope="wan.neruthes.xyz"
+else
+    if [[ "$(uname)" == "Linux" ]]; then
+        AddrScope="lan"
+    fi
+    if [[ "$(uname)" == "Darwin" ]]; then
+        AddrScope="local"
+    fi
+fi
+
+echo ""
+printf "Mounting SSH Filesystem: \e[38;5;198mroot\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m"
+echo ""
+echo ""
+
+sudo sshfs root@${TargetDevice}.${AddrScope}:/ /mnt/sshfs/${TargetDevice}
