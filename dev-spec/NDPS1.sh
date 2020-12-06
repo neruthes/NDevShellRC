@@ -43,6 +43,7 @@ function NDPS1-system-mount() {
 NDPS1-system-mount q
 
 function dockerstart-nextcloud() {
+    printf ""
     # docker run -d \
     #     --mount src=/mnt/NEPd2/Data/WWW/n.nextcloud1/var/www/html,target=/var/www/html,type=bind \
     #     --name n.nextcloud1 \
