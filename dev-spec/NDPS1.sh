@@ -12,6 +12,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
 tcprpserver 8080 10.104.22.2 8080
+tcprpserver 16001 172.17.0.2 3306
 
 function NDPS1-system-mount() {
     isQUIET=$1
@@ -41,6 +42,10 @@ function NDPS1-system-mount() {
     fi
 }
 NDPS1-system-mount q
+
+function docker-NDPS1-cron-trigger() {
+    docker exec -it -u 33 n.nextcloud1 /var/www/html/_rescan.sh
+}
 
 function dockerstart-nextcloud() {
     printf ""
