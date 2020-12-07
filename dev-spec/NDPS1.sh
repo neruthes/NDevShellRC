@@ -47,7 +47,7 @@ function docker-NDPS1-cron-trigger() {
     docker exec -it -u 33 n.nextcloud1 /var/www/html/_rescan.sh
 }
 
-function dockerstart-nextcloud() {
+function OTHERUTILS-docker-nextcloud() {
     printf ""
     # docker run -d \
     #     --mount src=/mnt/NEPd2/Data/WWW/n.nextcloud1/var/www/html,target=/var/www/html,type=bind \
@@ -61,4 +61,11 @@ function dockerstart-nextcloud() {
     #     --name n.mariadb2 \
     #     -e MYSQL_ROOT_PASSWORD=$(pasm p n.mariadb2) \
     #     mariadb
+
+}
+
+function Docker-n.nextcloud1-rescanfiles() {
+    ### Nextcloud: Rescan files
+    docker exec -it n.nextcloud1 /var/www/html/_chown.sh
+    docker exec -it -u 33 n.nextcloud1 /var/www/html/_rescan.sh
 }

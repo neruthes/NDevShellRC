@@ -2,6 +2,7 @@
 
 # arg1: Target Device
 TargetDevice=$1
+GivenAddrScope=$2
 
 ### Decide Address Scope
 if [[ ${TargetDevice:0:4} == "NDVS" ]]; then
@@ -15,9 +16,13 @@ else
     fi
 fi
 
+if [[ "$GivenAddrScope" != "" ]]; then
+    AddrScope=$GivenAddrScope
+fi
+
 echo ""
-printf "Mounting SSH Filesystem: \e[38;5;198mroot\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m"
+printf "Mounting SSH Filesystem: \e[38;5;196mroot\e[0m @ \e[38;5;81m${TargetDevice}.${AddrScope}\e[0m"
 echo ""
 echo ""
 
-sudo sshfs root@${TargetDevice}.${AddrScope}:/ /mnt/sshfs/${TargetDevice}
+sudo sshfs "root@${TargetDevice}.${AddrScope}:/" "/mnt/sshfs/${TargetDevice}"
