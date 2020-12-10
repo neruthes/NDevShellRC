@@ -11,8 +11,11 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
-tcprpserver 8080 10.104.22.2 8080
-tcprpserver 16001 172.17.0.2 3306
+if [[ ! -r /tmp/NDPS1-extra-initsh.done ]]; then
+    tcprpserver 8080 10.104.22.2 8080
+    tcprpserver 16001 172.17.0.2 3306
+    touch /tmp/NDPS1-extra-initsh.done
+fi
 
 function NDPS1-system-mount() {
     isQUIET=$1
@@ -22,6 +25,20 @@ function NDPS1-system-mount() {
             echo $1
         fi
     }
+
+    if [[ -r /usr/.mounted ]]; then
+        qecho "Already mounted '/usr'."
+    else
+        qecho "Mounting '/usr'..."
+        mount --rbind /mnt/NEPd2/PS1Ext/Main/usr /usr
+    fi
+
+    if [[ -r /var/.mounted ]]; then
+        qecho "Already mounted '/var'."
+    else
+        qecho "Mounting '/var'..."
+        mount --rbind /mnt/NEPd2/PS1Ext/Main/var /var
+    fi
 
     if [[ -r /home/.mounted ]]; then
         qecho "Already mounted '/home'."
@@ -39,6 +56,11 @@ function NDPS1-system-mount() {
         cryptsetup open /dev/disk/by-partlabel/NEPd2_Data NEPd2_Data -d /home/neruthes/.MyLuksKey
         qecho "Mounting 'NEPd2:Data' on '/mnt/NEPd2/Data'..."
         mount /dev/mapper/NEPd2_Data /mnt/NEPd2/Data
+        qecho "Starting Docker daemon..."
+        systemctl start docker
+        docker start n.mariadb2
+        docker start n.nextcloud1
+        docker ps
     fi
 }
 NDPS1-system-mount q

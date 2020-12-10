@@ -3,7 +3,12 @@ alias s5poff="unset ALL_PROXY; unset HTTP_PROXY"
 
 function s5pserver() {
     LOCAL_PORT=$1
-    daemonize "$(which gost)" -L=:$LOCAL_PORT
+    USER_PASSWD=$2
+    if [[ "x$USER_PASSWD" != "x" ]]; then
+        daemonize "$(which gost)" -L=$USER_PASSWD@localhost:$LOCAL_PORT
+    else
+        daemonize "$(which gost)" -L=:$LOCAL_PORT
+    fi
     echo "Created SOCKS5 proxy at 'localhost:$LOCAL_PORT'"
 }
 function tcprpserver() {
