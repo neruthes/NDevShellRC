@@ -58,8 +58,8 @@ function NDPS1-system-mount() {
         mount /dev/mapper/NEPd2_Data /mnt/NEPd2/Data
         qecho "Starting Docker daemon..."
         systemctl start docker
-        docker start n.mariadb2
-        docker start n.nextcloud1
+        docker start n.mariadb2 &
+        docker start n.nextcloud1 &
         docker ps
     fi
 }
