@@ -20,4 +20,5 @@ if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     echo "--------------------------------------------------------------"
 fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
+echo "Device: [$NDEV_OSID] $NDEV_MODEL | $NDEV_OS ($NDEV_ARCH)"
 echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"
