@@ -21,14 +21,18 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 # source $DEV_HOME_DIR/NDevShellRC/components/NDevSSH.sh
 
 ########## END ##########
-printf "\n\n"
+printf "\n"
 neofetch
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     echo "--------------------------------------------------------------"
-    echo "Executing the device-specific script for $(hostname)..."
+    echo "  *  Executing the device-specific script for $(hostname)..."
     source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
     echo "--------------------------------------------------------------"
 fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
-echo "Device: [$NDEV_OSID] $NDEV_MODEL | $NDEV_OS ($NDEV_ARCH)"
-echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"
+printf "\n"
+echo "  *  Device:          $NDEV_OSID : $NDEV_MODEL"
+echo "                      $NDEV_OS ($NDEV_ARCH)"
+echo ""
+echo "  *  NDevShellRC:     $NDEVSHELLRC_VERSION : $NDEVSHELLRC_VERSION_MSGLOG"
+printf "\n"
