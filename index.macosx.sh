@@ -11,6 +11,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
 ########## END ##########
+printf "\n\n"
 neofetch
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     echo "--------------------------------------------------------------"
