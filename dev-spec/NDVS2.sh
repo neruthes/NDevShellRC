@@ -5,9 +5,6 @@ if [[ `hostname` != NDVS2 ]]; then
     exit 1
 fi
 
-if [[ ! -r /tmp/NDVS2-extra-initsh.done ]]; then
-    tcprpserver 22081 10.104.22.81 22
-    tcprpserver 80 10.104.22.81 80
-    s5pserver 8080
-    touch /tmp/NDVS2-extra-initsh.done
-fi
+tcprpserver 22081 10.104.22.81 22
+tcprpserver 80 10.104.22.81 80
+s5pserver 8080

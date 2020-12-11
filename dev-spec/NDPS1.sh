@@ -11,11 +11,8 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
-if [[ ! -r /tmp/NDPS1-extra-initsh.done ]]; then
-    tcprpserver 8080 10.104.22.2 8080
-    tcprpserver 16001 172.17.0.2 3306
-    touch /tmp/NDPS1-extra-initsh.done
-fi
+tcprpserver 8080 10.104.22.2 8080
+tcprpserver 16001 172.17.0.2 3306
 
 function NDPS1-system-mount() {
     isQUIET=$1
