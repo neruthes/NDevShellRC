@@ -131,7 +131,7 @@ function _getfullreposlist() {
     TMP="/tmp/_getfullreposlist-$(uuidgen)"
     touch "$CONFPREFIX/repos"
     cat "$CONFPREFIX/repos" > $TMP
-    cat "$CONFPREFIX/repos.d/*" >> $TMP
+    cat "$CONFPREFIX/repos.d/"* >> $TMP
     REPOSLIST=$(cat "$TMP" | grep ^https)
     rm "$TMP"
     echo $REPOSLIST
