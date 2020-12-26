@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [[ `uname` == Darwin ]]; then
+if [[ $(uname) != "Linux" ]]; then
     exit 1
 fi
 
 echo "Switching display mode..."
-CurrentCase=`NDevVar get switch-display--currentCase`
+CurrentCase=$(NDevVar get switch-display--currentCase)
 
 if [[ $1 = "set" ]]; then
     CurrentCase=$2;
@@ -25,7 +25,7 @@ if [[ $1 = "" ]]; then
     esac
 fi
 
-echo "Switching to $2"
+echo "Switching to $CurrentCase"
 
 bash "$HOME/.screenlayout/base-$CurrentCase.sh"
 NDevVar set switch-display--currentCase $CurrentCase

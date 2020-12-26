@@ -4,4 +4,4 @@ if [[ `uname` == Darwin ]]; then
     exit 1
 fi
 
-which $1 | xargs daemonize
+daemonize $(which $1)
