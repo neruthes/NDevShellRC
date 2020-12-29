@@ -33,7 +33,7 @@ cd $DEV_HOME_DIR/NDevShellRC && git pull && git add . && git commit -m "NDevSync
 cd $DEV_HOME_DIR/NDevCron && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevMsgInbox && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 clipass-sync
-source $MY_SHELL_RC_PATH
+source .bashrc
 cd $mypwd
 
 NDevVar del syslock-NDevSync
