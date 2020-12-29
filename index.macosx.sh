@@ -11,14 +11,19 @@ source $DEV_HOME_DIR/NDevShellRC/components/cli.sh
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 
 ########## END ##########
-printf "\n\n"
+printf "\n"
 neofetch
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     echo "--------------------------------------------------------------"
-    echo "Executing the device-specific script for $(hostname)..."
+    echo "  *  Executing the device-specific script for $(hostname)..."
     source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
     echo "--------------------------------------------------------------"
 fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
-echo "Device: [$NDEV_OSID] $NDEV_MODEL | $NDEV_OS ($NDEV_ARCH)"
-echo "NDevShellRC version: $NDEVSHELLRC_VERSION ($NDEVSHELLRC_VERSION_MSGLOG)"
+printf "\n"
+echo "  #  $NDEV_OSID"
+echo ""
+echo "  *  Device:          $NDEV_MODEL"
+echo "  *  System:          $NDEV_OS ($NDEV_ARCH)"
+echo "  *  NDevShellRC:     $NDEVSHELLRC_VERSION '$NDEVSHELLRC_VERSION_MSGLOG'"
+printf "\n"
