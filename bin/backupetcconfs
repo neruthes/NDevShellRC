@@ -1,12 +1,21 @@
 #!/bin/bash
 
 WORKDIR=$DEV_HOME_DIR/NDevEtcConfBackup
+
 if [[ ! -r $WORKDIR/dirs/$(hostname) ]]; then
     echo "This deivce $(hostname) does not have a backup list."
     exit 0
 fi
 DIRS=$(cat $WORKDIR/dirs/$(hostname))
+echo "DIRS: [ $DIRS ]"
 
 for i in $DIRS; do
-    rsync -av /etc/$i/ $WORKDIR/backups/$(hostname)/$i/
+    mkdir -p $WORKDIR/backups/$(hostname)/$i
+    sudo rsync -av /etc/$i/ $WORKDIR/backups/$(hostname)/$i/
 done
+
+cd $WORKDIR
+git pull origin master
+git add .
+git commit -m "Autocommit: $(date -Is)"
+git push -u origin master

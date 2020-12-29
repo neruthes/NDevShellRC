@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ `hostname` != NDPS1 ]]; then
+if [[ "$(hostname)" != "NDPS1" ]]; then
     echo "Not NDPS1!"
     exit 1
 fi
