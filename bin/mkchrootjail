@@ -1,0 +1,61 @@
+#!/bin/bash
+
+### EXPERIMENTAL. DO NOT USE IN PRODUCTION!
+
+JAILROOT="${HOME}/.chrootjail-${USER}"
+JAILHOME="${JAILROOT}/home/${USER}"
+
+function _showHelp() {
+    echo "mkchrootjail: Make a chroot jail for running specific apps"
+    echo "  Use with 'cj-run APPNAME'"
+}
+
+function _mkJail() {
+    ### Already exists?
+    if [[ -e "${JAILROOT}" ]]; then
+        echo "A chroot jail already exists!"
+        exit 0
+    fi
+
+    ### Make a jail
+    mkdir -p "${JAILROOT}"
+    for i in sys dev proc run usr var bin sbin opt tmp lib lib64 media mnt; do
+        if [[ -e "/$i" ]]; then
+            mkdir -p "${JAILROOT}/${i}"
+            sudo mount --rbind "/${i}" "${JAILROOT}/${i}"
+        fi
+    done
+
+    ### Create home dir
+    function _mountbind() {
+        if [[ -e "${HOME}/$1" ]]; then
+            mkdir -p "${JAILHOME}/$2"
+            sudo mount --bind "${HOME}/$1" "${JAILHOME}/$2"
+        fi
+    }
+    _mountbind DOC Documents
+    _mountbind DOC/Desktop Desktop
+    _mountbind DEV Developer
+    _mountbind DEV DEV
+    _mountbind PIC Pictures
+    _mountbind VID Movies
+    _mountbind AUD Music
+    _mountbind DLD Downloads
+    _mountbind EWS EWS
+}
+
+function _rmJail() {
+    sudo umount ${JAILHOME}/*
+    rm -r ${JAILROOT}/home
+    sudo umount -l ${JAILROOT}/*
+    rm -r ${JAILROOT}
+}
+
+case $1 in
+    make )
+        _mkJail
+        ;;
+    rm )
+        _rmJail
+        ;;
+esac
