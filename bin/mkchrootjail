@@ -2,8 +2,10 @@
 
 ### EXPERIMENTAL. DO NOT USE IN PRODUCTION!
 
-JAILROOT="${HOME}/.chrootjail-${USER}"
+JAILROOT="${HOME}/.chrootjail"
 JAILHOME="${JAILROOT}/home/${USER}"
+
+xhost +local:
 
 function _showHelp() {
     echo "mkchrootjail: Make a chroot jail for running specific apps"
@@ -12,43 +14,49 @@ function _showHelp() {
 
 function _mkJail() {
     ### Already exists?
-    if [[ -e "${JAILROOT}" ]]; then
+    if [[ -e "${JAILHOME}/DEV/.mounted" ]]; then
         echo "A chroot jail already exists!"
         exit 0
     fi
 
     ### Make a jail
     mkdir -p "${JAILROOT}"
-    for i in sys dev proc run usr var bin sbin opt tmp lib lib64 media mnt; do
+    for i in bin dev etc lib lib64 media mnt opt proc root run sbin srv sys tmp usr var; do
         if [[ -e "/$i" ]]; then
             mkdir -p "${JAILROOT}/${i}"
             sudo mount --rbind "/${i}" "${JAILROOT}/${i}"
         fi
     done
+    touch "${JAILROOT}/.isChroot"
 
     ### Create home dir
-    function _mountbind() {
-        if [[ -e "${HOME}/$1" ]]; then
-            mkdir -p "${JAILHOME}/$2"
-            sudo mount --bind "${HOME}/$1" "${JAILHOME}/$2"
-        fi
+    for i in AUD DEV DLD DOC EWS NET PIC TMP VID; do
+        mkdir -p "${JAILHOME}/$i"
+        sudo mount --bind "${HOME}/$i" "${JAILHOME}/$i"
+    done
+    function _mksymlink() {
+        ln -sf "$1" "${JAILHOME}/$2"
     }
-    _mountbind DOC Documents
-    _mountbind DOC/Desktop Desktop
-    _mountbind DEV Developer
-    _mountbind DEV DEV
-    _mountbind PIC Pictures
-    _mountbind VID Movies
-    _mountbind AUD Music
-    _mountbind DLD Downloads
-    _mountbind EWS EWS
+    _mksymlink DOC Documents
+    _mksymlink DOC/Desktop Desktop
+    _mksymlink DEV Developer
+    _mksymlink PIC Pictures
+    _mksymlink VID Movies
+    _mksymlink AUD Music
+    _mksymlink DLD/Latest Downloads
+    for i in .bashrc .bash_history; do
+        cat "${HOME}/$i" > "${JAILHOME}/$i"
+    done
 }
 
 function _rmJail() {
     sudo umount ${JAILHOME}/*
-    rm -r ${JAILROOT}/home
+    # sudo rm -r ${JAILROOT}/home
     sudo umount -l ${JAILROOT}/*
-    rm -r ${JAILROOT}
+    for i in $(ls -a $JAILHOME); do
+        sudo umount -l ${JAILROOT}/$i
+    done
+    # rm -r ${JAILROOT}
 }
 
 case $1 in

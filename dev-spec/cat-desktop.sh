@@ -10,9 +10,11 @@ function _normalizeHomeDirs() {
         rm -r ~/$FROMDIR
     fi
 }
-# _normalizeHomeDirs      Desktop         DOC/Desktop
-# _normalizeHomeDirs      Downloads       DLD/Latest
-# _normalizeHomeDirs      Recordings      AUD/Recordings
+if [[ ! -e /.isChroot ]]; then
+    _normalizeHomeDirs      Desktop         DOC/Desktop
+    _normalizeHomeDirs      Downloads       DLD/Latest
+    _normalizeHomeDirs      Recordings      AUD/Recordings
+fi
 
 ### ----------------------------------------------------------------------------
 ### Downloads directory
