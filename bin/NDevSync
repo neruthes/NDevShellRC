@@ -32,7 +32,11 @@ cd $DEV_HOME_DIR/NDevMgr && git pull && git add . && git commit -m "NDevSync: `d
 cd $DEV_HOME_DIR/NDevShellRC && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevCron && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevMsgInbox && git pull && git add . && git commit -m "NDevSync: `date`" && git push
-clipass-sync
+for i in NDLT6 NDLT7 NDLT7W; do
+    if [[ "$(hostname)" == "$i" ]]; then
+        pasm-sync
+    fi
+done
 source ~/.bashrc
 cd $mypwd
 
