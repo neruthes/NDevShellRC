@@ -19,7 +19,7 @@ fi
 
 NDevVar set syslock-NDevSync LOCKED
 
-source ~/.bashrc
+# source ~/.bashrc
 mkdir -p ~/.tmp
 LASTSYNC=`cat ~/.tmp/NDev-Sync--LastSyncTimestamp.txt`
 node -e "console.log('Last sync ' + (new Date($LASTSYNC)).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') + ' (' + Math.floor( (Date.now()-(new Date($LASTSYNC)))/1000/60 ) + ' min ago).');"
@@ -33,7 +33,7 @@ cd $DEV_HOME_DIR/NDevShellRC && git pull && git add . && git commit -m "NDevSync
 cd $DEV_HOME_DIR/NDevCron && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevMsgInbox && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 clipass-sync
-source .bashrc
+source ~/.bashrc
 cd $mypwd
 
 NDevVar del syslock-NDevSync
