@@ -1,0 +1,8 @@
+#!/bin/bash
+
+### EXPERIMENTAL. DO NOT USE IN PRODUCTION!
+
+JAILROOT="${HOME}/.chrootjail"
+JAILHOME="${JAILROOT}/home/${USER}"
+
+sudo chroot "${JAILROOT}" $(which sudo) -u neruthes bash

@@ -47,5 +47,5 @@ function NEPd3-umount() {
     sudo cryptsetup close /dev/mapper/NEPd3Pv6
     sudo cryptsetup close /dev/mapper/NEPd3Pv7
 
-    sudo cryptsetup close /dev/mapper/NEPd3_AOSc
+    sudo cryptsetup close /dev/mapper/NEPd3_AOSC
 }

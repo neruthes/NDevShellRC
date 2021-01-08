@@ -37,13 +37,13 @@ function _mkJail() {
     function _mksymlink() {
         ln -sf "$1" "${JAILHOME}/$2"
     }
-    _mksymlink DOC Documents
-    _mksymlink DOC/Desktop Desktop
-    _mksymlink DEV Developer
-    _mksymlink PIC Pictures
-    _mksymlink VID Movies
-    _mksymlink AUD Music
-    _mksymlink DLD/Latest Downloads
+    # _mksymlink DOC Documents
+    # _mksymlink DOC/Desktop Desktop
+    # _mksymlink DEV Developer
+    # _mksymlink PIC Pictures
+    # _mksymlink VID Movies
+    # _mksymlink AUD Music
+    # _mksymlink DLD/Latest Downloads
     for i in .bashrc .bash_history; do
         cat "${HOME}/$i" > "${JAILHOME}/$i"
     done
