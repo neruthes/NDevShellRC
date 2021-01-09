@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Runtime flags
+AUR_isGreeted=false
+
+# Internal functions
+function _greet() {
+    if [[ $AUR_isGreeted == false ]]; then
+        echo ""
+        echo "Welcome to AOSC CLI Utils!"
+        echo "This toolkit is free software. The source code is available"
+        echo "on GitHub at <https://github.com/neruthes/aosc-cli-utils>."
+        echo "Copyright (c) 2020 Neruthes, etc. Published with GNU GPLv2."
+        echo ""
+        echo "Usage:"
+        echo ""
+        echo "    au SUBCOMMAND ARG0 ARG1 .."
+        echo ""
+        echo "Subcommands:"
+        echo ""
+        echo "    ssh-ls                List all remote servers"
+        echo "    ssh {SERVER_ID}       Connect to a remote server"
+        echo ""
+        echo ""
+    fi
+    export AUR_isGreeted=true
+}
+
+
+# Initialization
+if [[ -r /tmp/.aosc-cli-utils-marker ]]; then
+    printf ""
+else
+    _greet
+    echo "================================================="
+    echo ""
+    date > /tmp/.aosc-cli-utils-marker
+fi
+
+SUBCOMMAND=$1
+ARG0=$2
+ARG1=$3
+
+if [[ "x$SUBCOMMAND" == "x" ]]; then
+    _greet
+fi
+
+# Subcommands
+case $SUBCOMMAND in
+    help|h )
+        _greet
+        ;;
+    man )
+        _greet
+        ;;
+    ssh-ls )
+        echo "This is the list of remotes:"
+        echo ""
+        echo "Architecture      ID          Description"
+        echo "---------------------------------------------------"
+        echo "AMD64             22003       Curium"
+        echo "                  22182       gbx-ry3700"
+        echo "                  22333       Ry3950X"
+        echo "                  22658       vmaoscagent001"
+        echo "MIPS              23141       lemote-a1601"
+        echo "                  23456       lpi-2"
+        echo "                  23869       lemote-a1901"
+        echo "ARM               24064       ice-rockpro64"
+        echo "                  24426       kp920"
+        echo "                  24424       JellyXavier"
+        echo "                  24444       JellyXavier"
+        echo "PowerPC           25202       powernv"
+        echo "RISC-V            -           -"
+        echo "---------------------------------------------------"
+        echo ""
+        echo "This list may not reflect the latest information. Please see AOSC Wiki"
+        echo "  in the event of inaccuracy, and create a pull request to fix."
+        echo ""
+        ;;
+    ssh )
+        ssh -v root@relay.aosc.io -p $ARG0
+        ;;
+esac
