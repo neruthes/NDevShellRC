@@ -14,6 +14,7 @@ set $mod Mod4
 # BEGIN USER SETUPS
 # exec --no-startup-id bash -c 'feh --bg-fill "/home/neruthes/PIC/My_Wallpapers/$( select-random-file-in-dir ~/PIC/My_Wallpapers )"'
 #exec --no-startup-id xrandr --dpi 100
+exec_always --no-startup-id echo START > /tmp/i3-neruthes.log
 workspace_layout tabbed
 default_border none
 title_align center
@@ -35,10 +36,11 @@ client.urgent           #900000 #900000 #ffffff #900000   #900000
 # Workspaces
 assign [class="Alacritty"] 1
 assign [class="Atom"] 2
+assign [class="Gimp"] 2
 assign [class="Firefox"] 3
 assign [class="Nightly"] 3
 assign [class="Firefox Nightly"] 3
-assign [class="Discord"] 4
+assign [class="discord"] 4
 assign [class="Telegram"] 4
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
@@ -46,11 +48,8 @@ assign [class="Telegram"] 4
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
-#assign [class="Placeholder"] 1
-assign [class="Virt-Manager"] 9
-assign [class="libvirt"] 9
-assign [class="kvm"] 9
-assign [class="qemu"] 9
+assign [class="VirtualBox Manager"] 8
+assign [class="Virt-manager"] 9
 
 # Screens
 #workspace 1 output DP1 eDP1
@@ -66,7 +65,9 @@ assign [class="qemu"] 9
 # Screenshot
 # Multi-screen screenshots with scrot
 bindsym --release Print exec --no-startup-id scrot-take
-bindsym --release $mod+Shift+p exec --no-startup-id "scrot-take & scrot-gimp"
+#bindsym --release $mod+Shift+p exec --no-startup-id "scrot-take & scrot-gimp"
+bindsym --release Ctrl+Print exec --no-startup-id "scrot-take & scrot-gimp"
+bindsym --release Ctrl+Shift+Print exec --no-startup-id "scrot-take-full & scrot-gimp"
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
@@ -91,7 +92,6 @@ exec --no-startup-id nm-applet
 exec_always --no-startup-id xinput set-prop "ELAN2303:00 04F3:3083 Touchpad" "libinput Natural Scrolling Enabled" 1
 exec_always --no-startup-id xinput set-prop "ELAN2303:00 04F3:3083 Touchpad" "libinput Tapping Enabled" 1
 exec_always --no-startup-id xinput set-prop "SteelSeries SteelSeries Rival 310 eSports Mouse" "libinput Natural Scrolling Enabled" 1
-exec_always --no-startup-id xinput set-prop "MOSART Semi. Mi Wireless Combo Mouse" "libinput Natural Scrolling Enabled" 1
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -155,13 +155,13 @@ bindsym $mod+f fullscreen toggle
 #bindsym $mod+e layout toggle split
 
 # toggle tiling / floating
-bindsym $mod+Shift+space floating toggle
+#bindsym $mod+Shift+space floating toggle
 
 # change focus between tiling / floating windows
-bindsym $mod+space focus mode_toggle
+#bindsym $mod+space focus mode_toggle
 
 # focus the parent container
-bindsym $mod+a focus parent
+#bindsym $mod+a focus parent
 
 # focus the child container
 #bindsym $mod+d focus child
@@ -177,7 +177,7 @@ set $ws6 "6"
 set $ws7 "7"
 set $ws8 "8"
 set $ws9 "9"
-set $ws10 "X"
+#set $ws10 "X"
 
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
@@ -189,7 +189,7 @@ bindsym $mod+6 workspace number $ws6
 bindsym $mod+7 workspace number $ws7
 bindsym $mod+8 workspace number $ws8
 bindsym $mod+9 workspace number $ws9
-bindsym $mod+0 workspace number $ws10
+#bindsym $mod+0 workspace number $ws10
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace number $ws1
@@ -201,7 +201,7 @@ bindsym $mod+Shift+6 move container to workspace number $ws6
 bindsym $mod+Shift+7 move container to workspace number $ws7
 bindsym $mod+Shift+8 move container to workspace number $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9
-bindsym $mod+Shift+0 move container to workspace number $ws10
+#bindsym $mod+Shift+0 move container to workspace number $ws10
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
@@ -242,10 +242,15 @@ mode "resize" {
 bar {
         status_command i3status
 	mode hide
+	#mode dock
+	position bottom
+	#position top
+	#transparency 0.5
 	hidden_state hide
 	separator_symbol "  "
 	tray_output none
 }
+#exec_always --no-startup-id ~/.config/polybar/launch
 
 
 # Startup programs
