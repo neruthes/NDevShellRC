@@ -78,6 +78,6 @@ case $SUBCOMMAND in
         echo ""
         ;;
     ssh )
-        ssh -v root@relay.aosc.io -p $ARG0
+        ssh root@relay.aosc.io -p $ARG0
         ;;
 esac
