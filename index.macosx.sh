@@ -14,8 +14,9 @@ source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh
 printf "\n"
 neofetch
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
-    echo "--------------------------------------------------------------"
-    echo "  *  Executing the device-specific script for $(hostname)..."
+    # echo "--------------------------------------------------------------"
+    echo "Executing the device-specific script for $(hostname)..."
+    echo ""
     source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
     echo "--------------------------------------------------------------"
 fi

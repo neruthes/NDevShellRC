@@ -31,3 +31,18 @@ function _mkDefaultDldSymlink() {
     fi
 }
 _mkDefaultDldSymlink
+
+### ----------------------------------------------------------------------------
+### System update alert
+if [[ "${NDEV_OS}" == "Gentoo" ]]; then
+    MyTmpVar1="$(stat /var/db/repos/gentoo | grep Modify)"
+    MyTmpVar2="${MyTmpVar1:8:19}"
+    LatestUpdateTimestamp="$(date --date="$MyTmpVar2" +%s)"
+    CurrentTimestamp="$(date +%s)"
+    DeltaTimeSec="$(($CurrentTimestamp - $LatestUpdateTimestamp))"
+    DeltaTimeDay="$(($DeltaTimeSec / 3600 / 24))"
+    # echo "It has been $DeltaTimeSec seconds since last 'emerge --sync'."
+    if [[ "$DeltaTimeDay" > "7" ]]; then
+        echo "[NOTICE] Last run of 'emerge --sync' was $DeltaTimeDay days ago."
+    fi
+fi

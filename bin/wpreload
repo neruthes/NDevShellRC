@@ -1,4 +1,8 @@
 #!/bin/bash
 
-WPPATH=$(cat /tmp/wppath.$USER)
-feh --bg-fill "$WPPATH"
+if [[ -e /tmp/wppath.$USER ]]; then
+    WPPATH=$(cat /tmp/wppath.$USER)
+    feh --bg-fill "$WPPATH"
+else
+    echo "ERROR: Cannot find /tmp/wppath.${USER}"
+fi
