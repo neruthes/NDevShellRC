@@ -1,6 +1,10 @@
 #!/bin/bash
 
 ### ----------------------------------------------------------------------------
+### Environment Variables
+PATH="$PATH:$HOME/.adb-fastboot/platform-tools"
+
+### ----------------------------------------------------------------------------
 ### Normalize directory names
 function _normalizeHomeDirs() {
     FROMDIR=$1

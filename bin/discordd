@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ "$HTTP_PROXY" == "" ]]; then
+    MY_PROXY="socks5://10.104.22.2:8080"
+else
+    MY_PROXY="$HTTP_PROXY"
+fi
+
 if [[ `uname` == Linux ]]; then
-    daemonize $(which discord) '--proxy-server=socks5://10.104.22.2:8080'
+    daemonize $(which discord) --proxy-server="$MY_PROXY"
 fi
