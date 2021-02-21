@@ -1,3 +1,5 @@
+export EDITOR="$(which nano)"
+
 function ps1gitbr() {
     git branch --show-current > /tmp/.L_GBSC_`whoami` 2>&1
     L_GBSC=$(cat /tmp/.L_GBSC_$(whoami))
@@ -21,7 +23,7 @@ function ps1devnickname() {
             printf -- -Sirius
             ;;
         NDLT7W)
-            printf -- -Sirius-Windows
+            printf -- -Sirius-WSL
             ;;
         NEPd2U)
             printf -- -Archer-Ubuntu
