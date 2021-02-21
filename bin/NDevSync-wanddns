@@ -4,12 +4,12 @@ mkdir ~/.tmp > /dev/null 2>&1
 node -e "process.stdout.write('Publishing WAN DDNS... ')"
 MY_WAN_IP_ADDR=`curl https://ifconfig.co`
 
-curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/cb2ed02f28b363fef832ae12d7350b88" \
+curl --proxy socks5h://192.168.1.20:1082 --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/cb2ed02f28b363fef832ae12d7350b88" \
     -H "Authorization: Bearer `pasm p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
     --data "{\"type\":\"A\",\"name\":\"home1ip\",\"content\":\"$MY_WAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > ~/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860.1.txt
 
-curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/97e375b95b35edf03ba8500e425da621" \
+curl --proxy socks5h://192.168.1.20:1082 --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/97e375b95b35edf03ba8500e425da621" \
     -H "Authorization: Bearer `pasm p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
     --data "{\"type\":\"A\",\"name\":\"aoscnet1\",\"content\":\"$MY_WAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > ~/.tmp/NDevSync-wanddns--6508d65e-8da7-441f-b371-b77d2a621860.2.txt
