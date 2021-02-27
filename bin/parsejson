@@ -1,0 +1,20 @@
+#!/bin/node
+
+const fs = require('fs');
+
+const data = fs.readFileSync(0, 'utf-8');
+const keypath = process.argv[2];
+const keypatharr = keypath.split('.');
+
+try {
+    let obj = JSON.parse(data);
+    let pointer = obj;
+    keypatharr.map(function (nextnode) {
+        pointer = pointer[nextnode];
+    });
+    console.log(pointer);
+} catch (e) {
+
+} finally {
+
+}
