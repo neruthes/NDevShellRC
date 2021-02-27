@@ -26,7 +26,7 @@ MYCOOKIE_LINE=$(grep Cookie $PREFIX.login)
 MYCOOKIE_CONTENT="${MYCOOKIE_LINE:20:32}"
 
 ### Get gwinfo
-curl 'http://useradmin:gqsvu@192.168.1.1/cgi-bin/luci/admin/settings/gwinfo?get=part' \
+curl 'http://192.168.1.1/cgi-bin/luci/admin/settings/gwinfo?get=part' \
     -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0' \
     -H 'Accept: */*' \
     -H 'Accept-Language: en-US,en;q=0.5' \

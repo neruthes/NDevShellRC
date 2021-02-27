@@ -2,8 +2,17 @@
 #alias s5poff="unset ALL_PROXY; unset HTTP_PROXY"
 
 function s5pon() {
+    PROXY_TINC=socks5://10.104.22.2:8080
+    PROXY_LAN=socks5://192.168.1.20:1082
+
+    if [[ "$(ip addr | grep 192.168.31)" == "" ]]; then
+        MY_PROXY_CHOICE=$PROXY_TINC
+    else
+        MY_PROXY_CHOICE=$PROXY_LAN
+    fi
+    
     for i in ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
-        export $i=socks5://10.104.22.2:8080
+        export $i=$MY_PROXY_CHOICE
     done
 }
 
