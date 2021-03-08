@@ -13,7 +13,7 @@ curl 'http://192.168.1.1:8080/login.cgi' \
     -H 'Content-Type: application/x-www-form-urlencoded' \
     -H 'Origin: http://192.168.1.1:8080' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Referer: http://192.168.1.1:8080/' \
     -H 'Cookie: Cookie=body:Language:chinese:SubmitType=Login:id=-1' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-GPC: 1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' \
-    --data-raw 'UserName=$USERNAME&PassWord=PASSWORD&Language=chinese&x.X_HW_Token=5f9c67068b532cf76c50733e9df3eed5' \
+    --data-raw "UserName=$USERNAME&PassWord=$PASSWORD&Language=chinese&x.X_HW_Token=5f9c67068b532cf76c50733e9df3eed5" \
     -D $PREFIX.login > /dev/null 2>&1
 
 ### Extract cookie
@@ -37,18 +37,18 @@ sed -i 's/\\x2e/./g' $PREFIX.gwinfo2
 TXT=($(cat $PREFIX.gwinfo2))
 echo "${TXT[65]}" > $PREFIX.new
 sed -i 's/"//g' $PREFIX.new
-cat $PREFIX.new
-#WANIP=$(cat $PREFIX.new)
-
-### Update cache
-touch $PREFIX.old $PREFIX.new
-cat $PREFIX.new > $PREFIX.old
+WANIP=$(cat $PREFIX.new)
+echo $WANIP
 
 ### Compare
 if [[ "$COMPARE" == "y" ]]; then
     if [[ "$(cat $PREFIX.new)" == "$(cat $PREFIX.old)" ]]; then
         echo COMPARE:Same
     else
-        echo COMPARE:NotSame
+        echo COMPARE:Changed
     fi
 fi
+
+### Update cache
+touch $PREFIX.old $PREFIX.new
+cat $PREFIX.new > $PREFIX.old
