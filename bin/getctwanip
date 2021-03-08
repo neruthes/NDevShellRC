@@ -39,6 +39,25 @@ curl 'http://192.168.1.1/cgi-bin/luci/admin/settings/gwinfo?get=part' \
     -H 'Pragma: no-cache' \
     -H 'Cache-Control: no-cache' > $PREFIX.gwinfo 2> /dev/null
 
+### Logout
+curl 'http://192.168.1.1/cgi-bin/luci/admin/logout' \
+    -H 'Accept: */*' \
+    -H 'Accept-Language: en-US,en;q=0.5' \
+    --compressed \
+    -H 'Content-type: application/x-www-form-urlencoded' \
+    -H 'Origin: http://192.168.1.1' \
+    -H 'DNT: 1' \
+    -H 'Connection: keep-alive' \
+    -H 'Referer: http://192.168.1.1/cgi-bin/luci/' \
+    -H 'Cookie: sysauth=${MYCOOKIE_CONTENT}; Cookie=sid=3d3b1c0b6e0a56c0a7889f93f6b8b403fe079b3fd3432c108e93badf0d72423a:Login:id=1' \
+    -H 'Sec-GPC: 1' \
+    --data-raw 'token=c90992cecef07dad5811728c511b05b7&_=0.21130530093112954' > /dev/null 2>&1
+
 ### Display WANIP
-WANIP=$(cat $PREFIX.gwinfo | parsejson WANIP)
+WANIP=$(cat $PREFIX.gwinfo | jq -r .WANIP)
 echo "$WANIP"
+
+### Save to cache
+touch $PREFIX.old $PREFIX.new
+cat $PREFIX.new > $PREFIX.old
+printf "$WANIP" > $PREFIX.new
