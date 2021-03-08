@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Version 1.0.2
+# Env vars: USERNAME, PASSWORD
+
 UUID=0c3cfea5fcbc4e51aa5957a9ee94b42a
 PREFIX=/tmp/getctwanip.$UUID
 
@@ -18,7 +21,7 @@ curl 'http://192.168.1.1/cgi-bin/luci' \
     -H 'Sec-GPC: 1' \
     -H 'Pragma: no-cache' \
     -H 'Cache-Control: no-cache' \
-    --data-raw 'username=useradmin&psd=gqsvu' \
+    --data-raw "username=$USERNAME&psd=$PASSWORD" \
     -D $PREFIX.login
 
 ### Extract cookie
