@@ -1,0 +1,47 @@
+#!/bin/bash
+
+### Args init
+
+IFNAME=$1
+
+if [[ $INTERVAL == "" ]]; then
+    INTERVAL=1
+fi
+
+### Lib functions
+
+function _gettotaltime() {
+    if [[ $SECS -lt 60 ]]; then
+        printf "$SECS sec"
+    else
+        printf "$(($SECS / 60)):$(($SECS % 60))"
+    fi
+}
+
+function logline() {
+    printf "\r                                                                                "
+    printf "\r$(($DELTAB / 1024)) KB"
+    TotalTrafic=$(($NEWB - $STARTB))
+    AVGSPD=$((TotalTrafic / $SECS))
+    printf "\nAverage speed   ($IFNAME)   $(($AVGSPD / 1024)) KB/s       (over $(_gettotaltime))"
+}
+
+function getbytes() {
+    cat /sys/class/net/$IFNAME/statistics/rx_bytes
+}
+
+### RAM vars
+
+STARTB=$(getbytes)
+SECS=0
+
+### Let the loop start
+
+while [[ "1" == "1" ]]; do
+    OLDB=$(getbytes)
+    sleep $INTERVAL
+    SECS=$(($SECS + $INTERVAL))
+    NEWB=$(getbytes)
+    DELTAB=$(($NEWB - $OLDB))
+    logline
+done
