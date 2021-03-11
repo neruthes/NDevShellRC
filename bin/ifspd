@@ -20,10 +20,12 @@ function _gettotaltime() {
 
 function logline() {
     printf "\r                                                                                "
-    printf "\r$(($DELTAB / 1024)) KB"
+    printf "\r$(($DELTAB / 1024)) KB\n"
     TotalTrafic=$(($NEWB - $STARTB))
     AVGSPD=$((TotalTrafic / $SECS))
-    printf "\nAverage speed   ($IFNAME)   $(($AVGSPD / 1024)) KB/s       (over $(_gettotaltime))"
+    if [[ $NOAVGSPD != y* ]]; then
+        printf "Average speed   ($IFNAME)   $(($AVGSPD / 1024)) KB/s       (over $(_gettotaltime))"
+    fi
 }
 
 function getbytes() {
