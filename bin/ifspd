@@ -1,8 +1,20 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2021 Neruthes.
+#
+# Published under GNU GPLv2 license. The full text may be found at
+# <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+#
+
 ### Args init
 
 IFNAME=$1
+
+if [[ $IFNAME == "" ]]; then
+    echo "Error: No interface specified."
+    exit 1
+fi
 
 if [[ $INTERVAL == "" ]]; then
     INTERVAL=1
