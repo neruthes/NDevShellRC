@@ -41,6 +41,8 @@ function borgBackup() {
                 borg create --stats \
                     --list \
                     --exclude '/home/neruthes/.cache' \
+                    --exclude '/home/neruthes/.chrootjail' \
+                    --exclude '/home/neruthes/.config/discord' \
                     --exclude '/home/neruthes/*/.cache' \
                     --compression zstd,22 \
                     --one-file-system \
