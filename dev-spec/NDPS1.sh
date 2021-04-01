@@ -46,13 +46,13 @@ function NDPS1-system-mount() {
         mount /dev/mapper/home.luks /home
     fi
 
-    if [[ -r /mnt/NEPd2/Data/.mounted ]]; then
+    if [[ -r /mnt/NEPd2_Archer/ls/.mounted ]]; then
         qecho "Already mounted 'NEPd2:Data'."
     else
         qecho "Decrypting 'NEPd2:Data'..."
         cryptsetup open /dev/disk/by-partlabel/NEPd2_Data NEPd2_Data -d /home/neruthes/.MyLuksKey
-        qecho "Mounting 'NEPd2:Data' on '/mnt/NEPd2/Data'..."
-        mount /dev/mapper/NEPd2_Data /mnt/NEPd2/Data
+        qecho "Mounting 'NEPd2:Data' on '/mnt/NEPd2_Archer/ls'..."
+        mount /dev/mapper/NEPd2_Data /mnt/NEPd2_Archer/ls
         qecho "Starting Docker daemon..."
         systemctl start docker
         docker start n.mariadb2 &
@@ -63,24 +63,25 @@ function NDPS1-system-mount() {
 NDPS1-system-mount q
 
 function docker-NDPS1-cron-trigger() {
-    docker exec -it -u 33 n.nextcloud1 /var/www/html/_rescan.sh
+    printf ""
+    # docker exec -it -u 33 n.nextcloud1 /var/www/html/_rescan.sh
 }
 
 function OTHERUTILS-docker-nextcloud() {
     printf ""
+    return 0
     # docker run -d \
-    #     --mount src=/mnt/NEPd2/Data/WWW/n.nextcloud1/var/www/html,target=/var/www/html,type=bind \
+    #     --mount src=/mnt/NEPd2_Archer/ls/WWW/n.nextcloud1/var/www/html,target=/var/www/html,type=bind \
     #     --name n.nextcloud1 \
     #     nextcloud
     # docker exec -it \
-    #     -v /mnt/NEPd2/Data/WWW/xyz.neruthes.nextcloud/var:/var \
+    #     -v /mnt/NEPd2_Archer/ls/WWW/xyz.neruthes.nextcloud/var:/var \
     #     xyz.neruthes.nextcloud bash
     # docker run -d \
-    #     --mount src=/mnt/NEPd2/Data/WWW/n.mariadb2/var/lib/mysql,target=/var/lib/mysql,type=bind \
+    #     --mount src=/mnt/NEPd2_Archer/ls/WWW/n.mariadb2/var/lib/mysql,target=/var/lib/mysql,type=bind \
     #     --name n.mariadb2 \
     #     -e MYSQL_ROOT_PASSWORD=$(pasm p n.mariadb2) \
     #     mariadb
-
 }
 
 function Docker-n.nextcloud1-rescanfiles() {
