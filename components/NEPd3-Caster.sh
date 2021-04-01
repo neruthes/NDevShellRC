@@ -29,7 +29,7 @@ function NEPd3-mount() {
         if [[ -e /mnt/NEPd3_Caster/LS/.IAmMounted ]]; then
             echo "Successfully mounted NEPd3."
         else
-            echo "Error: Failed mounting NEPd3."
+            echo "Error: Failed mounting NEPd3; cannot find mount mark file."
         fi
     else
         echo "Error: Disk is not connected."
