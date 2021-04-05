@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#
+# ifspd (v0.1.5)
 # Copyright (c) 2021 Neruthes.
 #
 # Published under GNU GPLv2 license. The full text may be found at
@@ -23,14 +23,16 @@ fi
 ### Lib functions
 
 function _gettotaltime() {
-    if [[ $SECS -lt 60 ]]; then
-        printf "$SECS sec"
+    DIV_REM_SECS=$(($SECS % 60))
+    if [[ $DIV_REM_SECS -lt 10 ]]; then
+        OUTPUT_SECS="0$DIV_REM_SECS"
     else
-        printf "$(($SECS / 60)):$(($SECS % 60))"
+        OUTPUT_SECS="$DIV_REM_SECS"
     fi
+    printf "$(($SECS / 60)):$OUTPUT_SECS"
 }
 
-function logline() {
+function _logline() {
     printf "\r                                                                                "
     printf "\r$(($DELTAB / 1024)) KB\n"
     TotalTrafic=$(($NEWB - $STARTB))
@@ -40,22 +42,22 @@ function logline() {
     fi
 }
 
-function getbytes() {
+function _getbytes() {
     cat /sys/class/net/$IFNAME/statistics/rx_bytes
 }
 
 ### RAM vars
 
-STARTB=$(getbytes)
+STARTB=$(_getbytes)
 SECS=0
 
 ### Let the loop start
 
 while [[ "1" == "1" ]]; do
-    OLDB=$(getbytes)
+    OLDB=$(_getbytes)
     sleep $INTERVAL
     SECS=$(($SECS + $INTERVAL))
-    NEWB=$(getbytes)
+    NEWB=$(_getbytes)
     DELTAB=$(($NEWB - $OLDB))
-    logline
+    _logline
 done
