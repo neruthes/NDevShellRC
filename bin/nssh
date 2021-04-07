@@ -2,6 +2,8 @@
 
 # arg1: Target Device
 TargetDevice=$1
+# arg1: Manually specified scope
+ArgAddrScope=$2
 
 if [[ `uname` == "Linux" ]]; then
     DEV_HOME_DIR=/home/neruthes/DEV
@@ -27,11 +29,10 @@ fi
 if [[ ${TargetDevice:0:2} == "VS" ]]; then
     AddrScope="wan.neruthes.xyz"
 else
-    if [[ "$(uname)" == "Linux" ]]; then
-        AddrScope="lan"
-    fi
-    if [[ "$(uname)" == "Darwin" ]]; then
-        AddrScope="local"
+    if [[ -z "$ArgAddrScope" ]]; then
+        AddrScope="lan.neruthes.xyz"
+    else
+        AddrScope="$ArgAddrScope.neruthes.xyz"
     fi
 fi
 
