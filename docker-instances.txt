@@ -1,0 +1,4 @@
+# Docker Instances
+
+[NDLT7]
+docker run --name myadmin -d -e PMA_ARBITRARY=1 -p 23007:80 phpmyadmin

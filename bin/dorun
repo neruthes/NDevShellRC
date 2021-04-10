@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#
+# Copyright (c) 2021 Neruthes
+#
+# dorun (Docker Run)
+#
+
+#
+# Arg1
+#
+
+# arg1: Instance name
+ITNAME=$1
+
+case $ITNAME in
+    phpmyadmin )
+        docker run --name myadmin --rm -d -e PMA_ARBITRARY=1 -p 23007:80 phpmyadmin
+        ;;
+    * )
+        _showhelp
+        ;;
+esac

@@ -3,4 +3,5 @@
 ### CR-run
 ### Run inside chroot jail
 
-sudo chroot $HOME/.chrootjail $(which sudo) -u $USER $1 $2 $3 $4 $5 $6 $7
+JAILROOT="/.chrootjail.${USER}"
+sudo chroot "${JAILROOT}" $(which sudo) -u $USER $1 $2 $3 $4 $5 $6 $7

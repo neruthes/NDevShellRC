@@ -2,13 +2,20 @@
 
 ### EXPERIMENTAL. DO NOT USE IN PRODUCTION!
 
-JAILROOT="${HOME}/.chrootjail"
-JAILHOME="${JAILROOT}/home/${USER}"
+JAILROOT="/.chrootjail.${USER}"
+if [[ "$USER" == "root" ]]; then
+    JAILHOME="${JAILROOT}/root"
+else
+    JAILHOME="${JAILROOT}/home/${USER}"
+fi
 
+echo "[INFO] Allowing in-jail processes to communicate with X server outside..."
 xhost +local:
 
 function _showHelp() {
     echo "mkchrootjail: Make a chroot jail for running specific apps"
+    echo "  Run 'mkchrootjail make' to create"
+    echo "  Run 'mkchrootjail rm' to destroy"
     echo "  Use with 'cj-run APPNAME'"
 }
 
@@ -20,14 +27,17 @@ function _mkJail() {
     fi
 
     ### Make a jail
-    mkdir -p "${JAILROOT}"
+    echo "Getting sudo access..."
+    sudo mkdir -p "${JAILROOT}"
+    sudo mkdir -p "${JAILHOME}"
+    sudo chown "$USER:$USER" "${JAILHOME}"
     for i in bin dev etc lib lib64 media mnt opt proc root run sbin srv sys tmp usr var; do
         if [[ -e "/$i" ]]; then
-            mkdir -p "${JAILROOT}/${i}"
+            sudo mkdir -p "${JAILROOT}/${i}"
             sudo mount --rbind "/${i}" "${JAILROOT}/${i}"
         fi
     done
-    touch "${JAILROOT}/.isChroot"
+    sudo touch "${JAILROOT}/.isChroot"
 
     ### Create home dir
     for i in AUD DEV DLD DOC EWS NET PIC TMP VID; do
@@ -35,15 +45,19 @@ function _mkJail() {
         sudo mount --bind "${HOME}/$i" "${JAILHOME}/$i"
     done
     function _mksymlink() {
-        ln -sf "$1" "${JAILHOME}/$2"
+        if [[ -e "${JAILHOME}/$2" ]]; then
+            echo "[INFO] Directory '${JAILHOME}/$2' already exists; skipping creating symlink"
+        else
+            ln -sf "$1" "${JAILHOME}/$2"
+        fi
     }
-    # _mksymlink DOC Documents
-    # _mksymlink DOC/Desktop Desktop
-    # _mksymlink DEV Developer
-    # _mksymlink PIC Pictures
-    # _mksymlink VID Movies
-    # _mksymlink AUD Music
-    # _mksymlink DLD/Latest Downloads
+    _mksymlink DOC Documents
+    _mksymlink DOC/Desktop Desktop
+    _mksymlink DEV Developer
+    _mksymlink PIC Pictures
+    _mksymlink VID Movies
+    _mksymlink AUD Music
+    _mksymlink DLD/Latest Downloads
     for i in .bashrc .bash_history; do
         cat "${HOME}/$i" > "${JAILHOME}/$i"
     done
@@ -53,7 +67,7 @@ function _rmJail() {
     sudo umount ${JAILHOME}/*
     # sudo rm -r ${JAILROOT}/home
     sudo umount -l ${JAILROOT}/*
-    for i in $(ls -a $JAILHOME); do
+    for i in $(ls -a $JAILHOME_showHelp); do
         sudo umount -l ${JAILROOT}/$i
     done
     # rm -r ${JAILROOT}
@@ -65,5 +79,8 @@ case $1 in
         ;;
     rm )
         _rmJail
+        ;;
+    * )
+        _showHelp
         ;;
 esac
