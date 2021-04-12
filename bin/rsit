@@ -1,0 +1,187 @@
+#!/bin/bash
+
+### EXPERIMENTAL. DO NOT USE IN PRODUCTION!
+
+#
+# rsit (Rsync Station Instance Toolkit)
+# Copyright (c) 2021 Neruthes.
+# Published under GNU GPLv2.
+#
+
+###########################################################
+#
+# BRIEF DOCUMENTATION
+#   - Each station has a config file at '.rsitconf' which contains a list of
+#     variables.
+#       - Variable 'upstream-url'
+#
+###########################################################
+
+### Environment variables
+# Name          | Accept            | Usage
+# ------------- | ----------------- | --------
+# DEBUG         | "y"               | Show debug messages.
+
+### Hardcoded constants
+_VER="0.1.0-pre1"
+
+
+### Constants
+
+
+### Arguments
+SUBCOMMAND=$1
+ARG0=$2
+ARG1=$3
+ARG2=$4
+
+
+### Lib functions
+function _help() {
+    echo "rsit (Rsync Station Instance Toolkit)"
+    echo "  Version ${_VER}"
+    echo "  Copyright (c) 2021 Neruthes. Published under GNU GPLv2"
+    echo ""
+    echo "Synopsis:"
+    echo "    rsit VERB [ARG0, ARG1, ...]"
+    echo ""
+    echo "Verbs:"
+    echo '    version                   Print program version'
+    echo '    init [URL_STRING]         Make $PWD a station and optionally set the upstream URL'
+    echo '    get-url                   Get the upstream URL of this station'
+    echo '    set-url URL_STRING        Set the upstream URL of this station'
+    echo '    pull                      Pull from upstream URL'
+    echo '    push                      Push to upstream URL'
+    echo ''
+    echo 'Examples:'
+    echo '    $ rsit init rsync://192.168.1.1/service/'
+    echo '        Note: Should always include the trailing slash'
+}
+function _debugMsg() {
+    if [[ "$DEBUG" == "y" ]]; then
+        echo "[DEBUG] $1" >&2
+    fi
+}
+function _checkDeps() {
+    RSIT_DEPS="rsync grep dirname"
+    for i in $RSIT_DEPS; do
+        if [[ "$(which $i)" != "/"*"$i" ]]; then
+            echo "[ERROR] Unsatisfied dependency '$i'."
+            exit 1
+        fi
+    done
+}
+function _getStationConfPath() {
+    # Try 6 times on searching recursively
+    TRY_PATH="$PWD"
+    MADE_ATTEMPTS="0"
+    ALREADY_FOUND="false"
+
+    for (( i = 0; i < 6; i++ )); do
+        _debugMsg "Going to try '$TRY_PATH/.rsitconf'..."
+        if [[ -e "$TRY_PATH/.rsitconf" ]]; then # File exists
+            ALREADY_FOUND="true"
+            _debugMsg "Found station config at '$TRY_PATH'."
+            break
+        else
+            TRY_PATH="$(dirname "$TRY_PATH")"
+            _debugMsg "Already made $i attempts."
+        fi
+    done
+
+    if [[ "$ALREADY_FOUND" == "false" ]]; then
+        # Station config file cannot be found
+        echo "[ERROR] Cannot find station config file '.rsitconf' within 6 levels up the parent chain." >&2
+        exit 2
+        # printf ""
+    else
+        printf -- "$TRY_PATH/.rsitconf"
+    fi
+}
+function _createStation() {
+    if [[ -e "$PWD/.rsitconf" ]]; then
+        echo "[ERROR] Already initialized." >&2
+    else
+        touch "$PWD/.rsitconf"
+        echo "[INFO] Created a new station at '$PWD'."
+    fi
+}
+function _getStationConfProp() {
+    if [[ -z "$1" ]]; then
+        echo "[ERROR] Property name is not specified."
+        exit 3
+    fi
+    STATION_CONF_PATH="$(_getStationConfPath)"
+    RAW_MATCH_LINE=$(grep -m 1 "^$1" "$STATION_CONF_PATH")
+    echo "${RAW_MATCH_LINE/$1\=/}"
+}
+function _setStationConfProp() {
+    if [[ -z "$1" ]]; then
+        echo "[ERROR] Property name is not specified."
+        exit 4
+    fi
+    if [[ -z "$2" ]]; then
+        echo "[ERROR] Property new value is not specified."
+        exit 5
+    fi
+    STATION_CONF_PATH="$(_getStationConfPath)"
+    _debugMsg "STATION_CONF_PATH: $STATION_CONF_PATH"
+    RAW_MATCH_LINE=$(grep -m 1 "^$1=" "$STATION_CONF_PATH")
+    _debugMsg "Raw line is $RAW_MATCH_LINE"
+    if [[ "$RAW_MATCH_LINE" == "" ]]; then
+        # Create new line
+        _debugMsg "Should create a new line."
+        # sed "/$1=/d" "$STATION_CONF_PATH"
+        echo "$1=$2" > "$STATION_CONF_PATH"
+    else
+        _debugMsg "Should modify the existing line."
+        sed -i "s/$1=.*/$1=$2/" "$STATION_CONF_PATH"
+    fi
+}
+
+
+### Subcommand handlers
+function SC_version() {
+    echo "rsit v${_VER}"
+}
+function SC_init() {
+    _checkDeps
+    _createStation
+    if [[ "$ARG0" != "" ]]; then
+        _setStationConfProp upstream "$ARG0"
+    fi
+}
+# function SC_geturl() {
+# }
+# function SC_seturl() {
+# }
+# function SC_pull() {
+# }
+# function SC_push() {
+# }
+
+
+### Main entry
+case $SUBCOMMAND in
+    v|ver|version )
+        SC_version
+        ;;
+    init )
+        SC_init $ARG0
+        ;;
+    get-prop )
+        _getStationConfProp $ARG0
+        ;;
+    set-prop )
+        _setStationConfProp $ARG0 $ARG1
+        ;;
+    get-url )
+        _getStationConfProp upstream
+        ;;
+    set-url )
+        _setStationConfProp upstream $ARG0
+        ;;
+    h|help|* )
+        _help
+        ;;
+esac
