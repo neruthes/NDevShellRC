@@ -23,8 +23,8 @@
 # DEBUG         | "y"               | Show debug messages.
 
 ### Hardcoded constants
-_VER="0.1.0-pre1"
-
+_VER="0.1.0-pre2"
+_PHUUID="20467ba2d6da4dd59bcb83fbf410aa6f"
 
 ### Constants
 
@@ -71,7 +71,7 @@ function _checkDeps() {
         fi
     done
 }
-function _getStationConfPath() {
+function _getStationBasePath() {
     # Try 6 times on searching recursively
     TRY_PATH="$PWD"
     MADE_ATTEMPTS="0"
@@ -95,8 +95,11 @@ function _getStationConfPath() {
         exit 2
         # printf ""
     else
-        printf -- "$TRY_PATH/.rsitconf"
+        printf -- "$TRY_PATH"
     fi
+}
+function _getStationConfPath() {
+    printf -- "$(_getStationBasePath)/.rsitconf"
 }
 function _createStation() {
     if [[ -e "$PWD/.rsitconf" ]]; then
@@ -116,6 +119,8 @@ function _getStationConfProp() {
     echo "${RAW_MATCH_LINE/$1\=/}"
 }
 function _setStationConfProp() {
+    # TODO: Bugs found
+    return 1
     if [[ -z "$1" ]]; then
         echo "[ERROR] Property name is not specified."
         exit 4
@@ -131,11 +136,21 @@ function _setStationConfProp() {
     if [[ "$RAW_MATCH_LINE" == "" ]]; then
         # Create new line
         _debugMsg "Should create a new line."
-        # sed "/$1=/d" "$STATION_CONF_PATH"
-        echo "$1=$2" > "$STATION_CONF_PATH"
+        echo "$1=$_PHUUID" > "$STATION_CONF_PATH"
     else
         _debugMsg "Should modify the existing line."
-        sed -i "s/$1=.*/$1=$2/" "$STATION_CONF_PATH"
+        _debugMsg "1: $1"
+        _debugMsg "2: $2"
+        sed -i "s/$1=.*/$1=$_PHUUID/g" "$STATION_CONF_PATH"
+    fi
+    cat "$STATION_CONF_PATH"
+    STATION_CONF_CONTENT="$(cat "$STATION_CONF_PATH")"
+    STATION_CONF_CONTENT_NEW="${STATION_CONF_CONTENT_NEW/$_PHUUID/$2}"
+    echo "$STATION_CONF_CONTENT_NEW" > "$STATION_CONF_PATH"
+    if [[ "$DEBUG" == "y" ]]; then
+        echo "--------"
+        echo "$STATION_CONF_CONTENT"
+        echo "--------"
     fi
 }
 
@@ -151,14 +166,23 @@ function SC_init() {
         _setStationConfProp upstream "$ARG0"
     fi
 }
-# function SC_geturl() {
-# }
-# function SC_seturl() {
-# }
-# function SC_pull() {
-# }
-# function SC_push() {
-# }
+
+function SC_pull() {
+    UPSTREAM="$(_getStationConfProp upstream)"
+    if [[ -z "$UPSTREAM" ]]; then
+        echo "[ERROR] Cannot find property 'upstream' in '.rsitconf'."
+        exit 6
+    fi
+    rsync -av "$UPSTREAM" "$(_getStationBasePath)/" --progress
+}
+function SC_push() {
+    UPSTREAM="$(_getStationConfProp upstream)"
+    if [[ -z "$UPSTREAM" ]]; then
+        echo "[ERROR] Cannot find property 'upstream' in '.rsitconf'."
+        exit 6
+    fi
+    rsync -av "$(_getStationBasePath)/" "$(_getStationConfProp upstream)" --progress
+}
 
 
 ### Main entry
@@ -172,14 +196,20 @@ case $SUBCOMMAND in
     get-prop )
         _getStationConfProp $ARG0
         ;;
-    set-prop )
-        _setStationConfProp $ARG0 $ARG1
-        ;;
+    # set-prop )
+        # _setStationConfProp $ARG0 $ARG1
+        # ;;
     get-url )
         _getStationConfProp upstream
         ;;
-    set-url )
-        _setStationConfProp upstream $ARG0
+    # set-url )
+        # _setStationConfProp upstream $ARG0
+        # ;;
+    pull )
+        SC_pull
+        ;;
+    push )
+        SC_push
         ;;
     h|help|* )
         _help
