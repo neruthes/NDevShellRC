@@ -13,7 +13,7 @@
 # BRIEF DOCUMENTATION
 #   - Each station has a config file at '.rsitconf' which contains a list of
 #     variables.
-#       - Variable 'upstream-url'
+#       - Variable 'upstream': The URL of upstream; can be 'rsync://host/dir/' or 'user@host:/dir/'.
 #
 ###########################################################
 
