@@ -5,10 +5,10 @@ if [[ $(uname) != "Linux" ]]; then
 fi
 
 echo "Switching display mode..."
-CurrentCase=$(NDevVar get switch-display--currentCase)
+CurrentCase="$(NDevVar get switch-display--currentCase)"
 
-if [[ $1 = "set" ]]; then
-    CurrentCase=$2;
+if [[ "$1" = "set" ]]; then
+    CurrentCase="$2";
 fi
 
 if [[ $1 = "" ]]; then
@@ -27,7 +27,13 @@ fi
 
 echo "Switching to $CurrentCase"
 
-bash "$HOME/.screenlayout/base-$CurrentCase.sh"
+#bash "$HOME/.screenlayout/base-$CurrentCase.sh"
+SCRIPT_PATH="$DEV_HOME_DIR/NDevShellRC/dev-local/$(hostname)/screenlayout/base-$CurrentCase.sh"
+if [[ -e "$SCRIPT_PATH" ]]; then
+    bash "$SCRIPT_PATH"
+else
+    echo "Cannot find dev-local script!" >&2
+fi
 NDevVar set switch-display--currentCase $CurrentCase
 
 wpreload

@@ -1,2 +1,2 @@
-export NDEVSHELLRC_VERSION="1.0.20-1"
-export NDEVSHELLRC_VERSION_MSGLOG="Added rsit (v0.1.0-pre1)"
+export NDEVSHELLRC_VERSION="1.0.20-2"
+export NDEVSHELLRC_VERSION_MSGLOG="Added dev-local dir"
