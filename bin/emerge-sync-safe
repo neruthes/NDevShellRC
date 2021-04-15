@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ $(uname) != "Linux" ]]; then
+    exit 1
+fi
+
+LOCKPATH="/tmp/emerge-sync.lock"
+
+if [[ -e "$LOCKPATH" ]]; then
+    echo "Another job of 'emerge-sync-safe' is aleady in progress..." >&2
+else
+    touch "$LOCKPATH"
+    emerge --sync
+    rm "$LOCKPATH"
+fi
