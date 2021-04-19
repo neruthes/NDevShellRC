@@ -36,4 +36,7 @@ else
 fi
 NDevVar set switch-display--currentCase $CurrentCase
 
+i3 restart
 wpreload
+killall fcitx
+i3 exec fcitx
