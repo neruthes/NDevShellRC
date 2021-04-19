@@ -3,7 +3,6 @@
 const os = require('os');
 const fs = require('fs');
 const http = require('http');
-const uuid = require('uuid');
 const sh = require('child_process').execSync;
 
 const ARG_PORT = process.argv[2];
