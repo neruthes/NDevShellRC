@@ -4,6 +4,7 @@ const os = require('os');
 const fs = require('fs');
 const http = require('http');
 const uuid = require('uuid');
+const sh = require('child_process').execSync;
 
 const ARG_PORT = process.argv[2];
 
@@ -42,7 +43,7 @@ if (fs.existsSync(`${CONFDIR}/config.json`)) {
         console.log(`[ERROR] Config file '${CONFDIR}/config.json' is invalid.`);
     };
 } else {
-    ETC_CONFIG.TokenMaster = uuid.v4();
+    ETC_CONFIG.TokenMaster = sh('uuidgen');
     fs.mkdirSync(CONFDIR, { recursive: true });
     fs.writeFileSync(`${CONFDIR}/config.json`, JSON.stringify(ETC_CONFIG, '\t', 4));
 };
