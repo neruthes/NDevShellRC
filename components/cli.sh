@@ -1,7 +1,8 @@
 export EDITOR="$(which nano)"
 
 function ps1gitbr() {
-    git branch --show-current > /tmp/.L_GBSC_`whoami` 2>&1
+#    git branch --show-current > /tmp/.L_GBSC_`whoami` 2>&1
+    git rev-parse --abbrev-ref HEAD > /tmp/.L_GBSC_`whoami` 2>&1
     L_GBSC=$(cat /tmp/.L_GBSC_$(whoami))
 #    echo "$L_GBSC"
     if [[ ${L_GBSC::5} == 'fatal' ]]; then
@@ -17,16 +18,16 @@ function ps1gitbr() {
 function ps1devnickname() {
     case `hostname` in
         NDLT6)
-            printf -- -Betelgeuse
+            printf -- ' (Betelgeuse)'
             ;;
         NDLT7)
-            printf -- -Sirius
+            printf -- ' (Sirius)'
             ;;
         NDLT7W)
-            printf -- -Sirius-WSL
+            printf -- ' (Sirius-WSL)'
             ;;
         NEPd2U)
-            printf -- -Archer-Ubuntu
+            printf -- ' (Archer-Ubuntu)'
             ;;
     esac
 }
