@@ -17,6 +17,9 @@ function ps1gitbr() {
 
 function ps1devnickname() {
     case `hostname` in
+        NDVS*)
+            printf -- ' (VPS)'
+            ;;
         NDLT6)
             printf -- ' (Betelgeuse)'
             ;;

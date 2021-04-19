@@ -4,6 +4,24 @@ function gitsetremote() {
 function gitclone() {
     git clone "https://neruthes:$(pasm p token.github.clipass-synced)@github.com/$1.git"
 }
+function gcl() {
+    SERVICE="$1"
+    REPOID="$2"
+    RHOST=""
+    case "$SERVICE" in
+        gh)
+            RHOST="github.com"
+            ;;
+        stn)
+            RHOST="git.shinonometn.com"
+            ;;
+        *)
+            echo "ERROR: Unknown service provider"
+            exit 1
+            ;;
+    esac
+    git clone git@$RHOST:$REPOID.git
+}
 function gitnuke() {
     cp .git/config .gitconf
     rm -rf .git
