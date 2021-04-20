@@ -37,4 +37,4 @@ function NDPS1-system-mount() {
         docker ps
     fi
 }
-NDPS1-system-mount q
+#NDPS1-system-mount q
