@@ -17,7 +17,7 @@ function gcl() {
             ;;
         *)
             echo "ERROR: Unknown service provider"
-            exit 1
+            return 1
             ;;
     esac
     git clone git@$RHOST:$REPOID.git

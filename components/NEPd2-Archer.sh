@@ -1,6 +1,5 @@
 if [[ "$(uname)" != "Linux" ]]; then
     echo "This script can only work on Linux!"
-    exit 1
 fi
 
 function NEPd2-mount() {
@@ -11,7 +10,6 @@ function NEPd2-mount() {
 
         ### Unencrypted filesystems
         sudo mount /dev/disk/by-partlabel/NEPd2_ESP /mnt/NEPd2_Archer/ESP
-        sudo mount /dev/disk/by-partlabel/NEPd2_usr /mnt/NEPd2_Archer/usr
 
         ### Test Case
         if [[ -e /mnt/NEPd2_Archer/LS/.IAmMounted ]]; then
@@ -25,7 +23,7 @@ function NEPd2-mount() {
 }
 
 function NEPd2-umount() {
-    sudo umount /mnt/NEPd2_Archer/{ESP,LS,usr}
+    sudo umount /mnt/NEPd2_Archer/{ESP,LS}
 
-    sudo cryptsetup close /dev/mapper/NEPd2Pv1
+    sudo cryptsetup close /dev/mapper/NEPd2_Data
 }
