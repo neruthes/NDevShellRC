@@ -21,9 +21,9 @@ function NEPd4-mount() {
 
         ### Test Case
         if [[ -e /mnt/NEPd4_Intel660p/LS/.IAmMounted ]]; then
-            echo "Successfully mounted NEPd3."
+            echo "Successfully mounted NEPd4."
         else
-            echo "Error: Failed mounting NEPd3; cannot find mount mark file."
+            echo "Error: Failed mounting NEPd4; cannot find mount mark file."
         fi
     else
         echo "Error: Disk is not connected."

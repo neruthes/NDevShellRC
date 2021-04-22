@@ -7,6 +7,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/git.sh
 # Drives
 source $DEV_HOME_DIR/NDevShellRC/components/NEPd2-Archer.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NEPd3-Caster.sh
+source $DEV_HOME_DIR/NDevShellRC/components/NEPd4-Intel660p.sh
 source $DEV_HOME_DIR/NDevShellRC/components/borgBackup.sh
 source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
 
@@ -26,16 +27,16 @@ printf "\n"
 neofetch
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh ]]; then
     # echo "--------------------------------------------------------------"
-    echo "Executing the device-specific script for $(hostname)..."
-    echo ""
-    source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh
-    echo "--------------------------------------------------------------"
+    echo "Executing the device-specific script for $(hostname)..." >/dev/stderr
+    echo "" >/dev/stderr
+    source $DEV_HOME_DIR/NDevShellRC/dev-spec/$(hostname).sh >/dev/stderr
+    echo "--------------------------------------------------------------" >/dev/stderr
 fi
 source $DEV_HOME_DIR/NDevShellRC/_version.sh
-printf "\n"
-echo "  #  $NDEV_OSID"
-echo ""
-echo "  *  Device:          $NDEV_MODEL"
-echo "  *  System:          $NDEV_OS ($NDEV_ARCH)"
-echo "  *  NDevShellRC:     $NDEVSHELLRC_VERSION '$NDEVSHELLRC_VERSION_MSGLOG'"
-printf "\n"
+printf "\n" >/dev/stderr
+echo "  #  $NDEV_OSID" >/dev/stderr
+echo "" >/dev/stderr
+echo "  *  Device:          $NDEV_MODEL" >/dev/stderr
+echo "  *  System:          $NDEV_OS ($NDEV_ARCH)" >/dev/stderr
+echo "  *  NDevShellRC:     $NDEVSHELLRC_VERSION '$NDEVSHELLRC_VERSION_MSGLOG'" >/dev/stderr
+printf "\n" >/dev/stderr

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ "$(hostname)" != "NDPS3" ]]; then
-    echo "Not NDPS3!"
+    echo "Not NDPS3!" >/dev/stderr
     exit 1
 fi
 
@@ -10,7 +10,7 @@ function NDPS1-system-mount() {
 
     function qecho() {
         if [[ "x$isQUIET" == 'x' ]]; then
-            echo $1
+            echo $1 >/dev/stderr
         fi
     }
 

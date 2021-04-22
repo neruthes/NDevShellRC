@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# backuphome-NDPS3 (v0.1.5)
+# Copyright (c) 2021 Neruthes.
+#
+# Published under GNU GPLv2 license. The full text may be found at
+# <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+#
+
+### Args init
+
+if [[ "$(hostname)" != "NDLT7" ]]; then
+    echo "ERROR: This script only works on NDLT7."
+    exit 1
+fi
+
+RHOST=10.0.233.183
+HOMEDIRPREF=/mnt/NEPd2_Archer/LS/HomeBackup.neruthes
+rsync -av /home/neruthes/PIC/ root@$RHOST:$HOMEDIRPREF/PIC/ --delete --exclude=*.photoslibrary/* --progress
+rsync -av /home/neruthes/DOC/ root@$RHOST:$HOMEDIRPREF/DOC/ --delete --progress
+rsync -av /home/neruthes/AUD/ root@$RHOST:$HOMEDIRPREF/AUD/ --delete --progress
