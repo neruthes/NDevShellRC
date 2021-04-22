@@ -19,3 +19,4 @@ HOMEDIRPREF=/mnt/NEPd2_Archer/LS/HomeBackup.neruthes
 rsync -av /home/neruthes/PIC/ root@$RHOST:$HOMEDIRPREF/PIC/ --delete --exclude=*.photoslibrary/* --progress
 rsync -av /home/neruthes/DOC/ root@$RHOST:$HOMEDIRPREF/DOC/ --delete --progress
 rsync -av /home/neruthes/AUD/ root@$RHOST:$HOMEDIRPREF/AUD/ --delete --progress
+rsync -av /home/neruthes/VID/ root@$RHOST:$HOMEDIRPREF/VID/ --delete --progress
