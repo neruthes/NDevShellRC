@@ -40,6 +40,9 @@ function g() {
     git push
 }
 
+alias gpom="git push origin master"
+alias gpuom="git push -u origin master"
+
 case `uname` in
     Linux)
         alias u="git add .; git commit -m 'Regular update `date -Is`'; git push;"
