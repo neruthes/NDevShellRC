@@ -1,63 +1,91 @@
 #!/bin/bash
 
-# ifspd (v0.1.5)
-# Copyright (c) 2021 Neruthes.
+# ifspd (v0.1.6)
+# Copyright (c) 2021 Catten Linger & Neruthes.
 #
 # Published under GNU GPLv2 license. The full text may be found at
 # <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
 #
 
-### Args init
+#!/bin/bash
 
 IFNAME=$1
-
-if [[ $IFNAME == "" ]]; then
-    echo "Error: No interface specified."
-    exit 1
+if [ ! -d "/sys/class/net/$IFNAME/statistics" ]; then
+	echo "sysfs dir not exists: /sys/class/net/$IFNAME/statistics"
+	exit 1
 fi
 
-if [[ $INTERVAL == "" ]]; then
-    INTERVAL=1
+IFSPEED=$2
+IFSPEED_PRE=""
+
+if [ -z $IFSPEED ]; then
+	IFSPEED="100"
+	echo "[INFO] Assuming scale 100 Mbps."
 fi
 
-### Lib functions
+function logline() {
+	# 1: CURRENTIN; 2:LASTIN  3: CURRENTOUT 4:LASTOUT
+	local BUSY=0
 
-function _gettotaltime() {
-    DIV_REM_SECS=$(($SECS % 60))
-    if [[ $DIV_REM_SECS -lt 10 ]]; then
-        OUTPUT_SECS="0$DIV_REM_SECS"
-    else
-        OUTPUT_SECS="$DIV_REM_SECS"
-    fi
-    printf "$(($SECS / 60)):$OUTPUT_SECS"
+        local IN=$(($1 - $2))
+	BUSY=$(($BUSY + $IN))
+	local U_IN="KB/s"
+	if [ 1024 -lt "$IN" ]; then IN=$(($IN / 1024)); U_IN="MB/s"; fi
+
+	local OUT=$(($3 - $4))
+	BUSY=$(($BUSY + $OUT))
+	local U_OUT="KB/s"
+	if [ 1024 -lt "$OUT" ]; then OUT=$(($OUT / 1024)); U_OUT="MB/s"; fi
+
+	BUSY=$(($BUSY * 8 / 10 / $IFSPEED))
+	if [ 100 -lt $BUSY ]; then BUSY=100; fi
+
+	# BUSY_BAR_LEN = $COLUMNS - "IN " + "%4d %4s" + " - OUT " + "%4d %4s " + "- %3d%% "
+	BUSY_BAR_LEN=$(($COLUMNS - 3 - 9 - 7 - 10 - 7))
+	local BUSY_BAR
+	local counter=$(($BUSY * $BUSY_BAR_LEN / 100))
+	while [ $counter -gt 0 ]; do BUSY_BAR="${BUSY_BAR}|"; counter=$(($counter - 1)); done
+	if [ -z "$BUSY_BAR" ]; then BUSY_BAR="|"; fi
+
+	if [[ "$NOHISTORY" != y* ]]; then
+		logline_with_history \
+			"$(printf "\rIN %4d %s | OUT %4d %s | %3d%% %s" $IN "$U_IN" $OUT "$U_OUT" $BUSY "$BUSY_BAR")" \
+			"$(printf "\nIN %4d %s | OUT %4d %s | Interface: $IFNAME" $IN "$U_IN" $OUT "$U_OUT")"
+	else
+		logline_without_history \
+			"$(printf "\rIN %4d %s | OUT %4d %s | Interface: $IFNAME" $IN "$U_IN" $OUT "$U_OUT")"
+	fi
 }
 
-function _logline() {
-    printf "\r                                                                                "
-    printf "\r$(($DELTAB / 1024)) KB\n"
-    TotalTrafic=$(($NEWB - $STARTB))
-    AVGSPD=$((TotalTrafic / $SECS))
-    if [[ $NOAVGSPD != y* ]]; then
-        printf "Average speed   ($IFNAME)   $(($AVGSPD / 1024)) KB/s       (over $(_gettotaltime))"
-    fi
+function logline_with_history() {
+	local HISTORY=$1
+	local STRING=$2
+	printf "%-${COLUMNS}s" "$HISTORY"
+	printf "%-${COLUMNS}s" "$STRING"
+}
+function logline_without_history() {
+	local STRING=$1
+	printf "%-${COLUMNS}s" "$STRING"
 }
 
-function _getbytes() {
-    cat /sys/class/net/$IFNAME/statistics/rx_bytes
+function getbytesin() {
+	# 1: ifname
+	cat /sys/class/net/$IFNAME/statistics/rx_bytes
 }
 
-### RAM vars
+function getbytesout() {
+	#1: ifname
+	cat /sys/class/net/$IFNAME/statistics/tx_bytes
+}
 
-STARTB=$(_getbytes)
-SECS=0
+STARTBIN=$(getbytesin)
+STARTBOUT=$(getbytesout)
 
-### Let the loop start
-
-while [[ "1" == "1" ]]; do
-    OLDB=$(_getbytes)
-    sleep $INTERVAL
-    SECS=$(($SECS + $INTERVAL))
-    NEWB=$(_getbytes)
-    DELTAB=$(($NEWB - $OLDB))
-    _logline
+while(true); do
+	LASTIN=$(($(getbytesin) / 1024))
+	LASTOUT=$(($(getbytesout) / 1024))
+	sleep 1
+	CURRENTIN=$(($(getbytesin) / 1024))
+	CURRENTOUT=$(($(getbytesout) / 1024))
+	logline $CURRENTIN $LASTIN $CURRENTOUT $LASTOUT
 done

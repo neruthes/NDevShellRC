@@ -3,14 +3,14 @@
 
 function s5pon() {
     PROXY_TINC=socks5://10.104.22.2:8080
-    PROXY_LAN=socks5://192.168.1.20:1082
+    PROXY_LAN=socks5://10.0.233.20:1083
 
-    if [[ "$(ip addr | grep 192.168.31)" == "" ]]; then
+    if [[ "$(ip addr | grep 10.0.233)" == "" ]]; then
         MY_PROXY_CHOICE=$PROXY_TINC
     else
         MY_PROXY_CHOICE=$PROXY_LAN
     fi
-    
+
     for i in ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
         export $i=$MY_PROXY_CHOICE
     done
