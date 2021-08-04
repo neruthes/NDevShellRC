@@ -3,7 +3,7 @@
 
 function s5pon() {
     PROXY_TINC=socks5://10.104.22.2:8080
-    PROXY_LAN=socks5://10.0.233.20:1083
+    PROXY_LAN=socks5://10.0.233.3:7891
 
     if [[ "$(ip addr | grep 10.0.233)" == "" ]]; then
         MY_PROXY_CHOICE=$PROXY_TINC
