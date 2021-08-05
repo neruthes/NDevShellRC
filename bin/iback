@@ -3,5 +3,4 @@
 if [[ `uname` == Linux ]]; then
     ir firefox-bin
     ir telegram-desktop
-    discordd
 fi
