@@ -39,7 +39,7 @@ _mkDefaultDldSymlink
 ### ----------------------------------------------------------------------------
 ### System update alert
 if [[ "${NDEV_OS}" == "Gentoo" ]]; then
-    MyTmpVar1="$(stat /var/db/repos/gentoo | grep Modify)"
+    MyTmpVar1="$(stat /var/db/repos/gentoo/.git | grep Modify)"
     MyTmpVar2="${MyTmpVar1:8:19}"
     LatestUpdateTimestamp="$(date --date="$MyTmpVar2" +%s)"
     CurrentTimestamp="$(date +%s)"
