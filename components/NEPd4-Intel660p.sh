@@ -11,9 +11,11 @@ function NEPd4-mount() {
         sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV5 NEPd4_PV5 --key-file ~/.MyLuksKey
         sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV4 NEPd4_PV4 --key-file ~/.MyLuksKey
         sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV3 NEPd4_PV3 --key-file ~/.MyLuksKey
+        sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV2 NEPd4_PV2 --key-file ~/.MyLuksKey
+        sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV1 NEPd4_PV1 --key-file ~/.MyLuksKey
 
         ### LVM
-        sudo vgcreate NEPd4Vg1 /dev/mapper/NEPd4_PV{6,5,4,3}
+        sudo vgcreate NEPd4Vg1 /dev/mapper/NEPd4_PV{6,5,4,3,2,1}
         sudo lvcreate -l 100%FREE -n NEPd4Lv1 NEPd4Vg1
         sudo mount /dev/NEPd4Vg1/NEPd4Lv1 /mnt/NEPd4_Intel660p/LS
 
@@ -33,9 +35,14 @@ function NEPd4-mount() {
 function NEPd4-umount() {
     sudo umount /var/lib/libvirt/images
     sudo umount /mnt/NEPd4_Intel660p/LS
+    sudo umount /mnt/NEPd4_Intel660p/NTFS
+
+    sudo vgremove NEPd4Vg1
 
     sudo cryptsetup close /dev/mapper/NEPd4_PV6
     sudo cryptsetup close /dev/mapper/NEPd4_PV5
     sudo cryptsetup close /dev/mapper/NEPd4_PV4
     sudo cryptsetup close /dev/mapper/NEPd4_PV3
+    sudo cryptsetup close /dev/mapper/NEPd4_PV2
+    sudo cryptsetup close /dev/mapper/NEPd4_PV1
 }

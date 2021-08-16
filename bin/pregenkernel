@@ -1,0 +1,1 @@
+sudo bash -c "cat /usr/src/linux/.config > /usr/share/genkernel/arch/x86_64/generated-config"
