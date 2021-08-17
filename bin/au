@@ -40,8 +40,9 @@ fi
 SUBCOMMAND=$1
 ARG0=$2
 ARG1=$3
+ARG2=$4
 
-if [[ "x$SUBCOMMAND" == "x" ]]; then
+if [[ "$SUBCOMMAND" == "" ]]; then
     _greet
 fi
 
@@ -55,23 +56,24 @@ case $SUBCOMMAND in
         echo ""
         echo "Architecture      ID          Description"
         echo "---------------------------------------------------"
-        echo "AMD64             22003       Curium"
-        echo "                  22182       gbx-ry3700"
-        echo "                  22333       Ry3950X"
-        echo "                  22658       vmaoscagent001"
-        echo "MIPS              23141       lemote-a1601"
-        echo "                  23456       lpi-2"
-        echo "                  23869       lemote-a1901"
-        echo "ARM               24064       ice-rockpro64"
-        echo "                  24426       kp920"
-        echo "                  24424       JellyXavier"
+        echo "AMD64             22333       Ry3950X"
+        echo ""
+        echo "MIPS              23869       lemote-a1901"
+        echo ""
+        echo "ARM               24426       kp920"
         echo "                  24444       JellyXavier"
+        echo "                  24242       Mio"
+        echo ""
         echo "PowerPC           25202       powernv"
+        echo ""
         echo "RISC-V            -           -"
+        echo ""
+        echo "LoongArch         27001       Yukoaioi"
         echo "---------------------------------------------------"
         echo ""
         echo "This list may not reflect the latest information. Please see AOSC Wiki"
-        echo "  in the event of inaccuracy, and create a pull request to fix."
+        echo "  https://wiki.aosc.io/developer/infrastructure/buildbots/ in the event"
+        echo "  of inaccuracy, and create a pull request to fix."
         echo ""
         ;;
     ssh )
