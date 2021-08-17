@@ -47,10 +47,7 @@ fi
 
 # Subcommands
 case $SUBCOMMAND in
-    help|h )
-        _greet
-        ;;
-    man )
+    help|h|man )
         _greet
         ;;
     ssh-ls )
