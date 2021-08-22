@@ -34,7 +34,7 @@ function _mkJail() {
     for i in bin dev etc lib lib64 media mnt opt proc root run sbin srv sys tmp usr var; do
         if [[ -e "/$i" ]]; then
             sudo mkdir -p "${JAILROOT}/${i}"
-            sudo mount --rbind "/${i}" "${JAILROOT}/${i}"
+            sudo mount --bind "/${i}" "${JAILROOT}/${i}"
         fi
     done
     sudo touch "${JAILROOT}/.isChroot"
