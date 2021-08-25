@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WPPATH="$(realpath $1)"
+WPPATH="$(realpath "$1")"
 
 feh --bg-fill "$WPPATH"
 echo "$WPPATH" > /tmp/wppath.$USER
