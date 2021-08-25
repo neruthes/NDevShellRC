@@ -22,10 +22,8 @@ function NEPd4-mount() {
         sudo lvcreate -l 100%FREE -n NEPd4Lv1 NEPd4Vg1
         sudo mount /dev/NEPd4Vg1/NEPd4Lv1 /mnt/NEPd4_Intel660p/LS
 
-        sudo mount --bind /mnt/NEPd4_Intel660p/LS/VirtHome/images /var/lib/libvirt/images
-
         ### NTFS
-        sudo mount //mnt/NEPd4_Intel660p/NTFS
+        sudo mount /dev/disk/by-partuuid/723ce7d8-07ea-4b99-b361-2eba66ff8467 /mnt/NEPd4_Intel660p/NTFS
 
         ### Test Case
         if [[ -e /mnt/NEPd4_Intel660p/LS/.IAmMounted ]]; then
