@@ -3,16 +3,19 @@ if [[ "$(uname)" != "Linux" ]]; then
     exit 1
 fi
 
-function rsyncBackup() {
-    NDevVar set syslock-rsyncBackup LOCKED
-    /home/neruthes/DEV/rsync-time-backup/rsync_tmbackup.sh /home/neruthes /mnt/NEPd3_Caster/LS/RsyncTimeMachine/home-neruthes /home/neruthes/DEV/NDevShellRC/config/rsyncBackup-excluded-files.txt
-    NDevVar del syslock-rsyncBackup
+
+if [[ "$HOSTNAME" == "NDLT7" ]]; then
+
+function ndrsyncpush() {
+    rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
+        /home/neruthes/DOC/ \
+        neruthes@10.0.233.126:/Users/Neruthes/Documents/
 }
-function rsyncBackup--full() {
-    rsyncBackup
-    NDevVar set syslock-rsyncBackup LOCKED
-    sudo /home/neruthes/DEV/rsync-time-backup/rsync_tmbackup.sh /etc /mnt/NEPd3_Caster/LS/RsyncTimeMachine/etc
-    sudo /home/neruthes/DEV/rsync-time-backup/rsync_tmbackup.sh /var /mnt/NEPd3_Caster/LS/RsyncTimeMachine/var
-    sudo /home/neruthes/DEV/rsync-time-backup/rsync_tmbackup.sh /usr /mnt/NEPd3_Caster/LS/RsyncTimeMachine/usr
-    NDevVar del syslock-rsyncBackup
+function ndrsyncpull() {
+    rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
+        neruthes@10.0.233.126:/Users/Neruthes/Music/GarageBand/ \
+        /home/neruthes/AUD/GarageBand/
 }
+
+fi
+
