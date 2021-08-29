@@ -1,2 +1,2 @@
-export NDEVSHELLRC_VERSION="1.0.21-0"
-export NDEVSHELLRC_VERSION_MSGLOG="Update ifspd to 0.1.6"
+export NDEVSHELLRC_VERSION="1.0.22-0"
+export NDEVSHELLRC_VERSION_MSGLOG="Working with i3-gaps"

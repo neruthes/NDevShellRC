@@ -2,4 +2,4 @@
 
 WPPATH="/$HOME/PIC/My_Wallpapers/$( select-random-file-in-dir $HOME/PIC/My_Wallpapers )"
 feh --bg-fill "$WPPATH"
-echo "$WPPATH" > /tmp/wppath.$USER
+echo "$WPPATH" > $HOME/.config/wppath

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+i3 gaps horizontal current set 500
+i3 gaps vertical current set 170
+i3 gaps inner current set 0

@@ -7,6 +7,11 @@ fi
 
 source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-desktop.sh
 
+if [[ -e $HOME/Pictures ]]; then
+    rsync -av $HOME/Pictures/ $HOME/PIC/Default/
+    rm -rf $HOME/Pictures
+fi
+
 ### ----------------------------------------------------------------------------
 ### Data backup operations
 function rsyncBackupNDev--NEPd2_Data_WWW--NEPd3_LS() {
