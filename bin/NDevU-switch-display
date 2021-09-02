@@ -4,6 +4,8 @@ if [[ $(uname) != "Linux" ]]; then
     exit 1
 fi
 
+# source $HOME/.bashrc >/dev/null 2>&1
+
 echo "Switching display mode..."
 CurrentCase="$(NDevVar get switch-display--currentCase)"
 
@@ -13,21 +15,19 @@ fi
 
 if [[ $1 = "" ]]; then
     case $CurrentCase in
-        "Native_Only")
+        "Native")
+            CurrentCase="DP1"
+            ;;
+        "DP1")
             CurrentCase="Mirror"
             ;;
-        "Mirror")
-            CurrentCase="DP1_Only"
-            ;;
         *)
-            CurrentCase="Native_Only"
+            CurrentCase="Native"
             ;;
     esac
 fi
 
 echo "Switching to $CurrentCase"
-
-#bash "$HOME/.screenlayout/base-$CurrentCase.sh"
 SCRIPT_PATH="$DEV_HOME_DIR/NDevShellRC/dev-local/$(hostname)/screenlayout/base-$CurrentCase.sh"
 if [[ -e "$SCRIPT_PATH" ]]; then
     bash "$SCRIPT_PATH"
