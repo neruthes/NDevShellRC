@@ -12,6 +12,7 @@
 set $mod Mod4
 
 # BEGIN USER SETUPS
+#for_window [class=".*"] border pixel 0
 # exec --no-startup-id bash -c 'feh --bg-fill "/home/neruthes/PIC/My_Wallpapers/$( select-random-file-in-dir ~/PIC/My_Wallpapers )"'
 #exec --no-startup-id xrandr --dpi 100
 exec_always --no-startup-id echo START > /tmp/i3-neruthes.log
@@ -20,51 +21,51 @@ default_border none
 title_align center
 hide_edge_borders both
 #exec --no-startup-id NDevU-switch-display set Mirror
-bindsym $mod+Shift+s exec --no-startup-id NDevU-switch-display
+bindsym $mod+Shift+a exec --no-startup-id NDevU-switch-display set Native
+bindsym $mod+Shift+s exec --no-startup-id NDevU-switch-display set DP1
+bindsym $mod+Shift+d exec --no-startup-id NDevU-switch-display set Mirror
 # END USER SETUPS
 
 # Window Deco Color
 # class                 border  backgr. text    indicator child_border
 #---------------------------------------------------------------------
-client.focused          #205080 #105090 #ffffff #2e9ef4   #285577
-#client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
-client.unfocused        #222222 #222222 #888888 #292d2e   #222222
-client.urgent           #900000 #900000 #ffffff #900000   #900000
-#client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
-#client.background       #ffffff
+client.focused          #ffffff #ffffff #000000 #ff0000   #ff0000
+client.focused_inactive #eeeeee #eeeeee #111111 #484e50   #5f676a
+client.unfocused        #d5d5d5 #d5d5d5 #444444 #151515   #151515
+client.urgent           #2299ff #2299ff #ffffff #900000   #900000
+client.placeholder      #000000 #000000 #ffffff #000000   #0c0c0c
+
+client.background       #ffffff
+
+
 
 # Workspaces
 assign [class="Alacritty"] 1
 assign [class="Atom"] 2
+assign [class="VSCodium"] 2
+assign [class="libreoffice"] 2
 assign [class="Gimp"] 2
 assign [class="Firefox"] 3
 assign [class="Nightly"] 3
 assign [class="Firefox Nightly"] 3
+assign [class="Chromium-browser"] 3
 assign [class="discord"] 4
 assign [class="Telegram"] 4
+assign [class="Minecraft Launcher"] 5
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
-#assign [class="Placeholder"] 1
-assign [class="VirtualBox Manager"] 8
+#assign [class="VirtualBox Manager"] 8
 assign [class="Virt-manager"] 9
 
 # Screens
-#workspace 1 output DP1 eDP1
-#workspace 2 output DP1 eDP1
-#workspace 3 output DP1 eDP1
-#workspace 4 output DP1 eDP1
-#workspace 5 output DP1 eDP1
-#workspace 6 output DP1 eDP1
-#workspace 7 output DP1 eDP1
-#workspace 8 output DP1 eDP1
-#workspace 9 output DP1 eDP1
 
 # Screenshot
 # Multi-screen screenshots with scrot
-bindsym --release Print exec --no-startup-id scrot-take
+#bindsym --release Print exec --no-startup-id scrot-take
+bindsym --release Print exec --no-startup-id spectacle
 #bindsym --release $mod+Shift+p exec --no-startup-id "scrot-take & scrot-gimp"
 bindsym --release Ctrl+Print exec --no-startup-id "scrot-take & scrot-gimp"
 bindsym --release Ctrl+Shift+Print exec --no-startup-id "scrot-take-full & scrot-gimp"
@@ -82,11 +83,7 @@ font pango:monospace 11
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
-
-# NetworkManager is the most popular way to manage wireless networks on Linux,
-# and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+#exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # HID Config
 exec_always --no-startup-id xinput set-prop "ELAN2303:00 04F3:3083 Touchpad" "libinput Natural Scrolling Enabled" 1
@@ -95,8 +92,8 @@ exec_always --no-startup-id xinput set-prop "SteelSeries SteelSeries Rival 310 e
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +3% && $refresh_i3status
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -3% && $refresh_i3status
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
@@ -105,9 +102,13 @@ floating_modifier $mod
 
 # start a terminal
 bindsym $mod+Return exec alacritty
+bindsym $mod+Shift+Return exec konsole
 
 # kill focused window
 bindsym $mod+Shift+q kill
+
+# lock screen
+bindsym $mod+Shift+l exec --no-startup-id i3lock
 
 # start dmenu (a program launcher)
 #bindsym $mod+d exec dmenu_run
@@ -117,54 +118,20 @@ bindsym $mod+Shift+q kill
 #bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
-
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
-# move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move right
-
 # alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
-
-# split in horizontal orientation
-bindsym $mod+h split h
-
-# split in vertical orientation
-bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
-#bindsym $mod+s layout stacking
-#bindsym $mod+w layout tabbed
-#bindsym $mod+e layout toggle split
-
-# toggle tiling / floating
-#bindsym $mod+Shift+space floating toggle
-
-# change focus between tiling / floating windows
-#bindsym $mod+space focus mode_toggle
-
-# focus the parent container
-#bindsym $mod+a focus parent
-
-# focus the child container
-#bindsym $mod+d focus child
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
@@ -210,45 +177,31 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
-# resize window (you can also use the mouse for that)
-mode "resize" {
-        # These bindings trigger as soon as you enter the resize mode
-
-        # Pressing left will shrink the window’s width.
-        # Pressing right will grow the window’s width.
-        # Pressing up will shrink the window’s height.
-        # Pressing down will grow the window’s height.
-        bindsym j resize shrink width 10 px or 10 ppt
-        bindsym k resize grow height 10 px or 10 ppt
-        bindsym l resize shrink height 10 px or 10 ppt
-        bindsym semicolon resize grow width 10 px or 10 ppt
-
-        # same bindings, but for the arrow keys
-        bindsym Left resize shrink width 10 px or 10 ppt
-        bindsym Down resize grow height 10 px or 10 ppt
-        bindsym Up resize shrink height 10 px or 10 ppt
-        bindsym Right resize grow width 10 px or 10 ppt
-
-        # back to normal: Enter or Escape or $mod+r
-        bindsym Return mode "default"
-        bindsym Escape mode "default"
-        bindsym $mod+r mode "default"
-}
-
-#bindsym $mod+r mode "resize"
-
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-        status_command i3status
-	mode hide
-	#mode dock
+    height 48
+    status_command i3status
+	#mode hide
+	mode dock
 	position bottom
 	#position top
-	#transparency 0.5
 	hidden_state hide
 	separator_symbol "  "
 	tray_output none
+    workspace_min_width 26
+
+    colors {
+        background #ffffff
+        statusline #000000
+        separator #666666
+
+        focused_workspace  #ffffff #ffffff #000000
+        active_workspace   #333333 #cc0000 #ffffff
+        inactive_workspace #ffffff #ffffff #aaaaaa
+        urgent_workspace   #2299ff #2299ff #ffffff
+        binding_mode       #2f343a #900000 #ffffff
+    }
 }
 #exec_always --no-startup-id ~/.config/polybar/launch
 
@@ -256,9 +209,25 @@ bar {
 # Startup programs
 exec --no-startup-id fcitx
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-#exec --no-startup-id mousetrap -t 2
 #exec --no-startup-id alacritty
-#exec --no-startup-id firefox
 #exec --no-startup-id
-#exec_always --no-startup-id feh --bg-fill "/home/neruthes/PIC/My_Wallpapers/$( select-random-file-in-dir ~/PIC/My_Wallpapers )"
-exec_always --no-startup-id wprand
+#exec --no-startup-id wpreload
+
+
+
+#############################################
+#### i3-gaps only
+#############################################
+for_window [class=".*"] border pixel 0
+gaps horizontal 160
+gaps vertical 80
+gaps inner 0
+workspace 2 gaps outer 0
+workspace 3 gaps outer 0
+workspace 9 gaps outer 0
+bindsym $mod+Shift+u exec --no-startup-id i3exgap
+bindsym $mod+Shift+i exec --no-startup-id i3biggap
+bindsym $mod+Shift+o exec --no-startup-id i3midgap
+bindsym $mod+Shift+p exec --no-startup-id i3rmgap
+
+exec --no-startup-id wpreload
