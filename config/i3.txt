@@ -108,7 +108,7 @@ bindsym $mod+Shift+Return exec konsole
 bindsym $mod+Shift+q kill
 
 # lock screen
-bindsym $mod+Shift+l exec --no-startup-id i3lock
+bindsym $mod+Shift+l exec --no-startup-id myi3lock
 
 # start dmenu (a program launcher)
 #bindsym $mod+d exec dmenu_run
@@ -211,7 +211,7 @@ exec --no-startup-id fcitx
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 #exec --no-startup-id alacritty
 #exec --no-startup-id
-#exec --no-startup-id wpreload
+exec_always --no-startup-id wpreload
 
 
 
@@ -230,4 +230,4 @@ bindsym $mod+Shift+i exec --no-startup-id i3biggap
 bindsym $mod+Shift+o exec --no-startup-id i3midgap
 bindsym $mod+Shift+p exec --no-startup-id i3rmgap
 
-exec --no-startup-id wpreload
+#exec --no-startup-id wpreload
