@@ -1,2 +1,2 @@
-export NDEVSHELLRC_VERSION="1.0.22-0"
-export NDEVSHELLRC_VERSION_MSGLOG="Working with i3-gaps"
+export NDEVSHELLRC_VERSION="1.0.22-1"
+export NDEVSHELLRC_VERSION_MSGLOG="Added gennginxconf"

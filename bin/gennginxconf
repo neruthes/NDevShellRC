@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# gennginxconf version 0.1.0-pre1
+# Copyright (c) 2021 Neruthes.
+# This program is released under GNU GPLv2.
+#
+# Usage:
+#   DOMAIN="$HOSTNAME.lan" LISTEN="0.0.0.0:80" NAMESPACE="myns." gennginxconf DIR
+
+PROG_VER="0.1.0-pre1"
+
+if [[ -z $NAMESPACE ]]; then
+    NAMESPACE_MINOR="$(basename $(realpath $1))."
+    NAMESPACE_MAJOR="$(basename $(dirname "$(realpath $1)"))."
+    NAMESPACE="$NAMESPACE_MINOR$NAMESPACE_MAJOR"
+fi
+if [[ -z $DOMAIN ]]; then
+    DOMAIN="${NAMESPACE}${HOSTNAME}.lan"
+fi
+if [[ -z $LISTEN ]]; then
+    LISTEN="0.0.0.0:80"
+fi
+
+function _genConfForDir() {
+    DIR=${1// /_}
+    echo "server {"
+    echo "    listen ${LISTEN};"
+    echo "    server_name ${DIR}.${DOMAIN};"
+    echo "    access_log /var/log/nginx/${DIR}.${DOMAIN}.access_log main;"
+    echo "    error_log /var/log/nginx/${DIR}.${DOMAIN}.error_log info;"
+    echo "    location / {"
+    echo "        autoindex on;"
+    echo "        root $(realpath "$1");"
+    echo "    }"
+    echo "}"
+}
+
+DIRECTORIES_RAW="$(ls $(realpath $1))"
+# echo "debug: DIRECTORIES_RAW: $DIRECTORIES_RAW"
+DIRECTORIES_REAL=""
+for DIR in $DIRECTORIES_RAW; do
+    # echo "debug: DIR: $DIR"
+    # echo "debug: realpath DIR: $(realpath $DIR)"
+    # if [[ -e "$(realpath $DIR)" ]]; then
+        DIRECTORIES_REAL="${DIRECTORIES_REAL} ${DIR}"
+    # fi
+done
+# echo "debug: DIRECTORIES_REAL: $DIRECTORIES_REAL"
+
+
+
+for DIR in $DIRECTORIES_REAL; do
+    echo ""
+    echo "# For directory $(realpath $1)/${DIR}"
+    _genConfForDir "${DIR}"
+done
