@@ -1,0 +1,59 @@
+general {
+        output_format = "i3bar"
+        colors = false
+        interval = 1
+        #color_good = "#FFFFFF"
+        #color_good = "#000000"
+}
+
+order += "wireless wlp0s20f3"
+order += "battery 0"
+order += "volume master"
+#order += "memory"
+#order += "disk /"
+order += "time"
+
+wireless wlp0s20f3 {
+        format_up = "%essid"
+        format_down = "Wi-Fi Down"
+}
+
+volume master {
+        format = "%volume"
+        format_muted = "Muted"
+        device = "pulse"
+}
+
+battery 0 {
+        format = "%percentage %status"
+        format_down = "No Battery"
+        integer_battery_capacity = true
+        last_full_capacity = true
+        status_chr = "C"
+        status_bat = "D"
+        status_unk = "U"
+        status_full = "F"
+        path = "/sys/class/power_supply/BAT%d/uevent"
+        low_threshold = 30
+}
+
+
+time {
+        format = "%Y-%m-%d %H:%M:%S "
+}
+
+load {
+        format = "%5min"
+}
+
+#memory {
+        #format = "M %free"
+        #prefix_type = "custom"
+        #threshold_degraded = "20%"
+        #format_degraded = "RAM %free"
+#}
+
+disk "/" {
+        format = "%free"
+        prefix_type = "custom"
+}
