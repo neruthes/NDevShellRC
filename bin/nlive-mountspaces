@@ -11,4 +11,5 @@ function SC_mount() {
     mount --bind    /tmp/varcachedistfiles      /var/cache/distfiles
     mount --bind    /tmp/vartmpportage          /var/tmp/portage
     rsync -avp --delete         /usr/           /tmp/usr/
+    mount --bind    /tmp/usr                    /usr
 }

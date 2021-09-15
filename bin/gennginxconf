@@ -41,9 +41,12 @@ DIRECTORIES_REAL=""
 for DIR in $DIRECTORIES_RAW; do
     # echo "debug: DIR: $DIR"
     # echo "debug: realpath DIR: $(realpath $DIR)"
-    # if [[ -e "$(realpath $DIR)" ]]; then
+    if [[ -d "$(realpath $DIR)" ]]; then
+        echo "[ OK ] $DIR $(realpath $DIR)">&2
         DIRECTORIES_REAL="${DIRECTORIES_REAL} ${DIR}"
-    # fi
+    else
+        echo "[    ] $DIR $(realpath $DIR)">&2
+    fi
 done
 # echo "debug: DIRECTORIES_REAL: $DIRECTORIES_REAL"
 
