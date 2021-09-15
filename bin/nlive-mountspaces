@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ "$HOSTNAME" != "NLive-Gentoo" ]]; then
+    echo "This script can only work on NLive-Gentoo"
+    exit 1
+fi
+
+
+function SC_mount() {
+    mount /dev/vdb1 /tmp
+    mount --bind    /tmp/varcachedistfiles      /var/cache/distfiles
+    mount --bind    /tmp/vartmpportage          /var/tmp/portage
+    rsync -avp --delete         /usr/           /tmp/usr/
+}
