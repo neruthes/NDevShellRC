@@ -7,9 +7,10 @@ fi
 
 
 function SC_mount() {
-    mount /dev/vdb1 /tmp
-    mount --bind    /tmp/varcachedistfiles      /var/cache/distfiles
-    mount --bind    /tmp/vartmpportage          /var/tmp/portage
-    rsync -avp --delete         /usr/           /tmp/usr/
-    mount --bind    /tmp/usr                    /usr
+    mount           /dev/vdb1                       /faketmp
+    rsync -avp --delete         /usr/               /faketmp/usr/
+    mount --bind    /faketmp/usr                    /usr
+    mount --bind    /faketmp/varcachedistfiles      /var/cache/distfiles
+    mount --bind    /faketmp/vartmpportage          /var/tmp/portage
+    mount --bind    /faketmp/vardbrepos             /var/db/repos
 }
