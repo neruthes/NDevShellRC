@@ -1,0 +1,51 @@
+#!/bin/bash
+
+############################################
+#
+#   renameallseq
+#
+#   version 0.1.0
+#
+#   Copyright (c) 2021 Neruthes.
+#   Published with GNU GPLv2.
+#
+############################################
+
+
+FILEEXT=$1
+COUNTERLENGTH=$2
+FNPREFIX=$3
+
+function _showHelp() {
+    echo "renameallseq (v0.1.0)"
+    echo ""
+    echo "Usage:"
+    echo ""
+    echo "  $ renameallseq {FileExt} {CounterLength} {Prefix}"
+    echo "      This will rename all *.{FileExt} in a sequence with a prefix and a counter."
+    echo ""
+    echo "Example:"
+    echo ""
+    echo "  $ renameallseq png 3 img"
+    echo "      some_file.png  ->  img-001.png"
+}
+
+if [[ -z $1 ]]; then
+    _showHelp
+    exit 1
+fi
+if [[ -z $2 ]]; then
+    _showHelp
+    exit 1
+fi
+if [[ -z $3 ]]; then
+    FNPREFIX=$FILEEXT
+fi
+
+COUNTER=1
+for FN in $(ls *.$FILEEXT); do
+    NEWFN=$FNPREFIX-$(perl -e '$str="'$COUNTER'";$pad="0";$len='$COUNTERLENGTH';print (($pad x ($len - length($str))) . $str)').$FILEEXT
+    echo "$FN  ->  $NEWFN"
+    mv "$FN" "$NEWFN"
+    COUNTER=$(($COUNTER+1))
+done
