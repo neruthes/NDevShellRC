@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#
+# Copyright (c) 2021 Neruthes.
+#
+# Released with GNU GPLv2.
+#
+
+if [[ -z "$REAL_PWD" ]]; then
+    REAL_PWD="$PWD"
+fi
+
+if [[ ! -e $REAL_PWD/.tbcache ]]; then
+    if [[ "$MKTBCACHE_AUTOMKDIR" != "y" ]]; then
+        echo '[ERROR] You must `mkdir .tbcache` here before making thumbnails.' >&2
+        exit 1
+    fi
+fi
+
+function _makeThumbnailCache() {
+    FN="$1"
+    DSTPATH="$REAL_PWD/.tbcache/img/$FN"
+    echo "    $FN"
+    convert "$FN" -resize 150\> "$REAL_PWD/.tbcache/img/$FN"
+}
+function _checkExpiry() {
+    FN="$1"
+    # Source file removed?
+    if [[ ! -e "$REAL_PWD/$FN" ]]; then
+        echo "    (deleted)     $FN"
+        rm "$REAL_PWD/.tbcache/img/$FN"
+        return 0
+    fi
+    # Source file modified?
+    if [[ $(date +%s -r "$REAL_PWD/$FN") -gt $(date +%s -r "$REAL_PWD/.tbcache/img/$FN") ]]; then
+        echo "    (modified)    $FN"
+        rm "$REAL_PWD/.tbcache/img/$FN"
+        return 0
+    fi
+}
+
+
+### Initialize
+mkdir -p $REAL_PWD/.tbcache/img
+IMG_LIST_SRC_RAW="$(ls $REAL_PWD/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2>/dev/null)"
+IMG_LIST_SRC=""
+echo "List of images:"
+for FN_RAW in $IMG_LIST_SRC_RAW; do
+    FN="$(basename $FN_RAW)"
+    if [[ "$(file "$FN")" == *"image data, "* ]]; then
+        IMG_LIST_SRC="$IMG_LIST_SRC $FN"
+    fi
+done
+echo "${IMG_LIST_SRC}"
+IMG_LIST_CACHED="$(ls $REAL_PWD/.tbcache/img)"
+echo ""
+echo "List of cached thumbnails:"
+echo "$IMG_LIST_CACHED"
+
+
+### Delete expired caches
+echo ""
+echo "Finding expired caches"
+for FN_RAW in $IMG_LIST_CACHED; do
+    FN="$(basename $FN_RAW)"
+    _checkExpiry "$FN"
+done
+
+
+### Create new caches
+echo ""
+echo "Creating new caches"
+for FN in $IMG_LIST_SRC; do
+    if [[ ! -e "$REAL_PWD/.tbcache/img/$FN" ]]; then
+        _makeThumbnailCache "$FN"
+    fi
+done

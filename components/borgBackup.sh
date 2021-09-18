@@ -43,6 +43,8 @@ function borgBackup() {
                     --exclude '/home/neruthes/.cache' \
                     --exclude '/home/neruthes/.chrootjail' \
                     --exclude '/home/neruthes/.config/discord' \
+                    --exclude '/home/neruthes/.config/yarn' \
+                    --exclude '/home/neruthes/.local/share/TelegramDesktop/tdata/user_data/media_cache' \
                     --exclude '/home/neruthes/*/.cache' \
                     --compression zstd,22 \
                     --one-file-system \

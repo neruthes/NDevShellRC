@@ -14,3 +14,73 @@ function SC_mount() {
     mount --bind    /faketmp/vartmpportage          /var/tmp/portage
     mount --bind    /faketmp/vardbrepos             /var/db/repos
 }
+
+function SC_filldistdir() {
+    ### Variables
+    LIVE_DIST_DIR=/mnt/nlivegentoodist
+    mkdir -p $LIVE_DIST_DIR
+
+    ### Make directories
+    SUBDIRS_LIST="bin boot dev etc home lib lib64 media mnt opt proc root run sbin sys tmp usr var"
+    #            "755 755  755 755 755  755 755   755   755 755 555  700  755 755  555 777 755 755"
+    for SUBDIR in SUBDIRS_LIST; do
+        mkdir $LIVE_DIST_DIR/$SUBDIR
+    done
+    chmod 755 $LIVE_DIST_DIR/bin
+    chmod 755 $LIVE_DIST_DIR/boot
+    chmod 755 $LIVE_DIST_DIR/dev
+    chmod 755 $LIVE_DIST_DIR/etc
+    chmod 755 $LIVE_DIST_DIR/home
+    chmod 755 $LIVE_DIST_DIR/lib
+    chmod 755 $LIVE_DIST_DIR/lib64
+    chmod 755 $LIVE_DIST_DIR/media
+    chmod 755 $LIVE_DIST_DIR/mnt
+    chmod 755 $LIVE_DIST_DIR/opt
+    chmod 555 $LIVE_DIST_DIR/proc
+    chmod 700 $LIVE_DIST_DIR/root
+    chmod 755 $LIVE_DIST_DIR/run
+    chmod 755 $LIVE_DIST_DIR/sbin
+    chmod 555 $LIVE_DIST_DIR/sys
+    chmod 755 $LIVE_DIST_DIR/tmp
+    chmod 755 $LIVE_DIST_DIR/usr
+    chmod 755 $LIVE_DIST_DIR/var
+
+    # ### File exclusion list
+    # EXCL_LIST_FILE=/tmp/filldistdir_excluded_dirs
+    # EXCL_PKGS="gcc cmake ghc"
+    EXCL_DIRS="/var/db/repos /var/tmp /tmp /var"
+    # if [[ -e $EXCL_LIST_FILE ]]; then
+    #     rm $EXCL_LIST_FILE $EXCL_LIST_FILE.tmp
+    # fi
+    # for DIR in $EXCL_DIRS; do
+    #     echo $DIR >> $EXCL_LIST_FILE.tmp
+    # done
+    # printf "\n\n\n\n\n\n\n" >> $EXCL_LIST_FILE.tmp
+    # for PKG in $EXCL_PKGS; do
+    #     equery f $PKG | grep -v '>' >> $EXCL_LIST_FILE.tmp
+    # done
+    # for LINE in $(cat $EXCL_LIST_FILE.tmp); do
+    #     echo "- $LINE" >> $EXCL_LIST_FILE
+    # done
+
+    # ### Fill files
+    # for SUBDIR in $SUBDIRS_LIST; do
+    #     rsync -avp --keep-dirlinks --links \
+    #         --exclude-from=$EXCL_LIST_FILE \
+    #         $SUBDIR/ $LIVE_DIST_DIR/$SUBDIR/
+    # done
+    
+    ### Mount rbind
+    for SUBDIR in bin boot etc home lib lib64 media opt root sbin usr var; do
+        mount --rbind /$SUBDIR $LIVE_DIST_DIR/$SUBDIR
+    done
+}
+
+if [[ -z $1 ]]; then
+    echo "Please specify an action:"
+    echo ""
+    echo "    mount, filldistdir"
+    exit 1
+fi
+
+SC_$1
