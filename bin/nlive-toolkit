@@ -17,24 +17,6 @@ function SC_mksqfs() {
     # for SUBDIR in $SUBDIRS_LIST; do
     #     mkdir -p $LIVE_DIST_DIR/$SUBDIR
     # done
-    # chmod 755 $LIVE_DIST_DIR/bin
-    # chmod 755 $LIVE_DIST_DIR/boot
-    # chmod 755 $LIVE_DIST_DIR/dev
-    # chmod 755 $LIVE_DIST_DIR/etc
-    # chmod 755 $LIVE_DIST_DIR/home
-    # chmod 755 $LIVE_DIST_DIR/lib
-    # chmod 755 $LIVE_DIST_DIR/lib64
-    # chmod 755 $LIVE_DIST_DIR/media
-    # chmod 755 $LIVE_DIST_DIR/mnt
-    # chmod 755 $LIVE_DIST_DIR/opt
-    # chmod 555 $LIVE_DIST_DIR/proc
-    # chmod 700 $LIVE_DIST_DIR/root
-    # chmod 755 $LIVE_DIST_DIR/run
-    # chmod 755 $LIVE_DIST_DIR/sbin
-    # chmod 555 $LIVE_DIST_DIR/sys
-    # chmod 777 $LIVE_DIST_DIR/tmp
-    # chmod 755 $LIVE_DIST_DIR/usr
-    # chmod 755 $LIVE_DIST_DIR/var
 
     EXCL_LIST_FILE=/nlive/filldistdir_excluded_dirs
     echo "/tmp/*
@@ -45,8 +27,9 @@ function SC_mksqfs() {
 /proc
 /run
 /mnt/*
-/root/.cache
-/root/.mozilla
+/boot
+/etc
+/root
 /usr/src
 /usr/libexec/gcc
 /usr/lib/gcc/x86_64-pc-linux-gnu
@@ -59,18 +42,98 @@ function SC_mksqfs() {
     echo ""
     cat $EXCL_LIST_FILE
 
-    # mksquashfs /nlive/nlivegentoodist /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -wildcards -ef $EXCL_LIST_FILE
     mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
 }
 
-function SC_mklivecd() {
-    grub-mkrescue -o NLive-Gentoo.$(date +%Y%m%d).iso
+function SC_DONOTRUN() {
+    return 0
+    #==============================================
+    # Some notes for manual execution
+    #==============================================
+    mkdir -p /nlive/distfs
+    mkdir -p /nlive/distfs/{efi,bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr,var}
+    mkdir -p /nlive/distfs/squashfs
+    
+    
+    # chmod 755 bin
+    # chmod 755 boot
+    # chmod 755 dev
+    # chmod 755 etc
+    # chmod 755 home
+    # chmod 755 lib
+    # chmod 755 lib64
+    # chmod 755 media
+    # chmod 755 mnt
+    # chmod 755 opt
+    # chmod 555 proc
+    # chmod 700 root
+    # chmod 755 run
+    # chmod 755 sbin
+    # chmod 555 sys
+    # chmod 777 tmp
+    # chmod 755 usr
+    # chmod 755 var
+
+    # Now play with the disk image
+    # dd if=/dev/zero of=NLive-Gentoo.img bs=1M count=1453 status=progress
+    # dd if=/dev/vdb of=NLive-Gentoo.img bs=1M count=16
+    # losetup --show -f /nlive/NLive-Gentoo.img
+    mkdir -p /mnt/finaldist
+    mount /dev/vda2 /mnt/finaldist
+    mount /dev/vda1 /mnt/finaldist/efi
+    rsync --delete -avp /sbin/ /mnt/finaldist/sbin/
+    # rsync --delete -avp /boot/ /mnt/finaldist/boot/
+    # rsync --delete -avp /etc/ /mnt/finaldist/etc/
+    rsync --delete -avp /root/ /mnt/finaldist/root/ --exclude .cache --exclude .mozilla
+    rsync --delete -avp /lib/ /mnt/finaldist/lib/ --exclude modules --exclude firmware
+
+
+    # Remember to edit `/etc/fstab`!
+    echo "############## NLive-Gentoo" >/mnt/finaldist/etc/fstab
+    echo "UUID=f7b0dcde-1980-478a-8898-1e1123544d99     /       ext4        rw              0 1" >>/mnt/finaldist/etc/fstab
+    echo "UUID=6108-828E                                /efi    vfat        rw              0 2" >>/mnt/finaldist/etc/fstab
+    echo "/newroot/output.squashfs                      /squashfs   squashfs    ro,defaults     0 0" >>/mnt/finaldist/etc/fstab
+    for DIR in bin home lib lib64 opt usr var; do
+        echo "/newroot/squashfs/$DIR      /$DIR      bind      ro,noatime      0 2" >>/mnt/finaldist/etc/fstab
+    done
+    
+    # Chroot and install...
+
+    # Normal Mount
+        mount -t squashfs -o loop /mnt/finaldist/output.squashfs /mnt/finaldist/squashfs
+        for i in bin home lib lib64 opt usr var; do
+            mount --rbind /mnt/finaldist/squashfs/$i /mnt/finaldist/$i
+        done
+        for i in sys dev proc run/udev; do
+            mount --rbind /$i /mnt/finaldist/$i
+        done
+        mount --rbind /var/db/rssepos /mnt/finaldist/var/db/repos
+
+    # Debug Mount
+        for i in bin home lib lib64 opt usr var; do
+            mount --rbind /$i /mnt/finaldist/$i
+        done
+        for i in sys dev proc run/udev; do
+            mount --rbind /$i /mnt/finaldist/$i
+        done
+
+    # Continue...
+    chroot /mnt/finaldist /bin/bash
+    export PS1="\n(chroot) ${PS1:2}"
+    # emerge --config gentoo-kernel-bin
+    genkernel initramfs
+    grub-install --removable --target=x86_64-efi --efi-directory=/efi
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+function SC_mklive() {
+    # grub-mkrescue -o NLive-Gentoo.$(date +%Y-%m-%d).iso iso -- -- -volid "NLive-Gentoo"
 }
 
 if [[ -z $1 ]]; then
     echo "Please specify an action:"
     echo ""
-    echo "    mksqfs, mklivecd"
+    echo "    mksqfs, mklive"
     exit 1
 fi
 
