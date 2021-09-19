@@ -15,63 +15,66 @@ function SC_mount() {
     mount --bind    /faketmp/vardbrepos             /var/db/repos
 }
 
-function SC_filldistdir() {
-    ### Variables
-    LIVE_DIST_DIR=/mnt/nlivegentoodist
-    mkdir -p $LIVE_DIST_DIR
+function SC_mksqfs() {
+    # ### Variables
+    # LIVE_DIST_DIR=/nlive/nlivegentoodist
+    # mkdir -p $LIVE_DIST_DIR
 
-    ### Make directories
-    SUBDIRS_LIST="bin boot dev etc home lib lib64 media mnt opt proc root run sbin sys tmp usr var"
-    #            "755 755  755 755 755  755 755   755   755 755 555  700  755 755  555 777 755 755"
-    for SUBDIR in $SUBDIRS_LIST; do
-        mkdir -p $LIVE_DIST_DIR/$SUBDIR
-    done
-    chmod 755 $LIVE_DIST_DIR/bin
-    chmod 755 $LIVE_DIST_DIR/boot
-    chmod 755 $LIVE_DIST_DIR/dev
-    chmod 755 $LIVE_DIST_DIR/etc
-    chmod 755 $LIVE_DIST_DIR/home
-    chmod 755 $LIVE_DIST_DIR/lib
-    chmod 755 $LIVE_DIST_DIR/lib64
-    chmod 755 $LIVE_DIST_DIR/media
-    chmod 755 $LIVE_DIST_DIR/mnt
-    chmod 755 $LIVE_DIST_DIR/opt
-    chmod 555 $LIVE_DIST_DIR/proc
-    chmod 700 $LIVE_DIST_DIR/root
-    chmod 755 $LIVE_DIST_DIR/run
-    chmod 755 $LIVE_DIST_DIR/sbin
-    chmod 555 $LIVE_DIST_DIR/sys
-    chmod 777 $LIVE_DIST_DIR/tmp
-    chmod 755 $LIVE_DIST_DIR/usr
-    chmod 755 $LIVE_DIST_DIR/var
+    # ### Make directories
+    # SUBDIRS_LIST="bin boot dev etc home lib lib64 media mnt opt proc root run sbin sys tmp usr var"
+    # #            "755 755  755 755 755  755 755   755   755 755 555  700  755 755  555 777 755 755"
+    # for SUBDIR in $SUBDIRS_LIST; do
+    #     mkdir -p $LIVE_DIST_DIR/$SUBDIR
+    # done
+    # chmod 755 $LIVE_DIST_DIR/bin
+    # chmod 755 $LIVE_DIST_DIR/boot
+    # chmod 755 $LIVE_DIST_DIR/dev
+    # chmod 755 $LIVE_DIST_DIR/etc
+    # chmod 755 $LIVE_DIST_DIR/home
+    # chmod 755 $LIVE_DIST_DIR/lib
+    # chmod 755 $LIVE_DIST_DIR/lib64
+    # chmod 755 $LIVE_DIST_DIR/media
+    # chmod 755 $LIVE_DIST_DIR/mnt
+    # chmod 755 $LIVE_DIST_DIR/opt
+    # chmod 555 $LIVE_DIST_DIR/proc
+    # chmod 700 $LIVE_DIST_DIR/root
+    # chmod 755 $LIVE_DIST_DIR/run
+    # chmod 755 $LIVE_DIST_DIR/sbin
+    # chmod 555 $LIVE_DIST_DIR/sys
+    # chmod 777 $LIVE_DIST_DIR/tmp
+    # chmod 755 $LIVE_DIST_DIR/usr
+    # chmod 755 $LIVE_DIST_DIR/var
 
-    ### File exclusion list
-    EXCL_LIST_FILE=/tmp/filldistdir_excluded_dirs
-    EXCL_DIRS_var="db/repos tmp cache"  # Basic
-    EXCL_DIRS_usr="src"  # Kernel
-    EXCL_DIRS_usr="$EXCL_DIRS_usr libexec/gcc lib/gcc/x86_64-pc-linux-gnu x86_64-pc-linux-gnu"  # GCC
-    EXCL_DIRS_usr="$EXCL_DIRS_usr lib/rust"  # Rust
-    EXCL_DIRS_root=".cache .mozilla"  # Root user
+    echo "/tmp/*
+/nlive
+/swapfile
+/sys
+/dev
+/proc
+/run
+/mnt/*
+/root/.cache
+/root/.mozilla
+/usr/src
+/usr/libexec/gcc
+/usr/lib/gcc/x86_64-pc-linux-gnu
+/usr/x86_64-pc-linux-gnu
+/usr/lib/rust
+/var/db/repos
+/var/tmp
+/var/cache" > $EXCL_LIST_FILE
+    echo "List of exlucded files:"
+    echo ""
+    cat $EXCL_LIST_FILE
 
-    ### Fill files
-    for SUBDIR in bin boot etc home lib lib64 media opt root sbin usr var; do
-        rm $EXCL_LIST_FILE.$SUBDIR 2>/dev/null
-        touch $EXCL_LIST_FILE.$SUBDIR
-        LOCALVARNAME="EXCL_DIRS_${SUBDIR}"
-        for ITEM in ${!LOCALVARNAME}; do
-            echo "$ITEM" >> $EXCL_LIST_FILE.$SUBDIR
-        done
-        echo "Filling files from '$SUBDIR' to '$LIVE_DIST_DIR/$SUBDIR'..."
-        rsync -avp --delete --keep-dirlinks --links \
-            --exclude-from=$EXCL_LIST_FILE.$SUBDIR \
-            /$SUBDIR/ $LIVE_DIST_DIR/$SUBDIR/
-    done
+    # mksquashfs /nlive/nlivegentoodist /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 23 -wildcards -ef /tmp/filldistdir_excluded_dirs
+    mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 23 -wildcards -ef /tmp/filldistdir_excluded_dirs
 }
 
 if [[ -z $1 ]]; then
     echo "Please specify an action:"
     echo ""
-    echo "    mount, filldistdir"
+    echo "    mount, mksqfs"
     exit 1
 fi
 
