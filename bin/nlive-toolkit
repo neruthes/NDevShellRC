@@ -23,8 +23,8 @@ function SC_filldistdir() {
     ### Make directories
     SUBDIRS_LIST="bin boot dev etc home lib lib64 media mnt opt proc root run sbin sys tmp usr var"
     #            "755 755  755 755 755  755 755   755   755 755 555  700  755 755  555 777 755 755"
-    for SUBDIR in SUBDIRS_LIST; do
-        mkdir $LIVE_DIST_DIR/$SUBDIR
+    for SUBDIR in $SUBDIRS_LIST; do
+        mkdir -p $LIVE_DIST_DIR/$SUBDIR
     done
     chmod 755 $LIVE_DIST_DIR/bin
     chmod 755 $LIVE_DIST_DIR/boot
@@ -41,40 +41,30 @@ function SC_filldistdir() {
     chmod 755 $LIVE_DIST_DIR/run
     chmod 755 $LIVE_DIST_DIR/sbin
     chmod 555 $LIVE_DIST_DIR/sys
-    chmod 755 $LIVE_DIST_DIR/tmp
+    chmod 777 $LIVE_DIST_DIR/tmp
     chmod 755 $LIVE_DIST_DIR/usr
     chmod 755 $LIVE_DIST_DIR/var
 
-    # ### File exclusion list
-    # EXCL_LIST_FILE=/tmp/filldistdir_excluded_dirs
-    # EXCL_PKGS="gcc cmake ghc"
-    EXCL_DIRS="/var/db/repos /var/tmp /var/cache"  # Basic
-    EXCL_DIRS="$EXCL_DIRS /usr/src"  # Kernel
-    EXCL_DIRS="$EXCL_DIRS /usr/libexec/gcc /usr/lib/gcc/x86_64-pc-linux-gnu /usr/x86_64-pc-linux-gnu"  # GCC
-    # if [[ -e $EXCL_LIST_FILE ]]; then
-    #     rm $EXCL_LIST_FILE $EXCL_LIST_FILE.tmp
-    # fi
-    # for DIR in $EXCL_DIRS; do
-    #     echo $DIR >> $EXCL_LIST_FILE.tmp
-    # done
-    # printf "\n\n\n\n\n\n\n" >> $EXCL_LIST_FILE.tmp
-    # for PKG in $EXCL_PKGS; do
-    #     equery f $PKG | grep -v '>' >> $EXCL_LIST_FILE.tmp
-    # done
-    # for LINE in $(cat $EXCL_LIST_FILE.tmp); do
-    #     echo "- $LINE" >> $EXCL_LIST_FILE
-    # done
+    ### File exclusion list
+    EXCL_LIST_FILE=/tmp/filldistdir_excluded_dirs
+    EXCL_DIRS_var="db/repos tmp cache"  # Basic
+    EXCL_DIRS_usr="src"  # Kernel
+    EXCL_DIRS_usr="$EXCL_DIRS_usr libexec/gcc lib/gcc/x86_64-pc-linux-gnu x86_64-pc-linux-gnu"  # GCC
+    EXCL_DIRS_usr="$EXCL_DIRS_usr lib/rust"  # Rust
+    EXCL_DIRS_root=".cache .mozilla"  # Root user
 
-    # ### Fill files
-    # for SUBDIR in $SUBDIRS_LIST; do
-    #     rsync -avp --keep-dirlinks --links \
-    #         --exclude-from=$EXCL_LIST_FILE \
-    #         $SUBDIR/ $LIVE_DIST_DIR/$SUBDIR/
-    # done
-    
-    ### Mount rbind
+    ### Fill files
     for SUBDIR in bin boot etc home lib lib64 media opt root sbin usr var; do
-        mount --rbind /$SUBDIR $LIVE_DIST_DIR/$SUBDIR
+        rm $EXCL_LIST_FILE.$SUBDIR 2>/dev/null
+        touch $EXCL_LIST_FILE.$SUBDIR
+        LOCALVARNAME="EXCL_DIRS_${SUBDIR}"
+        for ITEM in ${!LOCALVARNAME}; do
+            echo "$ITEM" >> $EXCL_LIST_FILE.$SUBDIR
+        done
+        echo "Filling files from '$SUBDIR' to '$LIVE_DIST_DIR/$SUBDIR'..."
+        rsync -avp --delete --keep-dirlinks --links \
+            --exclude-from=$EXCL_LIST_FILE.$SUBDIR \
+            /$SUBDIR/ $LIVE_DIST_DIR/$SUBDIR/
     done
 }
 
