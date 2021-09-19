@@ -6,15 +6,6 @@ if [[ "$HOSTNAME" != "NLive-Gentoo" ]]; then
 fi
 
 
-function SC_mount() {
-    mount           /dev/vdb1                       /faketmp
-    rsync -avp --delete         /usr/               /faketmp/usr/
-    mount --bind    /faketmp/usr                    /usr
-    mount --bind    /faketmp/varcachedistfiles      /var/cache/distfiles
-    mount --bind    /faketmp/vartmpportage          /var/tmp/portage
-    mount --bind    /faketmp/vardbrepos             /var/db/repos
-}
-
 function SC_mksqfs() {
     # ### Variables
     # LIVE_DIST_DIR=/nlive/nlivegentoodist
@@ -74,7 +65,7 @@ function SC_mksqfs() {
 if [[ -z $1 ]]; then
     echo "Please specify an action:"
     echo ""
-    echo "    mount, mksqfs"
+    echo "    mksqfs"
     exit 1
 fi
 
