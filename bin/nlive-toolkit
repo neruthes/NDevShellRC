@@ -36,6 +36,7 @@ function SC_mksqfs() {
     # chmod 755 $LIVE_DIST_DIR/usr
     # chmod 755 $LIVE_DIST_DIR/var
 
+    EXCL_LIST_FILE=/nlive/filldistdir_excluded_dirs
     echo "/tmp/*
 /nlive
 /swapfile
@@ -58,14 +59,18 @@ function SC_mksqfs() {
     echo ""
     cat $EXCL_LIST_FILE
 
-    # mksquashfs /nlive/nlivegentoodist /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 23 -wildcards -ef /tmp/filldistdir_excluded_dirs
-    mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 23 -wildcards -ef /tmp/filldistdir_excluded_dirs
+    # mksquashfs /nlive/nlivegentoodist /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -wildcards -ef $EXCL_LIST_FILE
+    mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
+}
+
+function SC_mklivecd() {
+    grub-mkrescue -o NLive-Gentoo.$(date +%Y%m%d).iso
 }
 
 if [[ -z $1 ]]; then
     echo "Please specify an action:"
     echo ""
-    echo "    mksqfs"
+    echo "    mksqfs, mklivecd"
     exit 1
 fi
 
