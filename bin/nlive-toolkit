@@ -48,7 +48,9 @@ function SC_filldistdir() {
     # ### File exclusion list
     # EXCL_LIST_FILE=/tmp/filldistdir_excluded_dirs
     # EXCL_PKGS="gcc cmake ghc"
-    EXCL_DIRS="/var/db/repos /var/tmp /tmp /var"
+    EXCL_DIRS="/var/db/repos /var/tmp /var/cache"  # Basic
+    EXCL_DIRS="$EXCL_DIRS /usr/src"  # Kernel
+    EXCL_DIRS="$EXCL_DIRS /usr/libexec/gcc /usr/lib/gcc/x86_64-pc-linux-gnu /usr/x86_64-pc-linux-gnu"  # GCC
     # if [[ -e $EXCL_LIST_FILE ]]; then
     #     rm $EXCL_LIST_FILE $EXCL_LIST_FILE.tmp
     # fi

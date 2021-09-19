@@ -1,0 +1,28 @@
+#!/bin/node
+
+const { execSync } = require('child_process');
+const fs = require('fs');
+
+console.log(`Fetching data via equery...\n\n`);
+
+const rawFile = execSync(`equery s '*'`).toString().trim();
+const pkglist = rawFile.split('\n').map(function (line) {
+    return {
+        pkg: line.match(/^(.+):/)[1],
+        size: parseInt(line.match(/size\((\d+)/)[1])
+    };
+});
+
+const LENGTH = pkglist.length;
+let topheap = 0;
+let pushlog = [];
+
+const sortedlist = pkglist.sort((a, b) => b.size - a.size);
+
+// console.log(sortedlist);
+console.log(sortedlist.slice(0, 80).map(function (pkg) {
+    let pkgSizeMB = Math.ceil(pkg.size / 1024 / 1024).toString();
+    return `${pkg.pkg}  ${(new Array(Math.max(5, 65 - pkg.pkg.length))).fill(' ').join('')
+        }  ${(new Array(6 - pkgSizeMB.length)).fill(' ').join('')
+        }${pkgSizeMB} MB`;
+}).join('\n'));
