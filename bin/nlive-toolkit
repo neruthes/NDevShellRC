@@ -30,6 +30,8 @@ function SC_mksqfs() {
 /boot
 /etc
 /root
+/sbin
+/bin
 /usr/src
 /usr/libexec/gcc
 /usr/lib/gcc/x86_64-pc-linux-gnu
@@ -42,7 +44,7 @@ function SC_mksqfs() {
     echo ""
     cat $EXCL_LIST_FILE
 
-    mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
+    # mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
 }
 
 function SC_DONOTRUN() {
@@ -50,9 +52,7 @@ function SC_DONOTRUN() {
     #==============================================
     # Some notes for manual execution
     #==============================================
-    mkdir -p /nlive/distfs
-    mkdir -p /nlive/distfs/{efi,bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr,var}
-    mkdir -p /nlive/distfs/squashfs
+    
     
     
     # chmod 755 bin
@@ -74,13 +74,14 @@ function SC_DONOTRUN() {
     # chmod 755 usr
     # chmod 755 var
 
-    # Now play with the disk image
-    # dd if=/dev/zero of=NLive-Gentoo.img bs=1M count=1453 status=progress
-    # dd if=/dev/vdb of=NLive-Gentoo.img bs=1M count=16
-    # losetup --show -f /nlive/NLive-Gentoo.img
     mkdir -p /mnt/finaldist
     mount /dev/vda2 /mnt/finaldist
+
+    # mkdir -p /nlive/distfs
+    # mkdir -p /nlive/distfs/{efi,bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr,var}
+    # mkdir -p /nlive/distfs/squashfs
     mount /dev/vda1 /mnt/finaldist/efi
+
     rsync --delete -avp /sbin/ /mnt/finaldist/sbin/
     # rsync --delete -avp /boot/ /mnt/finaldist/boot/
     # rsync --delete -avp /etc/ /mnt/finaldist/etc/
@@ -92,10 +93,11 @@ function SC_DONOTRUN() {
     echo "############## NLive-Gentoo" >/mnt/finaldist/etc/fstab
     echo "UUID=f7b0dcde-1980-478a-8898-1e1123544d99     /       ext4        rw              0 1" >>/mnt/finaldist/etc/fstab
     echo "UUID=6108-828E                                /efi    vfat        rw              0 2" >>/mnt/finaldist/etc/fstab
-    echo "/newroot/output.squashfs                      /squashfs   squashfs    ro,defaults     0 0" >>/mnt/finaldist/etc/fstab
-    for DIR in bin home lib lib64 opt usr var; do
-        echo "/newroot/squashfs/$DIR      /$DIR      bind      ro,noatime      0 2" >>/mnt/finaldist/etc/fstab
-    done
+    #### No longer need to add SquashFS to fstab
+    # echo "/newroot/output.squashfs                      /squashfs   squashfs    ro,defaults     0 0" >>/mnt/finaldist/etc/fstab
+    # for DIR in bin home lib lib64 opt usr var; do
+    #     echo "/newroot/squashfs/$DIR      /$DIR      bind      ro,noatime      0 2" >>/mnt/finaldist/etc/fstab
+    # done
     
     # Chroot and install...
 
@@ -120,9 +122,8 @@ function SC_DONOTRUN() {
     # Continue...
     chroot /mnt/finaldist /bin/bash
     export PS1="\n(chroot) ${PS1:2}"
-    # emerge --config gentoo-kernel-bin
-    genkernel initramfs
-    grub-install --removable --target=x86_64-efi --efi-directory=/efi
+    # genkernel initramfs     ### No longer need the initramfs from genkernel since we build our own
+    # grub-install --removable --target=x86_64-efi --efi-directory=/efi
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
