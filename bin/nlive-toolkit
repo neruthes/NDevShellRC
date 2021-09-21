@@ -127,7 +127,7 @@ function SC_DONOTRUN() {
 }
 
 function SC_mklive() {
-    # grub-mkrescue -o NLive-Gentoo.$(date +%Y-%m-%d).iso iso -- -- -volid "NLive-Gentoo"
+    echo "Not implemented"
 }
 
 if [[ -z $1 ]]; then
