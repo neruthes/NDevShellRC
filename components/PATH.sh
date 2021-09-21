@@ -10,3 +10,4 @@ export PATH="$PATH:$HOME/.cargo/bin"
 #NDev
 export PATH="$DEV_HOME_DIR/NDevShellRC/bin:$PATH"
 export PATH="$PATH:/opt/local/bin"
+export PATH="$PATH:$HOME/.privatebin/bin"
