@@ -122,7 +122,20 @@ function SC_DONOTRUN() {
     # Continue...
     chroot /mnt/finaldist /bin/bash
     export PS1="\n(chroot) ${PS1:2}"
+
+    # Need these kernel modules in initramfs
+    MODLIST="kernel/fs/squashfs/squashfs.ko"
+    KERNELVER="5.14.6-gentoo-dist"
+    for MOD in $MODLIST; do
+        echo "Copying   /lib/modules/$KERNELVER/$MOD  ->  /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD"
+        cp --archive /lib/modules/$KERNELVER/$MOD /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD
+    done
+
     # genkernel initramfs     ### No longer need the initramfs from genkernel since we build our own
+    # This makes our own initramfs
+    find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/custom-initramfs.cpio.gz
+
+    # Remember to generate grub.cfg!
     # grub-install --removable --target=x86_64-efi --efi-directory=/efi
     grub-mkconfig -o /boot/grub/grub.cfg
 }

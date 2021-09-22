@@ -9,9 +9,9 @@ PATH="$PATH:$HOME/.adb-fastboot/platform-tools"
 function _normalizeHomeDirs() {
     FROMDIR=$1
     TODIR=$2
-    if [[ -r ~/$FROMDIR ]]; then
-        rsync -av ~/$FROMDIR/ ~/$TODIR/ > /dev/null 2>&1
-        rm -r ~/$FROMDIR
+    if [[ -r $HOME/$FROMDIR ]]; then
+        rsync -av $HOME/$FROMDIR/ $HOME/$TODIR/ > /dev/null 2>&1
+        rm -r $HOME/$FROMDIR
     fi
 }
 if [[ ! -e /.isChroot ]]; then
