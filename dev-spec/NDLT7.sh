@@ -28,3 +28,19 @@ function rsyncBackupNDev--NEPd3_LS_BorgHome--NEPd2_Data() {
         echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
     fi
 }
+
+
+### ----------------------------------------------------------------------------
+### Kernel
+function buildMyKernelNow() {
+    if [[ $PWD != /usr/src/linux ]]; then
+        echo "[ERROR] This command can only be used in '/usr/src/linux'."
+        return 1
+    fi
+    source /etc/portage/make.conf
+    sudo make -j8 all
+    sudo make modules_install
+    sudo make install
+    sudo genkernel initramfs
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+}
