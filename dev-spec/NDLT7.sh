@@ -43,4 +43,5 @@ function buildMyKernelNow() {
     sudo make install
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
+    sudo emerge @module-rebuild
 }
