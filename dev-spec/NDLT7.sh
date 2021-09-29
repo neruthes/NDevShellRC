@@ -28,6 +28,15 @@ function rsyncBackupNDev--NEPd3_LS_BorgHome--NEPd2_Data() {
         echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
     fi
 }
+function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
+    if [[ -e /mnt/NEPd3_Caster/LS/.fsroot ]]; then
+        for i in etc usr var root opt lib lib64 boot srv bin sbin home; do
+            sudo rsync -avp --one-file-system --delete --progress /$i/ /mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/$i/
+        done
+    else
+        echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
+    fi
+}
 
 
 ### ----------------------------------------------------------------------------
@@ -44,4 +53,20 @@ function buildMyKernelNow() {
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo emerge @module-rebuild
+}
+
+### ----------------------------------------------------------------------------
+### Service daemons
+function start_rsyncd_alt() {
+    sudo rsync --daemon --port 23873 --dparam=pidfile=/run/rsyncd_alt.pid
+}
+function stop_rsyncd_alt() {
+    ps ax | grep "$(cat /run/rsyncd_alt.pid)" | grep rsync
+    UANSWER=n
+    echo "Kill it? (y/n)"
+    printf "> "
+    read UANSWER
+    if [[ $UANSWER == y ]]; then
+        sudo kill -9 "$(cat /run/rsyncd_alt.pid)"
+    fi
 }

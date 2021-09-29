@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ "$(uname)" != "Linux" ]]; then
+    exit 1
+fi
+
+# $1: Home Dir
+# $2: Remote (Disabled)
+
+# List of remotes:
+# - Dropbox-Neruthes
+
+
+echo "Synchronizing '/home/neruthes/DOC/DropboxClear'..."
+rclone sync -P -L "/home/neruthes/DOC/DropboxClear" "Dropbox-Neruthes:DropboxClear"

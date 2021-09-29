@@ -38,15 +38,20 @@ function NEPd3-mount() {
 function NEPd3-umount() {
     sudo umount /mnt/NEPd3_Caster/{LS,Shared,AOSC}
 
-    sudo vgremove NEPd3Vg1
+    MYALERT="
+sudo vgremove NEPd3Vg1
 
-    sudo cryptsetup close /dev/mapper/NEPd3Pv1
-    sudo cryptsetup close /dev/mapper/NEPd3Pv2
-    sudo cryptsetup close /dev/mapper/NEPd3Pv3
-    sudo cryptsetup close /dev/mapper/NEPd3Pv4
-    sudo cryptsetup close /dev/mapper/NEPd3Pv5
-    sudo cryptsetup close /dev/mapper/NEPd3Pv6
-    sudo cryptsetup close /dev/mapper/NEPd3Pv7
+sudo cryptsetup close /dev/mapper/NEPd3Pv1
+sudo cryptsetup close /dev/mapper/NEPd3Pv2
+sudo cryptsetup close /dev/mapper/NEPd3Pv3
+sudo cryptsetup close /dev/mapper/NEPd3Pv4
+sudo cryptsetup close /dev/mapper/NEPd3Pv5
+sudo cryptsetup close /dev/mapper/NEPd3Pv6
+sudo cryptsetup close /dev/mapper/NEPd3Pv7
 
-    sudo cryptsetup close /dev/mapper/NEPd3_AOSC
+sudo cryptsetup close /dev/mapper/NEPd3_AOSC"
+
+    echo "Also run manually:"
+    echo ""
+    echo "$MYALERT"
 }
