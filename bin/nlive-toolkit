@@ -42,7 +42,7 @@ function SC_mksqfs() {
     # cat $EXCL_LIST_FILE
 
     ### Deprecated
-    mksquashfs / /nlive/root.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
+    # mksquashfs / /nlive/root.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
 
     ### Test only
     function _mksq() {
@@ -50,10 +50,12 @@ function SC_mksqfs() {
         EXCLARGS=$2
         mksquashfs /$1 /nlive/sqfs.$1 -comp zstd -b 1M -one-file-system -Xcompression-level 22 -info -progress $2
     }
-    _mksq var "-e /var/db/repos/gentoo /var/tmp /var/cache /var/log /var/spool"
     _mksq usr "-e /usr/src /usr/libexec/gcc /usr/lib/gcc/x86_64-pc-linux-gnu /usr/x86_64-pc-linux-gnu /usr/lib/rust"
-    _mksq opt
     _mksq lib
+    _mksq opt
+    cp --archive /nlive/sqfs.usr /mnt/finaldist/sqfs.usr
+    cp --archive /nlive/sqfs.lib /mnt/finaldist/sqfs.lib
+    cp --archive /nlive/sqfs.opt /mnt/finaldist/sqfs.opt
 }
 
 function SC_DONOTRUN() {
@@ -93,15 +95,16 @@ function SC_DONOTRUN() {
     # mkdir -p /nlive/distfs/{efi,bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr,var}
     # mkdir -p /nlive/distfs/squashfs
 
-    rsync --delete -avp /home/ /mnt/finaldist/home/ --exclude live/.cache --exclude live/.mozilla --exclude live/.local --exclude live/.bash_history
-    rsync --delete -avp /sbin/ /mnt/finaldist/sbin/
-    rsync --delete -avp /bin/ /mnt/finaldist/bin/
-    rsync --delete -avp /root/ /mnt/finaldist/root/ --exclude .cache --exclude .mozilla --exclude .local --exclude .bash_history
-    rsync --delete -avp /lib/ /mnt/finaldist/lib/ --exclude modules --exclude firmware
-    rsync --delete -avp /lib64/ /mnt/finaldist/lib64/
+    rsync --delete -avpx /home/ /mnt/finaldist/home/ --exclude live/.cache --exclude live/.mozilla --exclude live/.local --exclude live/.bash_history
+    rsync --delete -avpx /sbin/ /mnt/finaldist/sbin/
+    rsync --delete -avpx /bin/ /mnt/finaldist/bin/
+    rsync --delete -avpx /root/ /mnt/finaldist/root/ --exclude .cache --exclude .mozilla --exclude .local --exclude .bash_history
+    rsync --delete -avpx /lib/ /mnt/finaldist/lib/ --exclude modules --exclude firmware
+    rsync --delete -avxx /var/ /mnt/finaldist/var/ --exclude db/repos/gentoo --exclude cache/distfiles --exclude spool/nullmailer --exclude log --exclude 'tmp/*' 
+    rsync --delete -avpx /lib64/ /mnt/finaldist/lib64/
 
     ### Prepare some other files in /usr before mounting
-    OTHERUSRFILES="bin/sudo"
+    OTHERUSRFILES="bin/sudo bin/whoami"
     for FN in $OTHERUSRFILES; do
         cp --archive /usr/$FN /mnt/finaldist/usr/$FN
     done
@@ -116,25 +119,26 @@ function SC_DONOTRUN() {
     # Remember to regenerate `/etc/fstab`!
     echo "############## NLive-Gentoo" >/mnt/finaldist/etc/fstab
     echo "UUID=f7b0dcde-1980-478a-8898-1e1123544d99     /       ext4        rw,noatime      0 1" >>/mnt/finaldist/etc/fstab
-    echo "UUID=6108-828E                                /efi    vfat        rw,noatime      0 2" >>/mnt/finaldist/etc/fstab
-    for i in lib usr var opt; do
-        echo "/sqfs.$i                                     /$i    squashfs    ro,noatime,errors=continue      0 2" >>/mnt/finaldist/etc/fstab
-    done
-    
+    echo "UUID=6108-828E    /efi            vfat        rw,noatime      0 2" >>/mnt/finaldist/etc/fstab
+    echo "/sqfs.usr         /usr            squashfs    ro,noatime,errors=continue      0 2" >>/mnt/finaldist/etc/fstab
+    echo "/sqfs.opt         /opt            squashfs    ro,noatime,errors=continue      0 2" >>/mnt/finaldist/etc/fstab
+    echo "/sqfs.lib         /lib            squashfs    ro,noatime,errors=continue      0 2" >>/mnt/finaldist/etc/fstab
+    echo "tmpfs             /tmp            tmpfs       rw,noatime          0 2" >>/mnt/finaldist/etc/fstab
+
     # Chroot and install...
 
     # Normal Mount
-        mount -t squashfs -o loop /mnt/finaldist/output.squashfs /mnt/finaldist/squashfs
-        for i in lib opt usr var; do
-            mount --rbind /mnt/finaldist/squashfs/$i /mnt/finaldist/$i
-        done
-        for i in sys dev proc run/udev; do
-            mount --rbind /$i /mnt/finaldist/$i
-        done
-        mount --rbind /var/db/repos /mnt/finaldist/var/db/repos
+        # mount -t squashfs -o loop /mnt/finaldist/output.squashfs /mnt/finaldist/squashfs
+        # for i in lib opt usr; do
+        #     mount --rbind /mnt/finaldist/squashfs/$i /mnt/finaldist/$i
+        # done
+        # for i in sys dev proc run/udev; do
+        #     mount --rbind /$i /mnt/finaldist/$i
+        # done
+        # mount --rbind /var/db/repos /mnt/finaldist/var/db/repos
 
     # Debug Mount
-        for i in lib opt usr var; do
+        for i in lib opt usr; do
             mount --rbind /$i /mnt/finaldist/$i
         done
         mkdir -p /mnt/finaldist/run/udev
@@ -167,25 +171,37 @@ function SC_applyMyInitramfsDiff() {
     # Modify initramfs init script
     # This section should be added before copyKeymap
 
-##### INITRAMFS INIT ONLY #####
-log_msg "About to mount SquashFS"
+
+
+######################################
+##### INITRAMFS INIT SCRIPT ONLY #####
+log_msg "About to mount SquashFS and OverlayFS"
+modprobe overlayfs
 modprobe squashfs
-for i in usr var opt lib; do
-    mount /newroot/sqfs.$i /newroot/$i
+mount -t tmpfs -o rw,noatime /newroot/tmp
+# for LAYER in upper lower work; do
+#     for DIR in usr opt lib; do
+#         mkdir -p /newroot/tmp/OverlayFS/$LAYER/$DIR
+#     done
+# done
+for i in usr opt lib; do
+    mount /newroot/sqfs.$i /newroot/tmp/OverlayFS/lower/$i
+    # mount -t overlay overlay -o lowerdir=/newroot/tmp/OverlayFS/lower/$i,upperdir=/newroot/tmp/OverlayFS/upper/$i,workdir=/newroot/tmp/OverlayFS/work/$i /$i
 done
 log_msg "Should have mounted SquashFS"
 if [ -e /newroot/opt/firefox/defaults ]; then
-		good_msg "Yes, we can find mounted content"
+    good_msg "Yes, we can find mounted content"
 else
-       	bad_msg "No, the mount failed"
+    bad_msg "No, the mount failed"
 fi
-##### INITRAMFS INIT ONLY #####
+##### INITRAMFS INIT SCRIPT ONLY #####
+######################################
 
 
 
     # Need these kernel modules in initramfs
-    MODLIST="kernel/fs/squashfs/squashfs.ko"
     KERNELVER="5.14.8-gentoo-dist"
+    MODLIST="kernel/fs/squashfs/squashfs.ko kernel/fs/overlayfs/overlay.ko"
     for MOD in $MODLIST; do
         echo "Copying   /lib/modules/$KERNELVER/$MOD  ->  /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD"
         cp --archive /lib/modules/$KERNELVER/$MOD /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD
@@ -201,9 +217,9 @@ fi
     cd /usr/src/initramfs-neruthes
     find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/initramfs-5.14.8-gentoo-dist.img
 
-    # Remember to generate grub.cfg!
+    # Remember to generate grub.cfg when upgrading kernel version
     # grub-install --removable --target=x86_64-efi --efi-directory=/efi
-    grub-mkconfig -o /boot/grub/grub.cfg
+    # grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 
