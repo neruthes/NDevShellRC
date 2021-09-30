@@ -3,6 +3,7 @@ if [[ "$(uname)" != "Linux" ]]; then
 fi
 
 function NEPd3-mount() {
+    MOUNTOPTS="-o noatime"
     if [[ -e /dev/disk/by-partlabel/Pd3Pv1 ]]; then
         ### LS: Linux Storage
         sudo cryptsetup open /dev/disk/by-partlabel/Pd3Pv1 NEPd3Pv1 --key-file ~/.MyLuksKey
@@ -15,14 +16,14 @@ function NEPd3-mount() {
 
         sudo vgcreate NEPd3Vg1 /dev/mapper/NEPd3Pv{1,2,3,4,5,6,7}
         sudo lvcreate -l 100%FREE -n NEPd3Lv1 NEPd3Vg1
-        sudo mount /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
+        sudo mount $MOUNTOPTS /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
 
         ### AOSC: NEPd3A Root
         sudo cryptsetup open /dev/disk/by-partlabel/NEPd3_AOSC NEPd3_AOSC --key-file /home/neruthes/.MyLuksKey
-        sudo mount /dev/mapper/NEPd3_AOSC /mnt/NEPd3_Caster/AOSC
+        sudo mount $MOUNTOPTS /dev/mapper/NEPd3_AOSC /mnt/NEPd3_Caster/AOSC
 
         ### Shared: FAT32
-        sudo mount /dev/disk/by-partlabel/NEPd3_Shared /mnt/NEPd3_Caster/Shared
+        sudo mount $MOUNTOPTS /dev/disk/by-partlabel/NEPd3_Shared /mnt/NEPd3_Caster/Shared
 
         ### Test Case
         if [[ -e /mnt/NEPd3_Caster/LS/.IAmMounted ]]; then

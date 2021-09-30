@@ -3,13 +3,14 @@ if [[ "$(uname)" != "Linux" ]]; then
 fi
 
 function NEPd2-mount() {
+    MOUNTOPTS="-o noatime"
     if [[ -e /dev/disk/by-partlabel/NEPd2_Data ]]; then
         ### LS: Linux Storage
         sudo cryptsetup open /dev/disk/by-partlabel/NEPd2_Data NEPd2_Data
-        sudo mount /dev/mapper/NEPd2_Data /mnt/NEPd2_Archer/LS
+        sudo mount $MOUNTOPTS /dev/mapper/NEPd2_Data /mnt/NEPd2_Archer/LS
 
         ### Unencrypted filesystems
-        sudo mount /dev/disk/by-partlabel/NEPd2_ESP /mnt/NEPd2_Archer/ESP
+        sudo mount $MOUNTOPTS /dev/disk/by-partlabel/NEPd2_ESP /mnt/NEPd2_Archer/ESP
 
         ### Test Case
         if [[ -e /mnt/NEPd2_Archer/LS/.IAmMounted ]]; then

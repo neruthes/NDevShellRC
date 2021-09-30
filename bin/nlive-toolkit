@@ -5,6 +5,10 @@ if [[ "$HOSTNAME" != "NLive-Gentoo" ]]; then
     exit 1
 fi
 
+echo "We should not actually execute this script."
+echo "This is only a note."
+exit 0
+
 
 function SC_mksqfs() {
     # ### Variables
@@ -30,21 +34,26 @@ function SC_mksqfs() {
 /boot
 /etc
 /root
+/home
 /sbin
-/bin
-/usr/src
-/usr/libexec/gcc
-/usr/lib/gcc/x86_64-pc-linux-gnu
-/usr/x86_64-pc-linux-gnu
-/usr/lib/rust
-/var/db/repos
-/var/tmp
-/var/cache" > $EXCL_LIST_FILE
-    echo "List of exlucded files:"
-    echo ""
-    cat $EXCL_LIST_FILE
+/bin" > $EXCL_LIST_FILE
+    # echo "List of exlucded files:"
+    # echo ""
+    # cat $EXCL_LIST_FILE
 
-    # mksquashfs / /nlive/output.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
+    ### Deprecated
+    mksquashfs / /nlive/root.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
+
+    ### Test only
+    function _mksq() {
+        SQNAME=$1
+        EXCLARGS=$2
+        mksquashfs /$1 /nlive/sqfs.$1 -comp zstd -b 1M -one-file-system -Xcompression-level 22 -info -progress $2
+    }
+    _mksq var "-e /var/db/repos/gentoo /var/tmp /var/cache /var/log /var/spool"
+    _mksq usr "-e /usr/src /usr/libexec/gcc /usr/lib/gcc/x86_64-pc-linux-gnu /usr/x86_64-pc-linux-gnu /usr/lib/rust"
+    _mksq opt
+    _mksq lib
 }
 
 function SC_DONOTRUN() {
@@ -84,34 +93,39 @@ function SC_DONOTRUN() {
     # mkdir -p /nlive/distfs/{efi,bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr,var}
     # mkdir -p /nlive/distfs/squashfs
 
-    rsync --delete -avp /home/ /mnt/finaldist/home/ --exclude live/.cache --exclude live/.mozilla --exclude live/.local
+    rsync --delete -avp /home/ /mnt/finaldist/home/ --exclude live/.cache --exclude live/.mozilla --exclude live/.local --exclude live/.bash_history
     rsync --delete -avp /sbin/ /mnt/finaldist/sbin/
     rsync --delete -avp /bin/ /mnt/finaldist/bin/
-    rsync --delete -avp /root/ /mnt/finaldist/root/ --exclude .cache --exclude .mozilla --exclude .local
+    rsync --delete -avp /root/ /mnt/finaldist/root/ --exclude .cache --exclude .mozilla --exclude .local --exclude .bash_history
     rsync --delete -avp /lib/ /mnt/finaldist/lib/ --exclude modules --exclude firmware
+    rsync --delete -avp /lib64/ /mnt/finaldist/lib64/
+
+    ### Prepare some other files in /usr before mounting
+    OTHERUSRFILES="bin/sudo"
+    for FN in $OTHERUSRFILES; do
+        cp --archive /usr/$FN /mnt/finaldist/usr/$FN
+    done
 
     # Sync /boot only when there is new kernel
-    # rsync --delete -avp /boot/ /mnt/finaldist/boot/
+    # rsync --delete -avpx /boot/ /mnt/finaldist/boot/
 
 
 
 
     rsync --delete -avp /etc/ /mnt/finaldist/etc/
-    # Remember to edit `/etc/fstab`!
+    # Remember to regenerate `/etc/fstab`!
     echo "############## NLive-Gentoo" >/mnt/finaldist/etc/fstab
-    echo "UUID=f7b0dcde-1980-478a-8898-1e1123544d99     /       ext4        rw              0 1" >>/mnt/finaldist/etc/fstab
-    echo "UUID=6108-828E                                /efi    vfat        rw              0 2" >>/mnt/finaldist/etc/fstab
-    #### No longer need to add SquashFS to fstab
-    # echo "/newroot/output.squashfs                      /squashfs   squashfs    ro,defaults     0 0" >>/mnt/finaldist/etc/fstab
-    # for DIR in bin home lib lib64 opt usr var; do
-    #     echo "/newroot/squashfs/$DIR      /$DIR      bind      ro,noatime      0 2" >>/mnt/finaldist/etc/fstab
-    # done
+    echo "UUID=f7b0dcde-1980-478a-8898-1e1123544d99     /       ext4        rw,noatime      0 1" >>/mnt/finaldist/etc/fstab
+    echo "UUID=6108-828E                                /efi    vfat        rw,noatime      0 2" >>/mnt/finaldist/etc/fstab
+    for i in lib usr var opt; do
+        echo "/sqfs.$i                                     /$i    squashfs    ro,noatime,errors=continue      0 2" >>/mnt/finaldist/etc/fstab
+    done
     
     # Chroot and install...
 
     # Normal Mount
         mount -t squashfs -o loop /mnt/finaldist/output.squashfs /mnt/finaldist/squashfs
-        for i in lib lib64 opt usr var; do
+        for i in lib opt usr var; do
             mount --rbind /mnt/finaldist/squashfs/$i /mnt/finaldist/$i
         done
         for i in sys dev proc run/udev; do
@@ -120,9 +134,10 @@ function SC_DONOTRUN() {
         mount --rbind /var/db/repos /mnt/finaldist/var/db/repos
 
     # Debug Mount
-        for i in lib lib64 opt usr var; do
+        for i in lib opt usr var; do
             mount --rbind /$i /mnt/finaldist/$i
         done
+        mkdir -p /mnt/finaldist/run/udev
         for i in sys dev proc run/udev; do
             mount --rbind /$i /mnt/finaldist/$i
         done
@@ -131,9 +146,46 @@ function SC_DONOTRUN() {
     chroot /mnt/finaldist /bin/bash
     export PS1="\n(chroot) ${PS1:2}"
 
+    
+
+    ### No longer need the initramfs from genkernel since we build our own
+    ### But we still need it as the template for further customization
+    # genkernel initramfs
+    # cd /usr/src/initramfs
+    # cpio --extract --make-directories --format=newc --no-absolute-filenames < /boot/initramfs-5.14.8-gentoo-dist.img
+
+
+}
+
+function SC_applyMyInitramfsDiff() {
+    ### We use these commands in this section to apply our diff for creating the real custom initramfs
+
+    # Prepare out directory
+    cd /usr/src/initramfs-neruthes
+    touch NLIVE_INITRAMFS
+
+    # Modify initramfs init script
+    # This section should be added before copyKeymap
+
+##### INITRAMFS INIT ONLY #####
+log_msg "About to mount SquashFS"
+modprobe squashfs
+for i in usr var opt lib; do
+    mount /newroot/sqfs.$i /newroot/$i
+done
+log_msg "Should have mounted SquashFS"
+if [ -e /newroot/opt/firefox/defaults ]; then
+		good_msg "Yes, we can find mounted content"
+else
+       	bad_msg "No, the mount failed"
+fi
+##### INITRAMFS INIT ONLY #####
+
+
+
     # Need these kernel modules in initramfs
     MODLIST="kernel/fs/squashfs/squashfs.ko"
-    KERNELVER="5.14.6-gentoo-dist"
+    KERNELVER="5.14.8-gentoo-dist"
     for MOD in $MODLIST; do
         echo "Copying   /lib/modules/$KERNELVER/$MOD  ->  /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD"
         cp --archive /lib/modules/$KERNELVER/$MOD /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD
@@ -145,18 +197,18 @@ function SC_DONOTRUN() {
         cp --archive $FILEPATHABS /usr/src/initramfs-neruthes$FILEPATHABS
     done
 
-    # genkernel initramfs     ### No longer need the initramfs from genkernel since we build our own
     # This makes our own initramfs
     cd /usr/src/initramfs-neruthes
-    find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/custom-initramfs.cpio.gz
+    find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/initramfs-5.14.8-gentoo-dist.img
 
     # Remember to generate grub.cfg!
     # grub-install --removable --target=x86_64-efi --efi-directory=/efi
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
+
 function SC_mklive() {
-    echo "Not implemented"
+    echo "Not implemented."
 }
 
 if [[ -z $1 ]]; then
