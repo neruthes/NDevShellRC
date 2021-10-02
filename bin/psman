@@ -55,11 +55,13 @@ SVCACTION="$2"
 function _printServiceStatusLine() {
     SVCNAME="$1"
     SVCSTATUS="$(_checkServiceStatus "$SVCNAME")"
+    source "$svcdir/$SVCNAME"
+    SVCPID="$(getpid 2>/dev/null)"
     if [[ "$SVCSTATUS" == "stopped" ]]; then
         echo "[ stopped ]   $SVCNAME"
     fi
     if [[ "$SVCSTATUS" == "started" ]]; then
-        echo "[ started ]   $(printf "%-*s" 50 $SVCNAME)   $SVCPID"
+        echo "[ started ]   $(printf "%-*s" 30 $SVCNAME)   $SVCPID"
     fi
 }
 # Status overview
