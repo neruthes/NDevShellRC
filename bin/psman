@@ -38,10 +38,10 @@ function _checkServiceStatus() {
         fi
     fi
 }
-function _requireState() {
+function _requireStateNot() {
     SVCNAME="$1"
     REQUIRED_STATE="$2"
-    if [[ "$(_checkServiceStatus "$SVCNAME")" != "$REQUIRED_STATE" ]]; then
+    if [[ "$(_checkServiceStatus "$SVCNAME")" == "$REQUIRED_STATE" ]]; then
         echo "[ERROR] Service '$SVCNAME' has already been ${REQUIRED_STATE}."
         exit 1
     fi
@@ -84,13 +84,14 @@ if [[ -e "$svcdir/$SVCNAME" ]]; then
     source "$svcdir/$SVCNAME"
     
     if [[ "$SVCACTION" == "start" ]]; then
-        _requireState "$SVCNAME" stopped
+        _requireStateNot "$SVCNAME" started
     fi
     if [[ "$SVCACTION" == "stop" ]] || [[ "$SVCACTION" == "restart" ]]; then
-        _requireState "$SVCNAME" started
+        _requireStateNot "$SVCNAME" stopped
     fi
 
     $SVCACTION
+    sleep 1
     _printServiceStatusLine "$SVCNAME"
 else
     echo "[ERROR] Cannot find service '$SVCNAME'."
