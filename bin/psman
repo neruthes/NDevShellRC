@@ -1,0 +1,97 @@
+#!/bin/bash
+
+#
+# PSMAN
+# Portable Service Manager
+#
+# Copyright (c) 2021 Neruthes.
+# Published under GNU GPLv2.
+#
+
+mkdir -p "$HOME/.config/psman"
+
+CONFFILE="$HOME/.config/psman/conf"
+touch "$CONFFILE"
+
+if [[ -e "$CONFFILE" ]]; then
+    source "${CONFFILE}"
+fi
+
+if [[ -z "$svcdir" ]]; then
+    svcdir="$HOME/.config/pservices"
+fi
+
+function _checkServiceStatus() {
+    SVCNAME="$1"
+    source "$svcdir/$SVCNAME"
+    SVCPID="$(getpid 2>/dev/null)"
+    if [[ "$SVCPID" == "" ]]; then
+        # Process is known to be dead if the getpid function returns an empty string
+        echo "stopped"
+    else
+        # Process should be running...?
+        if [[ "$(ps -p "$SVCPID" | grep "$SVCPID")" == "" ]]; then
+            # Process is dead, but stopped or crashed? // TODO
+            echo "stopped"
+        else
+            echo "started"
+        fi
+    fi
+}
+function _requireState() {
+    SVCNAME="$1"
+    REQUIRED_STATE="$2"
+    if [[ "$(_checkServiceStatus "$SVCNAME")" != "$REQUIRED_STATE" ]]; then
+        echo "[ERROR] Service '$SVCNAME' has already been ${REQUIRED_STATE}."
+        exit 1
+    fi
+}
+################################################
+### Main
+################################################
+SVCNAME="$1"
+SVCACTION="$2"
+
+function _printServiceStatusLine() {
+    SVCNAME="$1"
+    SVCSTATUS="$(_checkServiceStatus "$SVCNAME")"
+    if [[ "$SVCSTATUS" == "stopped" ]]; then
+        echo "[ stopped ]   $SVCNAME"
+    fi
+    if [[ "$SVCSTATUS" == "started" ]]; then
+        echo "[ started ]   $(printf "%-*s" 50 $SVCNAME)   $SVCPID"
+    fi
+}
+# Check status
+if [[ -z $1 ]]; then
+    for SVCNAME in $(ls $svcdir); do
+        _printServiceStatusLine "$SVCNAME"
+    done
+    exit 0
+fi
+
+# Operation
+case "$SVCACTION" in
+    start|stop|restart|getpid)
+        printf ""
+        ;;
+    *)
+        echo "[ERROR] ACTION must be start/stop/restart"
+        exit 1
+        ;;
+esac
+if [[ -e "$svcdir/$SVCNAME" ]]; then
+    source "$svcdir/$SVCNAME"
+    
+    if [[ "$SVCACTION" == "start" ]]; then
+        _requireState "$SVCNAME" stopped
+    fi
+    if [[ "$SVCACTION" == "stop" ]] || [[ "$SVCACTION" == "restart" ]]; then
+        _requireState "$SVCNAME" started
+    fi
+
+    $SVCACTION
+    _printServiceStatusLine "$SVCNAME"
+else
+    echo "[ERROR] Cannot find service '$SVCNAME'."
+fi

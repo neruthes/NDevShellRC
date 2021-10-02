@@ -1,0 +1,13 @@
+function start() {
+    sudo rsync --daemon --port 23873 --dparam=pidfile=/run/rsyncd_alt.pid
+}
+function stop() {
+    sudo start-stop-daemon --stop --pidfile /run/rsyncd_alt.pid --user root --verbose
+}
+function restart() {
+    sudo start-stop-daemon --stop --pidfile /run/rsyncd_alt.pid --user root --verbose
+    sudo rsync --daemon --port 23873 --dparam=pidfile=/run/rsyncd_alt.pid
+}
+function getpid() {
+    sudo cat /run/rsyncd_alt.pid 2>/dev/null
+}
