@@ -70,3 +70,9 @@ function stop_rsyncd_alt() {
         sudo kill -9 "$(cat /run/rsyncd_alt.pid)"
     fi
 }
+function start_ssserver_gateway() {
+    daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f /run/_ssserver-23080.pid
+}
+function stop_ssserver_gateway() {
+    sudo start-stop-daemon --stop --pidfile /run/_ssserver-23080.pid --user nobody --test --verbose
+}

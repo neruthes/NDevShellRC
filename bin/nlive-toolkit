@@ -45,6 +45,7 @@ function SC_mksqfs() {
     # mksquashfs / /nlive/root.squashfs -comp zstd -b 1M -one-file-system -Xcompression-level 22 -ef $EXCL_LIST_FILE -info -progress
 
     ### Test only
+    rm /nlive/sqfs.*
     function _mksq() {
         SQNAME=$1
         EXCLARGS=$2
@@ -156,7 +157,8 @@ function SC_DONOTRUN() {
     ### But we still need it as the template for further customization
     # genkernel initramfs
     # cd /usr/src/initramfs
-    # cpio --extract --make-directories --format=newc --no-absolute-filenames < /boot/initramfs-5.14.8-gentoo-dist.img
+    # cpio --extract --make-directories --format=newc --no-absolute-filenames < /boot/initramfs-5.14.9-gentoo-dist.img
+    # rsync -avpx --delete /usr/src/initramfs/ /usr/src/initramfs-neruthes/
 
 
 }
@@ -178,14 +180,14 @@ function SC_applyMyInitramfsDiff() {
 log_msg "About to mount SquashFS and OverlayFS"
 modprobe overlayfs
 modprobe squashfs
-mount -t tmpfs -o rw,noatime /newroot/tmp
+# mount -t tmpfs -o rw,noatime /newroot/tmp
 # for LAYER in upper lower work; do
 #     for DIR in usr opt lib; do
 #         mkdir -p /newroot/tmp/OverlayFS/$LAYER/$DIR
 #     done
 # done
 for i in usr opt lib; do
-    mount /newroot/sqfs.$i /newroot/tmp/OverlayFS/lower/$i
+    mount /newroot/sqfs.$i /newroot/$i
     # mount -t overlay overlay -o lowerdir=/newroot/tmp/OverlayFS/lower/$i,upperdir=/newroot/tmp/OverlayFS/upper/$i,workdir=/newroot/tmp/OverlayFS/work/$i /$i
 done
 log_msg "Should have mounted SquashFS"
@@ -200,22 +202,23 @@ fi
 
 
     # Need these kernel modules in initramfs
-    KERNELVER="5.14.8-gentoo-dist"
+    KERNELVER="5.14.9-gentoo-dist"
     MODLIST="kernel/fs/squashfs/squashfs.ko kernel/fs/overlayfs/overlay.ko"
     for MOD in $MODLIST; do
         echo "Copying   /lib/modules/$KERNELVER/$MOD  ->  /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD"
         cp --archive /lib/modules/$KERNELVER/$MOD /usr/src/initramfs-neruthes/lib/modules/$KERNELVER/$MOD
     done
 
-    # Copy some files into initramfs...
-    COPYFILES="/bin/chroot"
-    for FILEPATHABS in $COPYFILES; do
-        cp --archive $FILEPATHABS /usr/src/initramfs-neruthes$FILEPATHABS
-    done
+    ### Deprecated
+    # # Copy some files into initramfs...
+    # COPYFILES="/bin/chroot"
+    # for FILEPATHABS in $COPYFILES; do
+    #     cp --archive $FILEPATHABS /usr/src/initramfs-neruthes$FILEPATHABS
+    # done
 
     # This makes our own initramfs
     cd /usr/src/initramfs-neruthes
-    find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/initramfs-5.14.8-gentoo-dist.img
+    find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/initramfs-5.14.9-gentoo-dist.img
 
     # Remember to generate grub.cfg when upgrading kernel version
     # grub-install --removable --target=x86_64-efi --efi-directory=/efi
