@@ -30,11 +30,11 @@ function _checkServiceStatus() {
         echo "stopped"
     else
         # Process should be running...?
-        if [[ "$(ps -p "$SVCPID" | grep "$SVCPID")" == "" ]]; then
+        if [[ -e "/proc/$SVCPID" ]]; then
+            echo "started"
+        else
             # Process is dead, but stopped or crashed? // TODO
             echo "stopped"
-        else
-            echo "started"
         fi
     fi
 }
@@ -62,7 +62,7 @@ function _printServiceStatusLine() {
         echo "[ started ]   $(printf "%-*s" 50 $SVCNAME)   $SVCPID"
     fi
 }
-# Check status
+# Status overview
 if [[ -z $1 ]]; then
     for SVCNAME in $(ls $svcdir); do
         _printServiceStatusLine "$SVCNAME"
