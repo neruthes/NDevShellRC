@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#
+# PSMAN-init
+# Portable Service Manager - init
+#
+# Copyright (c) 2021 Neruthes.
+# Published under GNU GPLv2.
+#
+
+mkdir -p "$HOME/.config/psman"
+
+CONFFILE="$HOME/.config/psman/conf"
+touch "$CONFFILE"
+
+if [[ -e "$CONFFILE" ]]; then
+    source "${CONFFILE}"
+fi
+
+if [[ -z "$svcdir" ]]; then
+    svcdir="$HOME/.config/pservices"
+fi
+RUNLEVELDIR="$svcdir/.rl"
+RUNLEVELFINISHMARKDIR="/tmp/.psman-init.${USER}.runlevelfinishmark"
+
+function _color_red() {
+    printf "\e[31m\e[1m$1\e[0m"
+}
+function _color_green() {
+    printf "\e[92m\e[1m$1\e[0m"
+}
+function _lsrunlevels() {
+    RUNLEVELS=""
+    for FN in $(ls "$RUNLEVELDIR/"*); do
+        RUNLEVEL_NAME="$(basename $FN)"
+        RUNLEVELS="${RUNLEVELS}${RUNLEVEL_NAME} "
+    done
+    echo "$RUNLEVELS"
+}
+function _startrunlevel() {
+    RUNLEVEL="$1"
+    _failifrunlevelisfinished "$RUNLEVEL"
+    echo "[INFO] Starting runlevel '$(_color_green $RUNLEVEL)':"
+    RUNLEVEL_CONTENT="$(cat "$RUNLEVELDIR/$RUNLEVEL")"
+    # echo "$RUNLEVEL_CONTENT"
+    for SVCNAME in $RUNLEVEL_CONTENT; do
+        psman "$SVCNAME" start
+    done
+    echo "[INFO] Reached runlevel '$(_color_green $RUNLEVEL)'"
+    _markrunlevelfinished "$RUNLEVEL"
+}
+function _failifrunlevelisfinished() {
+    if [[ -e "$RUNLEVELFINISHMARKDIR/$1" ]]; then
+        echo "[$(_color_red ERROR)] Runlevel $(_color_green $1) has already been reached."
+        exit 1
+    fi
+}
+function _markrunlevelfinished() {
+    mkdir -p "$RUNLEVELFINISHMARKDIR"
+    touch "$RUNLEVELFINISHMARKDIR/$1"
+}
+
+# echo "[INFO] All runlvels:"
+# _lsrunlevels
+
+for RUNLEVEL in $(_lsrunlevels); do
+    _startrunlevel $RUNLEVEL
+done
+
+### Prevent executing again

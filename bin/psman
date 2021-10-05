@@ -20,7 +20,29 @@ fi
 if [[ -z "$svcdir" ]]; then
     svcdir="$HOME/.config/pservices"
 fi
+RUNLEVELDIR="$svcdir/.rl"
+RUNLEVELS=""
+for FN in $(ls "$RUNLEVELDIR/"*); do
+    RUNLEVEL_NAME="$(basename $FN)"
+    RUNLEVELS="${RUNLEVELS}${RUNLEVEL_NAME} "
+done
 
+function _findservicerunlevel() {
+    SVCNAME="$1"
+    FOUND=n
+    TARGET=""
+    ### Iterate
+    # echo "[DEBUG] _findservicerunlevel $SVCNAME">&2
+    # echo "[DEBUG] RUNLEVELS=$RUNLEVELS">&2
+    for RL in $RUNLEVELS; do
+        # echo "?????"
+        if [[ "$(grep "^$SVCNAME" "$RUNLEVELDIR/$RL")" != "" ]]; then
+            echo "$RL"
+            return 0
+        fi
+    done
+    echo "manual"
+}
 function _checkServiceStatus() {
     SVCNAME="$1"
     source "$svcdir/$SVCNAME"
@@ -46,6 +68,16 @@ function _requireStateNot() {
         exit 1
     fi
 }
+
+function _color_red() {
+    printf "\e[31m\e[1m$1\e[0m"
+}
+function _color_green() {
+    printf "\e[92m\e[1m$1\e[0m"
+}
+function _color_cyan() {
+    printf "\e[96m\e[1m$1\e[0m"
+}
 ################################################
 ### Main
 ################################################
@@ -57,18 +89,49 @@ function _printServiceStatusLine() {
     SVCSTATUS="$(_checkServiceStatus "$SVCNAME")"
     source "$svcdir/$SVCNAME"
     SVCPID="$(getpid 2>/dev/null)"
+    # _findservicerunlevel $SVCNAME
     if [[ "$SVCSTATUS" == "stopped" ]]; then
-        echo "[ stopped ]   $SVCNAME"
+        echo "[ $(_color_red stopped) ]   $SVCNAME"
     fi
     if [[ "$SVCSTATUS" == "started" ]]; then
-        echo "[ started ]   $(printf "%-*s" 30 $SVCNAME)   $SVCPID"
+        echo "[ $(_color_green started) ]   $(printf "%-*s" 50 $SVCNAME)   $SVCPID"
     fi
 }
+function _svcaction() {
+    SVCNAME="$1"
+    SVCACTION="$2"
+    source "$svcdir/$SVCNAME"
+    
+    if [[ "$SVCACTION" == "start" ]]; then
+        _requireStateNot "$SVCNAME" started
+    fi
+    if [[ "$SVCACTION" == "stop" ]] || [[ "$SVCACTION" == "restart" ]]; then
+        _requireStateNot "$SVCNAME" stopped
+    fi
+
+    $SVCACTION
+}
+
+
 # Status overview
 if [[ -z $1 ]]; then
-    for SVCNAME in $(ls $svcdir); do
-        _printServiceStatusLine "$SVCNAME"
+    for RUNLEVEL in $RUNLEVELS; do
+        echo "Runlevel: $(_color_cyan $RUNLEVEL)"
+        for SVCNAME in $(ls $svcdir); do
+            if [[ "$(_findservicerunlevel $SVCNAME)" == "$RUNLEVEL" ]]; then
+                _printServiceStatusLine "$SVCNAME"
+            fi
+        done
+        echo ""
     done
+
+    echo "Runlevel: $(_color_cyan manual)"
+    for SVCNAME in $(ls $svcdir); do
+        if [[ "$(_findservicerunlevel $SVCNAME)" == "manual" ]]; then
+            _printServiceStatusLine "$SVCNAME"
+        fi
+    done
+    echo ""
     exit 0
 fi
 
@@ -82,17 +145,8 @@ case "$SVCACTION" in
         exit 1
         ;;
 esac
-if [[ -e "$svcdir/$SVCNAME" ]]; then
-    source "$svcdir/$SVCNAME"
-    
-    if [[ "$SVCACTION" == "start" ]]; then
-        _requireStateNot "$SVCNAME" started
-    fi
-    if [[ "$SVCACTION" == "stop" ]] || [[ "$SVCACTION" == "restart" ]]; then
-        _requireStateNot "$SVCNAME" stopped
-    fi
-
-    $SVCACTION
+if [[ -e "$svcdir/$_svcaction" ]]; then
+    _svcaction $SVCNAME $SVCACTION
     sleep 1
     _printServiceStatusLine "$SVCNAME"
 else

@@ -52,20 +52,5 @@ function buildMyKernelNow() {
     sudo make install
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
-    sudo emerge @module-rebuild
+    sudo emerge @module-rebuild --ask=n
 }
-
-### ----------------------------------------------------------------------------
-### Service daemons
-# function start_rsyncd_alt() {
-#     sudo rsync --daemon --port 23873 --dparam=pidfile=/run/rsyncd_alt.pid
-# }
-# function stop_rsyncd_alt() {
-#     sudo start-stop-daemon --stop --pidfile /run/rsyncd_alt.pid --user root --verbose
-# }
-# function start_ssserver_gateway() {
-#     daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f /run/_ssserver-23080.pid
-# }
-# function stop_ssserver_gateway() {
-#     sudo start-stop-daemon --stop --pidfile /run/_ssserver-23080.pid --user nobody --verbose
-# }

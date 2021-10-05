@@ -1,13 +1,15 @@
+PIDFILE=/run/_ssserver-23080.pid
+
 function start() {
-    daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f /run/_ssserver-23080.pid
+    daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f "$PIDFILE"
 }
 function stop() {
-    sudo start-stop-daemon --stop --pidfile /run/_ssserver-23080.pid --user nobody --verbose
+    sudo start-stop-daemon --stop --pidfile "$PIDFILE" --user nobody --verbose
 }
 function restart() {
-    sudo start-stop-daemon --stop --pidfile /run/_ssserver-23080.pid --user nobody --verbose
-    daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f /run/_ssserver-23080.pid
+    stop
+    start
 }
 function getpid() {
-    cat /run/_ssserver-23080.pid 2>/dev/null
+    cat "$PIDFILE" 2>/dev/null
 }
