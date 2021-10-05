@@ -40,6 +40,12 @@ function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
 
 
 ### ----------------------------------------------------------------------------
+### Portage
+function fullupdate() {
+    sudo emerge --update --newuse --tree --verbose --deep --ask=n --autounmask-write @world
+}
+
+### ----------------------------------------------------------------------------
 ### Kernel
 function buildMyKernelNow() {
     if [[ $PWD != /usr/src/linux ]]; then

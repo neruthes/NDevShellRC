@@ -26,10 +26,10 @@ function _mkDefaultDldSymlink() {
         FULLDATE="$(date -Is)"
         YearMonthID=${FULLDATE:0:7}
         mkdir -p "$HOME/DLD/$YearMonthID"
-        CURRENTYMID=$(basename $(readlink -f ~/DLD/Latest))
+        CURRENTYMID=$(basename $(readlink -f $HOME/DLD/Latest))
         if [[ "$CURRENTYMID" != "$YearMonthID" ]]; then
-            rm ~/DLD/Latest
-            ln -svf ~/DLD/$YearMonthID ~/DLD/Latest
+            rm $HOME/DLD/Latest
+            ln -svf $HOME/DLD/$YearMonthID $HOME/DLD/Latest
         fi
     fi
 }
