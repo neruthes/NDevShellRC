@@ -11,12 +11,6 @@ function NEPd4-mount() {
         for i in 1 2 3 4 5 6; do
             sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV$i NEPd4_PV$i --key-file ~/.MyLuksKey
         done
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV6 NEPd4_PV6 --key-file ~/.MyLuksKey
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV5 NEPd4_PV5 --key-file ~/.MyLuksKey
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV4 NEPd4_PV4 --key-file ~/.MyLuksKey
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV3 NEPd4_PV3 --key-file ~/.MyLuksKey
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV2 NEPd4_PV2 --key-file ~/.MyLuksKey
-        # sudo cryptsetup open /dev/disk/by-partlabel/NEPd4_PV1 NEPd4_PV1 --key-file ~/.MyLuksKey
 
         ### LVM
         sudo vgcreate NEPd4Vg1 /dev/mapper/NEPd4_PV{6,5,4,3,2,1}

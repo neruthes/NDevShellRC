@@ -58,6 +58,6 @@ function borgBackup() {
         echo ""
         echo "Borg backup completed."
     else
-        echo "Error: Path '/mnt/NEPd3_Caster/BorgHome/NDLT7' cannot be found!"
+        echo "Error: Path '/mnt/NEPd3_Caster/LS/BorgHome/NDLT7' cannot be found!"
     fi
 }
