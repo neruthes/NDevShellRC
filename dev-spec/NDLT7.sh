@@ -41,9 +41,7 @@ function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
 
 ### ----------------------------------------------------------------------------
 ### Portage
-function fullupdate() {
-    sudo emerge --update --newuse --tree --verbose --deep --ask=n --autounmask-write @world
-}
+alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
 
 ### ----------------------------------------------------------------------------
 ### Kernel
@@ -60,3 +58,7 @@ function buildMyKernelNow() {
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo emerge @module-rebuild --ask=n
 }
+
+### ----------------------------------------------------------------------------
+### Miscellaneous
+alias startlutris="sudo arch-chroot arch /usr/bin/sudo -u player proxychains -q lutris"
