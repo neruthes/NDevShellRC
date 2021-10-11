@@ -13,7 +13,7 @@ function ps1gitbr() {
 }
 
 function ps1devnickname() {
-    case `hostname` in
+    case $HOSTNAME in
         NDVS*)
             printf -- ' (VPS)'
             ;;
