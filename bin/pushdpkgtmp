@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ `hostname` == 'NDVM1-AOSC' ]]; then
+if [[ "$HOSTNAME" == 'NDVM1-AOSC' ]]; then
     rm -r $DEV_HOME_DIR/dpkgtmp/*.deb
     cp $1 $DEV_HOME_DIR/dpkgtmp/
     cd $DEV_HOME_DIR/dpkgtmp
