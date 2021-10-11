@@ -43,11 +43,17 @@ function g() {
 alias gpom="git push origin master"
 alias gpuom="git push -u origin master"
 
-case `uname` in
-    Linux)
-        alias u="git add .; git commit -m 'Regular update `date -Is`'; git push;"
-        ;;
-    Darwin)
-        alias u="git add .; git commit -m 'Regular update `date`'; git push;"
-        ;;
-esac
+function u() {
+    case "$(uname)" in
+        Linux)
+            DATESTR="$(Date -Is)"
+            ;;
+        Darwin)
+            DATESTR="$(Date)"
+            ;;
+    esac
+    git add .
+    git commit -m "Regular update '$DATESTR'"
+    git push
+}
+

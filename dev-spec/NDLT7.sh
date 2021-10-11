@@ -61,4 +61,4 @@ function buildMyKernelNow() {
 
 ### ----------------------------------------------------------------------------
 ### Miscellaneous
-alias startlutris="sudo arch-chroot arch /usr/bin/sudo -u player proxychains -q lutris"
+# alias startlutris="INSIDE CHROOT    sudo -u player daemonize $(which proxychains) lutris"
