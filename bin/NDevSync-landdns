@@ -25,14 +25,14 @@ MY_LAN_IP_ADDR=`cat $TMP`
 
 
 ### Push to GitHub
-# if [[ -r $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt ]]; then
+# if [[ -r $DEV_HOME_DIR/NDevMgr/LanDDNS/$HOSTNAME.txt ]]; then
     # echo "Pushing to GitHub..."
-    # echo $MY_LAN_IP_ADDR > $DEV_HOME_DIR/NDevMgr/LanDDNS/$(hostname).txt
+    # echo $MY_LAN_IP_ADDR > $DEV_HOME_DIR/NDevMgr/LanDDNS/$HOSTNAME.txt
     # cd $DEV_HOME_DIR/NDevMgr
     # source $DEV_HOME_DIR/NDevShellRC/components/git.sh > /dev/null 2>&1
     # git pull origin master
     # git add .
-    # git commit -m "LAN DDNS Update: $(hostname) @ $(date)"
+    # git commit -m "LAN DDNS Update: $HOSTNAME @ $(date)"
     # git push origin master
 # fi
 
@@ -42,7 +42,7 @@ echo "Pushing to Cloudflare..."
 curl --show-error -s -X PUT "https://api.cloudflare.com/client/v4/zones/cef23400ccfef7aa9511988f2e27b181/dns_records/${MYDEVCFID}" \
     -H "Authorization: Bearer `pasm p token.cloudflare.OmniDnsToken`" \
     -H "Content-Type: application/json" \
-    --data "{\"type\":\"A\",\"name\":\"$(hostname).lan\",\"content\":\"$MY_LAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > $TMP.2
+    --data "{\"type\":\"A\",\"name\":\"$HOSTNAME.lan\",\"content\":\"$MY_LAN_IP_ADDR\",\"ttl\":120,\"proxied\":false}" > $TMP.2
     # -H "X-Auth-Key: `pasm p token.cloudflare.OmniDnsToken`" \
     # -H "X-Auth-Email: joyneop@gmail.com" \
 cat $TMP.2

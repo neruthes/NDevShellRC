@@ -5,25 +5,8 @@ TargetDevice=$1
 # arg1: Manually specified scope
 ArgAddrScope=$2
 
-if [[ `uname` == "Linux" ]]; then
-    DEV_HOME_DIR=/home/neruthes/DEV
-else
-    DEV_HOME_DIR=/Users/Neruthes/Developer
-fi
-
 ### Decide Username
-SSHUsername=neruthes
-if [[ ${TargetDevice:0:2} == "PS" ]]; then
-    SSHUsername=root
-fi
-if [[ ${TargetDevice:0:2} == "VS" ]]; then
-    SSHUsername=root
-fi
-if [[ ${SSHUsername} == "root" ]]; then
-    UsernameColor=196
-else
-    UsernameColor=118
-fi
+SSHUsername="$USER"
 
 ### Decide Address Scope
 if [[ ${TargetDevice:0:2} == "VS" ]]; then
@@ -35,15 +18,16 @@ else
         AddrScope="$ArgAddrScope.neruthes.xyz"
     fi
 fi
+UsernameColor=118
 
 echo ""
 printf "Establishing SSH connection: \e[38;5;${UsernameColor}m${SSHUsername}\e[0m @ \e[38;5;81mND${TargetDevice}.${AddrScope}\e[0m"
 echo ""
 echo ""
 
-if [[ -r "~/.ssh/$(hostname)" ]]; then
+if [[ -r "$HOME/.ssh/$HOSTNAME" ]]; then
     ### Prefer the keypair which is named after the hostname
-    ssh -i "~/.ssh/$(hostname)" "${SSHUsername}@ND${TargetDevice}.${AddrScope}"
+    exec ssh -i "$HOME/.ssh/$HOSTNAME" "${SSHUsername}@ND${TargetDevice}.${AddrScope}"
 else
-    ssh "${SSHUsername}@ND${TargetDevice}.${AddrScope}"
+    exec ssh "${SSHUsername}@ND${TargetDevice}.${AddrScope}"
 fi

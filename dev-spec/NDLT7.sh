@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$(hostname)" != "NDLT7" ]]; then
+if [[ "$HOSTNAME" != "NDLT7" ]]; then
     echo "Not NDLT7!"
     exit 1
 fi
@@ -46,12 +46,9 @@ alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-grap
 ### ----------------------------------------------------------------------------
 ### Kernel
 function buildMyKernelNow() {
-    if [[ $PWD != /usr/src/linux ]]; then
-        echo "[ERROR] This command can only be used in '/usr/src/linux'."
-        return 1
-    fi
+    cd /usr/src/linux
     source /etc/portage/make.conf
-    sudo make -j8 all
+    sudo make -j3 all
     sudo make modules_install
     sudo make install
     sudo genkernel initramfs

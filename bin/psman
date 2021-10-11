@@ -21,6 +21,7 @@ if [[ -z "$svcdir" ]]; then
     svcdir="$HOME/.config/pservices"
 fi
 RUNLEVELDIR="$svcdir/.rl"
+mkdir -p "$RUNLEVELDIR"
 RUNLEVELS=""
 for FN in $(ls "$RUNLEVELDIR/"*); do
     RUNLEVEL_NAME="$(basename $FN)"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$(hostname)" != "NEPd2Arch" ]]; then
+if [[ "$HOSTNAME" != "NEPd2Arch" ]]; then
     echo "Not NEPd2Arch!"
     exit 1
 fi

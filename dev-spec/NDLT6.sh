@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$(hostname)" != "NDLT6" ]]; then
+if [[ "$HOSTNAME" != "NDLT6" ]]; then
     echo "Not NDLT6!"
     exit 1
 fi

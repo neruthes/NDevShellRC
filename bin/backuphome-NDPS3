@@ -9,7 +9,7 @@
 
 ### Args init
 
-if [[ "$(hostname)" != "NDLT7" ]]; then
+if [[ "$HOSTNAME" != "NDLT7" ]]; then
     echo "ERROR: This script only works on NDLT7."
     exit 1
 fi

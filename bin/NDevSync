@@ -33,7 +33,7 @@ cd $DEV_HOME_DIR/NDevShellRC && git pull && git add . && git commit -m "NDevSync
 cd $DEV_HOME_DIR/NDevCron && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 cd $DEV_HOME_DIR/NDevMsgInbox && git pull && git add . && git commit -m "NDevSync: `date`" && git push
 for i in NDLT6 NDLT7 NDLT7W; do
-    if [[ "$(hostname)" == "$i" ]]; then
+    if [[ "$HOSTNAME" == "$i" ]]; then
         pasm-sync
     fi
 done

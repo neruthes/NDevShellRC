@@ -28,7 +28,7 @@ if [[ $1 = "" ]]; then
 fi
 
 echo "Switching to $CurrentCase"
-SCRIPT_PATH="$DEV_HOME_DIR/NDevShellRC/dev-local/$(hostname)/screenlayout/base-$CurrentCase.sh"
+SCRIPT_PATH="$DEV_HOME_DIR/NDevShellRC/dev-local/$HOSTNAME/screenlayout/base-$CurrentCase.sh"
 if [[ -e "$SCRIPT_PATH" ]]; then
     bash "$SCRIPT_PATH"
 else
