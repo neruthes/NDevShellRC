@@ -1,7 +1,7 @@
-PIDFILE=/run/_ssserver-23080.pid
+PIDFILE=/run/ss-gost-23080.pid
 
 function start() {
-    daemonize -- $(which proxychains) -q sudo ss-server -s 0.0.0.0 -p 23080 -k "$(cat /home/neruthes/.config/sskey)" -m chacha20-ietf-poly1305 -a nobody -f "$PIDFILE"
+    sudo daemonize -p "$PIDFILE" -- /usr/local/bin/gost -L=ss://chacha20-ietf-poly1305:$(cat $HOME/.config/sskey)@:23080 -F=socks5://10.0.233.3:7891
 }
 function stop() {
     sudo start-stop-daemon --stop --pidfile "$PIDFILE" --user nobody --verbose
