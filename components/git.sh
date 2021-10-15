@@ -46,10 +46,10 @@ alias gpuom="git push -u origin master"
 function u() {
     case "$(uname)" in
         Linux)
-            DATESTR="$(Date -Is)"
+            DATESTR="$(date -Is)"
             ;;
         Darwin)
-            DATESTR="$(Date)"
+            DATESTR="$(date)"
             ;;
     esac
     git add .
