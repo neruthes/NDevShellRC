@@ -80,7 +80,7 @@ function _checkMortalityAlert() {
     read NEED_UPDATE
     if [[ "$NEED_UPDATE" == "y" ]]; then
         echo "Running script..."
-        bash postponemortalityalert.sh &
+        bash postponemortalityalert.sh
     fi
     cd "$RealPWD"
 }
