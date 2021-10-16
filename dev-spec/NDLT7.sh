@@ -69,18 +69,23 @@ function _checkMortalityAlert() {
     NOWDATE="$(date +%s)"
     DELTASECS="$((NOWDATE-OLDDATE))"
     DELTAHOURS="$((DELTASECS/3600))"
-    if [[ "$DELTAHOURS" -lt "4" ]]; then
+    # if [[ "$DELTAHOURS" -lt "5" ]]; then
+    #     echo "DELTAHOURS ($DELTAHOURS) is less than 5"
+    # else
+    #     echo "DELTAHOURS ($DELTAHOURS) is greater than 5"
+    # fi
+    if [[ "$DELTAHOURS" -lt "24" ]]; then
         cd "$RealPWD"
         return 0
     fi
     echo "$DELTAHOURS hours since last postpone mortality alert.">&2
     NEED_UPDATE=n
-    echo "Update now? (y/n)"
-    printf "> "
+    echo "Update now? (y/n)">&2
+    printf "> ">&2
     read NEED_UPDATE
     if [[ "$NEED_UPDATE" == "y" ]]; then
-        echo "Running script..."
-        bash postponemortalityalert.sh
+        echo "Running script...">&2
+        daemonize -c "$PWD" /bin/bash "$PWD/postponemortalityalert.sh"
     fi
     cd "$RealPWD"
 }
