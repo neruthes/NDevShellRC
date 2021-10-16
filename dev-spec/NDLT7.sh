@@ -59,3 +59,29 @@ function buildMyKernelNow() {
 ### ----------------------------------------------------------------------------
 ### Miscellaneous
 # alias startlutris="INSIDE CHROOT    sudo -u player daemonize $(which proxychains) lutris"
+function _checkMortalityAlert() {
+    if [[ "$USER" != "neruthes" ]]; then
+        return 0
+    fi
+    RealPWD="$PWD"
+    cd /home/neruthes/DEV/neruthes.github.io
+    OLDDATE="$(git log -1 --format=%at)"
+    NOWDATE="$(date +%s)"
+    DELTASECS="$((NOWDATE-OLDDATE))"
+    DELTAHOURS="$((DELTASECS/3600))"
+    if [[ "$DELTAHOURS" -lt "4" ]]; then
+        cd "$RealPWD"
+        return 0
+    fi
+    echo "$DELTAHOURS hours since last postpone mortality alert.">&2
+    NEED_UPDATE=n
+    echo "Update now? (y/n)"
+    printf "> "
+    read NEED_UPDATE
+    if [[ "$NEED_UPDATE" == "y" ]]; then
+        echo "Running script..."
+        bash postponemortalityalert.sh &
+    fi
+    cd "$RealPWD"
+}
+_checkMortalityAlert
