@@ -1,4 +1,4 @@
-PIDFILE=/run/rsyncd_alt.pid
+PIDFILE="/run/rsyncd_alt.pid"
 
 function start() {
     sudo rsync --daemon --port 23873 --dparam=pidfile="$PIDFILE"

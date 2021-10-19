@@ -69,18 +69,12 @@ function _checkMortalityAlert() {
     NOWDATE="$(date +%s)"
     DELTASECS="$((NOWDATE-OLDDATE))"
     DELTAHOURS="$((DELTASECS/3600))"
-    # if [[ "$DELTAHOURS" -lt "5" ]]; then
-    #     echo "DELTAHOURS ($DELTAHOURS) is less than 5"
-    # else
-    #     echo "DELTAHOURS ($DELTAHOURS) is greater than 5"
-    # fi
     if [[ "$DELTAHOURS" -lt "24" ]]; then
         cd "$RealPWD"
         return 0
     fi
-    echo "$DELTAHOURS hours since last postpone mortality alert.">&2
     NEED_UPDATE=n
-    echo "Update now? (y/n)">&2
+    echo "$DELTAHOURS hours since last postpone mortality alert. Update now? (y/n)">&2
     printf "> ">&2
     read NEED_UPDATE
     if [[ "$NEED_UPDATE" == "y" ]]; then
@@ -90,3 +84,4 @@ function _checkMortalityAlert() {
     cd "$RealPWD"
 }
 _checkMortalityAlert
+alias pa_z420="env PULSE_SERVER=10.0.233.20"
