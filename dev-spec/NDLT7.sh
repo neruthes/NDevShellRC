@@ -61,6 +61,11 @@ function buildMyKernelNow() {
 # alias startlutris="INSIDE CHROOT    sudo -u player daemonize $(which proxychains) lutris"
 function _checkMortalityAlert() {
     if [[ "$USER" != "neruthes" ]]; then
+        ### Not for any other user
+        return 0
+    fi
+    if [[ "$SSH_TTY" != "" ]]; then
+        ### Must not be inside SSH
         return 0
     fi
     RealPWD="$PWD"
@@ -84,4 +89,5 @@ function _checkMortalityAlert() {
     cd "$RealPWD"
 }
 _checkMortalityAlert
+
 alias pa_z420="env PULSE_SERVER=10.0.233.20"

@@ -129,18 +129,6 @@ export PS1="\n(chroot) ${PS1:2}"
 ##################################
 KERNELVER="5.14.12-gentoo-dist"
 
-### No longer need the initramfs from genkernel since we build our own
-### But we still need it as the template for further customization
-genkernel initramfs
-cd /usr/src/initramfs
-rm -rf * /usr/src/initramfs/*
-cpio --extract --make-directories --format=newc --no-absolute-filenames < /boot/initramfs-$KERNELVER.img
-rsync -avpx --delete /usr/src/initramfs/ /usr/src/initramfs-nlive/
-
-### Prepare our directory
-cd /usr/src/initramfs-nlive
-touch NLIVE_INITRAMFS
-
 ### Insert the following code into the init script
 ### This section should be added before copyKeymap
 ### This practice should be avoided if fstab can do the job
@@ -148,18 +136,11 @@ touch NLIVE_INITRAMFS
 
 ######################################
 ##### INITRAMFS INIT SCRIPT ONLY #####
+modprobe virtio-gpu drm drm_kms_helper
 log_msg "About to mount SquashFS and OverlayFS"
-modprobe overlayfs
-modprobe squashfs
-# mount -t tmpfs -o rw,noatime /newroot/tmp
-# for LAYER in upper lower work; do
-#     for DIR in usr opt lib; do
-#         mkdir -p /newroot/tmp/OverlayFS/$LAYER/$DIR
-#     done
-# done
+modprobe overlayfs squashfs
 for i in usr opt lib; do
     mount /newroot/sqfs.$i /newroot/$i
-    # mount -t overlay overlay -o lowerdir=/newroot/tmp/OverlayFS/lower/$i,upperdir=/newroot/tmp/OverlayFS/upper/$i,workdir=/newroot/tmp/OverlayFS/work/$i /$i
 done
 log_msg "Should have mounted SquashFS"
 if [ -e /newroot/opt/firefox/defaults ]; then
@@ -178,8 +159,8 @@ for MOD in $MODLIST; do
 done
 
 ### Make our own initramfs
-cd /usr/src/initramfs-nlive
-find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/initramfs-$KERNELVER.img
+### We use a customized linuxrc file for generating the initramfs
+genkernel initramfs --linuxrc=/nlive/linuxrc
 
 
 
