@@ -3,5 +3,5 @@
 if [[ `uname` == Linux ]]; then
     ir firefox-bin
     ir telegram-desktop
-    daemonize $(which discord) '--proxy-server=socks5://10.0.233.3:7891'
+    # daemonize $(which discord) '--proxy-server=socks5://10.0.233.3:7891'
 fi
