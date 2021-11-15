@@ -37,6 +37,20 @@ function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
         echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
     fi
 }
+# From and to NDLT6
+function ndrsyncpush() {
+    rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
+        /home/neruthes/DOC/ \
+        neruthes@10.0.233.126:/Users/Neruthes/Documents/
+}
+function ndrsyncpull() {
+    rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
+        neruthes@10.0.233.126:/Users/Neruthes/Music/GarageBand/ \
+        /home/neruthes/AUD/GarageBand/
+    rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
+        neruthes@10.0.233.126:/Users/Neruthes/Documents/Design/ \
+        /home/neruthes/DOC/Design/
+}
 
 
 ### ----------------------------------------------------------------------------
