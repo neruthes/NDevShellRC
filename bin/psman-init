@@ -8,6 +8,13 @@
 # Published under GNU GPLv2.
 #
 
+if [[ "$FORK" == "y" ]]; then
+    echo "psman-init: running in background">&2
+    daemonize /usr/bin/env FORK=n $(which psman-init)
+    exit 0
+fi
+date -Is > /tmp/.psman-init.${USER}.hitmark
+
 mkdir -p "$HOME/.config/psman"
 
 CONFFILE="$HOME/.config/psman/conf"

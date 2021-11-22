@@ -108,5 +108,5 @@ _checkMortalityAlert
 alias pa_z420="env PULSE_SERVER=10.0.233.20"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
-    psman-init
+    FORK=y psman-init
 fi
