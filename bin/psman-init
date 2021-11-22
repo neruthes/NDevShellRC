@@ -21,7 +21,13 @@ if [[ -z "$svcdir" ]]; then
     svcdir="$HOME/.config/pservices"
 fi
 RUNLEVELDIR="$svcdir/.rl"
+ALLFINISHMARK="/tmp/.psman-init.${USER}.allfinishmark"
 RUNLEVELFINISHMARKDIR="/tmp/.psman-init.${USER}.runlevelfinishmark"
+
+if [[ -e "$ALLFINISHMARK" ]]; then
+    echo "ERROR: Already initialized.">&2
+    exit 0
+fi
 
 function _color_red() {
     printf "\e[31m\e[1m$1\e[0m"
@@ -63,6 +69,7 @@ function _markrunlevelfinished() {
 # echo "[INFO] All runlvels:"
 # _lsrunlevels
 
+touch "$ALLFINISHMARK"
 for RUNLEVEL in $(_lsrunlevels); do
     _startrunlevel $RUNLEVEL
 done

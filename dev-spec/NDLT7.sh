@@ -65,6 +65,7 @@ function buildMyKernelNow() {
     sudo make -j3 all
     sudo make modules_install
     sudo make install
+    pregenkernel
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo emerge @module-rebuild --ask=n
@@ -105,3 +106,7 @@ function _checkMortalityAlert() {
 _checkMortalityAlert
 
 alias pa_z420="env PULSE_SERVER=10.0.233.20"
+
+if [[ "$(tty)" == "/dev/tty1" ]]; then
+    psman-init
+fi
