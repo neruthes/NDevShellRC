@@ -162,6 +162,7 @@ if [[ ! -e "$CONFDIR/config" ]]; then
     echo '# This is a sample configuration
 # DBDIR=$HOME/Documents/websave
 # BROWSER=firefox
+# EDITOR=nano
 ' > "$CONFDIR/config"
 fi
 
@@ -174,6 +175,9 @@ source $CONFDIR/config
 if [[ ! -e $DBDIR ]]; then
     echo "ERROR: You must define DBDIR in '$CONFDIR/config'."
     exit 1
+fi
+if [[ ! -e $EDITOR ]]; then
+    EDITOR="nano"
 fi
 CONFDIR="$HOME/.config/websave"
 
@@ -250,6 +254,14 @@ function _fetchWebpageContent() {
         echo "HINT: You may use 'websave write "$URL"' to write manually."
     fi
 }
+function _editWebpageContent() {
+    URL="$1"
+    SHOTID="$2"
+    HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
+    echo "Editing '$HTMLFILE'"
+    $EDITOR "$HTMLFILE"
+    _afterWriteHtml "$URL" "$SHOTID"
+}
 function _afterWriteHtml() {
     URL="$1"
     SHOTID="$2"
@@ -307,8 +319,10 @@ function SC_help() {
     echo "Usage:"
     echo ""
     echo "  websave save https://example.com/       Save new webpage"
+    echo "  websave write https://example.com/      The same, but write content manually"
     echo "  websave find https://example.com/       List all snapshots of the URL"
     echo "  websave read 1637656166.9b47e0e9        Read a specific snapshot"
+    echo "  websave search Keyword                  Search a keyword for URLs"
     echo ""
     echo "Notes:"
     echo ""
@@ -322,6 +336,13 @@ function SC_save() {
     echo "Saving webpage '$URL' snapshot as '$SHOTID'"
     _makeSnapshot "$URL" "$SHOTID"
     _fetchWebpageContent "$URL" "$SHOTID"
+}
+function SC_write() {
+    URL="$1"
+    SHOTID="$(_genSnapshotId)"
+    echo "Saving webpage '$URL' snapshot as '$SHOTID'"
+    _makeSnapshot "$URL" "$SHOTID"
+    _editWebpageContent "$URL" "$SHOTID"
 }
 function SC_find() {
     URL="$1"
@@ -352,7 +373,7 @@ function SC_search() {
     grep "$KEYWORD" "$DBDIR/url-title.txt"
 }
 case $1 in
-    help | save | write | read | find | search | search-snapshot )
+    help | save | write | find | read | search )
         SC_$1 $2 $3 $4
         ;;
     *)
