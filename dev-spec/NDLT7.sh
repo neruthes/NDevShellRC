@@ -12,6 +12,8 @@ if [[ -e $HOME/Pictures ]]; then
     rm -rf $HOME/Pictures
 fi
 
+export BROWSER="firefox-bin"
+
 ### ----------------------------------------------------------------------------
 ### Data backup operations
 function rsyncBackupNDev--NEPd2_Data_WWW--NEPd3_LS() {
@@ -55,7 +57,8 @@ function ndrsyncpull() {
 
 ### ----------------------------------------------------------------------------
 ### Portage
-alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
+# alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
+alias fullupdate="sudo emerge -avuDN --tree --keep-going @world"
 
 ### ----------------------------------------------------------------------------
 ### Kernel
@@ -65,10 +68,10 @@ function buildMyKernelNow() {
     sudo make -j3 all
     sudo make modules_install
     sudo make install
+    sudo emerge @module-rebuild --ask=n
     pregenkernel
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
-    sudo emerge @module-rebuild --ask=n
 }
 
 ### ----------------------------------------------------------------------------

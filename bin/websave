@@ -1,0 +1,371 @@
+#!/bin/bash
+#
+# websave
+#
+# Copyright (c) 2021 Neruthes.
+# This program is free software. Published with <GNU GPL 2.0>.
+# See <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+#
+
+
+
+
+###################################################
+# DOCUMENTATION
+###################################################
+echo '
+
+# Websave Documentation
+
+## Database Structure
+
+- $DBDIR
+    - log.txt
+    - url-title.txt
+    - snapshot-title.txt
+    - urls
+        - $URLHASH
+            - snapshots
+            - title
+    - snapshots
+        - $SHOTID
+            - main.html
+            - metadata
+                - id
+                - url
+                - date
+                - title
+                - note
+
+## Varaibles
+
+- DBDIR:        Database directory
+- URLHASH:      SHA2-256 hash of URL string (trimmed)
+- SHOTID:       Like `$(date +%s).$(uuidgen)` but UUID only has the initial 8 digits
+
+
+
+
+## Files
+
+### File log.txt
+
+Example:
+
+```
+2021-11-23 07:45:24 snapshot=1637653524.13443f04 https://example.com/
+```
+
+### File url-title.txt
+
+Example:
+
+```
+https://example.com/  Example
+
+https://neruthes.xyz/  Neruthes
+
+```
+
+### File snapshot-title.txt
+
+Example:
+
+```
+1637640856.26e2f435  Example
+
+1637641821.1255a915  Neruthes
+
+```
+### File urls/$URLHASH/snapshots
+
+Example:
+
+```
+1637640856.26e2f435
+1637641821.1255a915
+```
+
+
+
+
+## Operations
+
+### Save (Normal)
+
+```
+websave save https://example.com/
+```
+
+Websave saves the webpage automatically.
+
+### Save (Manual)
+
+```
+websave write https://example.com/
+```
+
+Websave creates the snapshot and asks the user to paste webpage HTML code in the EDITOR.
+
+### Search (URL)
+
+```
+websave search Keyword
+```
+
+Websave executes `grep Keyword $DBDIR/url-title.txt` to find.
+
+### Search (Snapshot)
+
+```
+websave search-snapshot Keyword
+```
+
+Websave executes `grep Keyword $DBDIR/snapshot-title.txt` to find.
+
+### Find
+
+```
+websave find https://example.com/
+```
+
+Websave shows a list of all snapshots of the URL.
+
+### Read
+
+```
+websave read $SHOTID
+BROWSER=firefox websave read $SHOTID
+```
+
+Websave uses BROWSER to view `$DBDIR/snapshots/$SHOTID/main.html`.
+
+
+
+'>/dev/null
+
+
+
+###################################################
+# CODE
+###################################################
+function _debuglog() {
+    if [[ ! -z "$DEBUG" ]]; then
+        echo "$1"
+    fi
+}
+
+### Initialization
+CONFDIR="$HOME/.config/websave"
+mkdir -p "$CONFDIR"
+if [[ ! -e "$CONFDIR/config" ]]; then
+    echo '# This is a sample configuration
+# DBDIR=$HOME/Documents/websave
+# BROWSER=firefox
+' > "$CONFDIR/config"
+fi
+
+DBDIR="$HOME/DOC/websave"
+if [[ -z "$USER_AGENT" ]]; then
+    # User-Agent: 
+    USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"
+fi
+source $CONFDIR/config
+if [[ ! -e $DBDIR ]]; then
+    echo "ERROR: You must define DBDIR in '$CONFDIR/config'."
+    exit 1
+fi
+CONFDIR="$HOME/.config/websave"
+
+
+APPVER="0.1.0-pre1"
+
+
+### Internal instructions
+function _genUrlHash() {
+    URL="$1"
+    HASH_BASIC="$(sha256sum <<< $URL)"
+    URLHASH="${HASH_BASIC:0:64}"
+    echo "$URLHASH"
+}
+function _genUrlId() {
+    URL="$1"
+    URLHASH="$(_genUrlHash "$URL")"
+    URL_HOST="$(node -e 'console.log(process.argv[1].replace(/^https?:\/\//, '').replace(/\/.+?/, ''))' "$URL")"
+    # echo "URL_HOST=$URL_HOST"
+    echo "$URL_HOST/$URLHASH"
+}
+function _makeUrl() {
+    URL="$1"
+    SHOTID="$2"
+    URLHASH="$(_genUrlHash "$URL")"
+
+    ### Step 1: Create URL entity
+    URLDIR="$DBDIR/urls/$URLHASH"
+    echo "Creating URL entity at '$URLDIR'"
+    mkdir -p "$URLDIR"
+    touch "$URLDIR/snapshots" "$URLDIR/title"
+    echo "$SHOTID" >> "$URLDIR/snapshots"
+}
+function _makeSnapshot() {
+    URL="$1"
+    SHOTID="$2"
+
+    ### Step 1: Create snapshot entity
+    SHOTDIR="$DBDIR/snapshots/$SHOTID"
+    echo "Creating snapshot entity at '$SHOTDIR'"
+    SHOTMETADATADIR="$DBDIR/snapshots/$SHOTID/metadata"
+    mkdir -p "$SHOTDIR" "$SHOTMETADATADIR"
+    touch "$SHOTDIR/main.html"
+    date -Is > "$SHOTMETADATADIR/date"
+    echo "$URL" > "$SHOTMETADATADIR/url"
+    echo "$SHOTID" > "$SHOTMETADATADIR/id"
+    echo "" > "$SHOTMETADATADIR/note"
+
+    ### Step 2: Create URL entity
+    _makeUrl "$URL" "$SHOTID"
+
+    ### Step 3: Append log.txt
+    echo "Writing log to '$DBDIR/log.txt'"
+    _pushLog "$URL" "$SHOTID"
+}
+function _pushLog() {
+    URL="$1"
+    SHOTID="$2"
+    echo "$(_getDateBySnapshotId $SHOTID) snapshot=$SHOTID $URL" >> "$DBDIR/log.txt"
+}
+function _makeArchiveDirStructure() {
+    mkdir -p "$DBDIR/urls" "$DBDIR/snapshots"
+}
+function _fetchWebpageContent() {
+    URL="$1"
+    SHOTID="$2"
+    HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
+    echo "Fetching '$URL' into '$HTMLFILE'"
+    curl -H "User-Agent: $USER_AGENT" "$URL" > "$HTMLFILE"
+    if [[ $? == "0" ]]; then
+        _afterWriteHtml "$URL" "$SHOTID"
+    else
+        echo "ERROR: Cannot fetch webpage content."
+        echo "HINT: You may use 'websave write "$URL"' to write manually."
+    fi
+}
+function _afterWriteHtml() {
+    URL="$1"
+    SHOTID="$2"
+    URLHASH="$(_genUrlHash "$URL")"
+    HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
+    echo "Saved webpage HTML at '$HTMLFILE'"
+    PAGETITLE="$(node -e 'let PAGEPATH=process.argv[1];
+let pageContentMatch=fs.readFileSync(PAGEPATH).toString().replace(/\n/g, '').match(/\<title\>(.+?)\<\/title\>/);
+let pageContent = pageContentMatch ? pageContentMatch[1] : "Untitled";
+console.log(pageContent);' "$DBDIR/snapshots/$SHOTID/main.html")"
+    echo "Page title is '${PAGETITLE}'"
+    ### Step: Modify snapshot metadata title
+    echo "$PAGETITLE" > "$DBDIR/snapshots/$SHOTID/metadata/title"
+    ### Step: Modify URL metadata title
+    echo "$PAGETITLE" > "$DBDIR/urls/$URLHASH/title"
+    ### Step: Append url-title.txt
+    echo "$URL  $PAGETITLE" >> "$DBDIR/url-title.txt"
+    ### Step: Append snapshot-title.txt
+    echo "$SHOTID  $PAGETITLE" >> "$DBDIR/snapshot-title.txt"
+}
+function _genSnapshotId() {
+    UUID="$(uuidgen)"
+    ShortUUID="${UUID:0:8}"
+    printf "$(date +%s).${ShortUUID}"
+}
+function _getDateBySnapshotId() {
+    SHOTID="$1"
+    TIMESTAMP="${SHOTID/.*/}"
+    LONGDATE="$(date --date="@$TIMESTAMP" -Is)"
+    LONGDATE2="${LONGDATE/T/ }"
+    echo "${LONGDATE2:0:19}"
+}
+function _locateBrowsers() {
+    FOUND="false"
+    for CANDIDATE in $@; do
+        if [[ "$(which $CANDIDATE 2>/dev/null)" != "" ]]; then
+            printf "$CANDIDATE"
+            return 0
+        fi
+    done
+}
+
+
+### Preprocessing
+_makeArchiveDirStructure
+
+### Subcommands
+function SC_help() {
+    echo "websave ($APPVER)"
+    echo ""
+    echo "Copyright (c) 2021 Neruthes."
+    echo "This program is free software. Published with <GNU GPL 2.0>."
+    echo "See <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>."
+    echo ""
+    echo "Usage:"
+    echo ""
+    echo "  websave save https://example.com/       Save new webpage"
+    echo "  websave find https://example.com/       List all snapshots of the URL"
+    echo "  websave read 1637656166.9b47e0e9        Read a specific snapshot"
+    echo ""
+    echo "Notes:"
+    echo ""
+    echo "- Configuration file is '~/.config/websave/config'."
+    echo '- Set $DBDIR to where you would like to keep data.'
+    echo '- Set $BROWSER to the program of your preferred web browser.'
+}
+function SC_save() {
+    URL="$1"
+    SHOTID="$(_genSnapshotId)"
+    echo "Saving webpage '$URL' snapshot as '$SHOTID'"
+    _makeSnapshot "$URL" "$SHOTID"
+    _fetchWebpageContent "$URL" "$SHOTID"
+}
+function SC_find() {
+    URL="$1"
+    URLHASH="$(_genUrlHash "$URL")"
+    LISTPATH="$DBDIR/urls/$URLHASH/snapshots"
+    if [[ ! -e "$LISTPATH" ]]; then
+        echo "ERROR: Found no snapshot for this URL."
+        exit 1
+    fi
+    echo "List of snapshots:"
+    echo ""
+    for SHOTID in $(cat "$LISTPATH"); do
+        echo "($(_getDateBySnapshotId $SHOTID))  websave read $SHOTID"
+        echo "               title:  $(cat "$DBDIR/snapshots/$SHOTID/metadata/title")"
+        echo ""
+    done
+}
+function SC_read() {
+    SHOTID="$1"
+    if [[ -z $BROWSER ]]; then
+        echo "WARNING: You should specify BROWSER in your environment."
+        BROWSER="$(_locateBrowsers firefox firefox-bin chromium chromium-bin ungoogled-chromium ungoogled-chromium-bin)"
+    fi
+    $BROWSER "$DBDIR/snapshots/$SHOTID/main.html"
+}
+function SC_search() {
+    KEYWORD="$1"
+    grep "$KEYWORD" "$DBDIR/url-title.txt"
+}
+case $1 in
+    help | save | write | read | find | search | search-snapshot )
+        SC_$1 $2 $3 $4
+        ;;
+    *)
+        SC_help
+        ;;
+esac
+
+
+
+
+###########################################################
+# EXTRA NOTES
+###########################################################
+#
+# - Should I use URLID instead of URLHASH in the filesystem?
+#
