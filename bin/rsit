@@ -120,7 +120,7 @@ function _getStationConfProp() {
 }
 function _setStationConfProp() {
     # TODO: Bugs found
-    return 1
+    # return 1
     if [[ -z "$1" ]]; then
         echo "[ERROR] Property name is not specified."
         exit 4
@@ -131,27 +131,27 @@ function _setStationConfProp() {
     fi
     STATION_CONF_PATH="$(_getStationConfPath)"
     _debugMsg "STATION_CONF_PATH: $STATION_CONF_PATH"
-    RAW_MATCH_LINE=$(grep -m 1 "^$1=" "$STATION_CONF_PATH")
+    RAW_MATCH_LINE="$(grep "^$1=" "$STATION_CONF_PATH")"
     _debugMsg "Raw line is $RAW_MATCH_LINE"
     if [[ "$RAW_MATCH_LINE" == "" ]]; then
         # Create new line
         _debugMsg "Should create a new line."
-        echo "$1=$_PHUUID" > "$STATION_CONF_PATH"
+        echo "$1=$2" > "$STATION_CONF_PATH"
     else
         _debugMsg "Should modify the existing line."
         _debugMsg "1: $1"
         _debugMsg "2: $2"
-        sed -i "s/$1=.*/$1=$_PHUUID/g" "$STATION_CONF_PATH"
+        sed -i "s|$1=.*|$1=$2|g" "$STATION_CONF_PATH"
     fi
-    cat "$STATION_CONF_PATH"
-    STATION_CONF_CONTENT="$(cat "$STATION_CONF_PATH")"
-    STATION_CONF_CONTENT_NEW="${STATION_CONF_CONTENT_NEW/$_PHUUID/$2}"
-    echo "$STATION_CONF_CONTENT_NEW" > "$STATION_CONF_PATH"
-    if [[ "$DEBUG" == "y" ]]; then
-        echo "--------"
-        echo "$STATION_CONF_CONTENT"
-        echo "--------"
-    fi
+    # cat "$STATION_CONF_PATH"
+    # STATION_CONF_CONTENT="$(cat "$STATION_CONF_PATH")"
+    # STATION_CONF_CONTENT_NEW="${STATION_CONF_CONTENT_NEW/$_PHUUID/$2}"
+    # echo "$STATION_CONF_CONTENT_NEW" > "$STATION_CONF_PATH"
+    # if [[ "$DEBUG" == "y" ]]; then
+        # echo "--------"
+        # echo "$STATION_CONF_CONTENT"
+        # echo "--------"
+    # fi
 }
 
 
@@ -202,16 +202,16 @@ case $SUBCOMMAND in
     get-url )
         _getStationConfProp upstream
         ;;
-    # set-url )
-        # _setStationConfProp upstream $ARG0
-        # ;;
+    set-url )
+        _setStationConfProp upstream $ARG0
+        ;;
     pull )
         SC_pull
         ;;
     push )
         SC_push
         ;;
-    h|help|* )
+    h|help )
         _help
         ;;
 esac

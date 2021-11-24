@@ -193,6 +193,7 @@ function _genUrlHash() {
     echo "$URLHASH"
 }
 function _genUrlId() {
+    ### Not in real usage yet
     URL="$1"
     URLHASH="$(_genUrlHash "$URL")"
     URL_HOST="$(node -e 'console.log(process.argv[1].replace(/^https?:\/\//, '').replace(/\/.+?/, ''))' "$URL")"
@@ -246,7 +247,15 @@ function _fetchWebpageContent() {
     SHOTID="$2"
     HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
     echo "Fetching '$URL' into '$HTMLFILE'"
-    curl -H "User-Agent: $USER_AGENT" "$URL" > "$HTMLFILE"
+    if [[ -z "$COOKIE" ]]; then
+        COOKIE="Cookie: "
+    fi
+    if [[ "$(xclip -selection clipboard -o)" == "Cookie:"* ]]; then
+        COOKIE="$(xclip -selection clipboard -o)"
+    fi
+    echo "Using cookie:"
+    echo "  $COOKIE"
+    curl -H "User-Agent: $USER_AGENT" -H "$COOKIE" "$URL" > "$HTMLFILE"
     if [[ $? == "0" ]]; then
         _afterWriteHtml "$URL" "$SHOTID"
     else
@@ -268,6 +277,11 @@ function _afterWriteHtml() {
     URLHASH="$(_genUrlHash "$URL")"
     HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
     echo "Saved webpage HTML at '$HTMLFILE'"
+    if [[ ! -z "$ENCODING" ]]; then
+        echo "Converting from '$ENCODING' to UTF-8."
+        iconv -f "$ENCODING" -t UTF-8 < "$HTMLFILE" > "$HTMLFILE.new"
+        mv "$HTMLFILE.new" "$HTMLFILE"
+    fi
     PAGETITLE="$(node -e 'let PAGEPATH=process.argv[1];
 let pageContentMatch=fs.readFileSync(PAGEPATH).toString().replace(/\n/g, '').match(/\<title\>(.+?)\<\/title\>/);
 let pageContent = pageContentMatch ? pageContentMatch[1] : "Untitled";
@@ -303,6 +317,16 @@ function _locateBrowsers() {
         fi
     done
 }
+function _insertUrlsDict() {
+    URL="$1"
+    echo "$URL" >> "$DBDIR/dict.txt"
+    _sortDictionaries
+}
+function _sortDictionaries() {
+    sort -u "$DBDIR/dict.txt" -o "$DBDIR/dict.txt"
+    sort -u "$DBDIR/url-title.txt" -o "$DBDIR/url-title.txt"
+    sort -u "$DBDIR/snapshot-title.txt" -o "$DBDIR/snapshot-title.txt"
+}
 
 
 ### Preprocessing
@@ -319,32 +343,57 @@ function SC_help() {
     echo "Usage:"
     echo ""
     echo "  websave save https://example.com/       Save new webpage"
+    echo ""
     echo "  websave write https://example.com/      The same, but write content manually"
-    echo "  websave find https://example.com/       List all snapshots of the URL"
+    echo ""
+    echo "  websave import https://example.com/ /path/to/file.html"
+    echo "                                          The same, but import from file path"
+    echo ""
+    echo "  websave ls https://example.com/         List all snapshots of the URL"
+    echo ""
+    echo "  websave find https://example.com/       Read latest snapshot of the URL"
+    echo ""
     echo "  websave read 1637656166.9b47e0e9        Read a specific snapshot"
+    echo ""
     echo "  websave search Keyword                  Search a keyword for URLs"
+    echo ""
+    echo "  websave cache                           Rebuild cache"
     echo ""
     echo "Notes:"
     echo ""
     echo "- Configuration file is '~/.config/websave/config'."
     echo '- Set $DBDIR to where you would like to keep data.'
     echo '- Set $BROWSER to the program of your preferred web browser.'
+    echo '- Copy cookie into clipboard (or $COOKIE) to pass it to curl.'
 }
 function SC_save() {
     URL="$1"
     SHOTID="$(_genSnapshotId)"
     echo "Saving webpage '$URL' snapshot as '$SHOTID'"
+    _insertUrlsDict "$URL"
     _makeSnapshot "$URL" "$SHOTID"
     _fetchWebpageContent "$URL" "$SHOTID"
+    # SC_find "$URL"
 }
 function SC_write() {
     URL="$1"
     SHOTID="$(_genSnapshotId)"
     echo "Saving webpage '$URL' snapshot as '$SHOTID'"
+    _insertUrlsDict "$URL"
     _makeSnapshot "$URL" "$SHOTID"
     _editWebpageContent "$URL" "$SHOTID"
 }
-function SC_find() {
+function SC_import() {
+    URL="$1"
+    IMPORTFILEPATH="$2"
+    SHOTID="$(_genSnapshotId)"
+    echo "Saving webpage '$URL' snapshot as '$SHOTID'"
+    _insertUrlsDict "$URL"
+    _makeSnapshot "$URL" "$SHOTID"
+    cat "$IMPORTFILEPATH" > "$DBDIR/snapshots/$SHOTID/main.html"
+    _afterWriteHtml "$URL" "$SHOTID"
+}
+function SC_ls() {
     URL="$1"
     URLHASH="$(_genUrlHash "$URL")"
     LISTPATH="$DBDIR/urls/$URLHASH/snapshots"
@@ -360,6 +409,24 @@ function SC_find() {
         echo ""
     done
 }
+function SC_find() {
+    URL="$1"
+    URLHASH="$(_genUrlHash "$URL")"
+    LISTPATH="$DBDIR/urls/$URLHASH/snapshots"
+    if [[ ! -e "$LISTPATH" ]]; then
+        echo "ERROR: Found no snapshot for this URL."
+        exit 1
+    fi
+    LATESTSHOT="null"
+    for SHOTID in $(cat "$LISTPATH"); do
+        LATESTSHOT="$SHOTID"
+    done
+    if [[ ! -e "$DBDIR/snapshots/$LATESTSHOT/main.html" ]]; then
+        echo "ERROR: Found no snapshot for this URL."
+        exit 1
+    fi
+    SC_read "$SHOTID"
+}
 function SC_read() {
     SHOTID="$1"
     if [[ -z $BROWSER ]]; then
@@ -372,8 +439,44 @@ function SC_search() {
     KEYWORD="$1"
     grep "$KEYWORD" "$DBDIR/url-title.txt"
 }
+function SC_cache() {
+    echo "Rebuilding cache..."
+    ### Remake url-title.txt
+    rm "$DBDIR/url-title.txt"
+    touch "$DBDIR/url-title.txt"
+    for URL in $(cat "$DBDIR/dict.txt"); do
+        URLHASH="$(_genUrlHash "$URL")"
+        PAGETITLE="$(cat "$DBDIR/urls/$URLHASH/title")"
+        echo "$URL  $PAGETITLE" >> "$DBDIR/url-title.txt"
+    done
+    _sortDictionaries
+    echo "Rebuilt 'url-title.txt'."
+    ### Create JSON
+    rm "$DBDIR/cache.json"
+    touch "$DBDIR/cache.json"
+    echo "[" > "$DBDIR/cache.json"
+    ARRITEMPRECOMMA=""
+    COUNT=0
+    for URL in $(cat "$DBDIR/dict.txt"); do
+        URLHASH="$(_genUrlHash "$URL")"
+        PAGETITLE="$(cat "$DBDIR/urls/$URLHASH/title")"
+        echo "$ARRITEMPRECOMMA{
+            \"url\": \"$URL\",
+            \"title\": \"$PAGETITLE\",
+            \"snapshots\": \"$(cat "$DBDIR/urls/$URLHASH/snapshots")\" }" >> "$DBDIR/cache.json"
+        ARRITEMPRECOMMA=","
+        COUNT=$((COUNT+1))
+    done
+    echo "Rebuilt 'cache.json' with $COUNT entries."
+    echo "]" >> "$DBDIR/cache.json"
+    echo "Operation completed."
+}
+
+
+
+
 case $1 in
-    help | save | write | find | read | search )
+    help|save|write|import|ls|find|read|search|cache )
         SC_$1 $2 $3 $4
         ;;
     *)
