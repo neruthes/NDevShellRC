@@ -185,6 +185,8 @@ CONFDIR="$HOME/.config/websave"
 APPVER="0.1.0-pre1"
 
 
+
+
 ### Internal instructions
 function _genUrlHash() {
     URL="$1"
@@ -247,12 +249,6 @@ function _fetchWebpageContent() {
     SHOTID="$2"
     HTMLFILE="$DBDIR/snapshots/$SHOTID/main.html"
     echo "Fetching '$URL' into '$HTMLFILE'"
-    if [[ -z "$COOKIE" ]]; then
-        COOKIE="Cookie: "
-    fi
-    if [[ "$(xclip -selection clipboard -o)" == "Cookie:"* ]]; then
-        COOKIE="$(xclip -selection clipboard -o)"
-    fi
     echo "Using cookie:"
     echo "  $COOKIE"
     curl -H "User-Agent: $USER_AGENT" -H "$COOKIE" "$URL" > "$HTMLFILE"
@@ -327,6 +323,11 @@ function _sortDictionaries() {
     sort -u "$DBDIR/url-title.txt" -o "$DBDIR/url-title.txt"
     sort -u "$DBDIR/snapshot-title.txt" -o "$DBDIR/snapshot-title.txt"
 }
+function _getHostFromUrl() {
+    URL="$1"
+    URLHOST="$(echo "$URL" | awk -F/ '{print $3}')"
+    printf "$URLHOST"
+}
 
 
 ### Preprocessing
@@ -359,21 +360,61 @@ function SC_help() {
     echo ""
     echo "  websave cache                           Rebuild cache"
     echo ""
+    echo "  websave rm                              Remove snapshot"
+    echo ""
     echo "Notes:"
     echo ""
-    echo "- Configuration file is '~/.config/websave/config'."
-    echo '- Set $DBDIR to where you would like to keep data.'
-    echo '- Set $BROWSER to the program of your preferred web browser.'
-    echo '- Copy cookie into clipboard (or $COOKIE) to pass it to curl.'
+    echo "* Configuration file is '~/.config/websave/config'."
+    echo '* Set $DBDIR to where you would like to keep data.'
+    echo '* Set $BROWSER to the program of your preferred web browser.'
+    echo '* Copy cookie into clipboard (or $COOKIE) to pass it to curl.'
 }
 function SC_save() {
-    URL="$1"
-    SHOTID="$(_genSnapshotId)"
+    export URL="$1"
+    export SHOTID="$(_genSnapshotId)"
+    export URLHOST="$(_getHostFromUrl "$URL")"
+    ### Hook pre-save
+    HOOKPATH="$DBDIR/hooks/pre-save/$URLHOST"
+    if [[ -e "$HOOKPATH" ]]; then
+        source "$HOOKPATH"
+    fi
+    ### Cookie Management
+    # 1. Environment
+    if [[ -z "$COOKIE" ]]; then
+        COOKIE="Cookie: "
+    fi
+    # 2. Clipboard
+    if [[ "$(xclip -selection clipboard -o)" == "Cookie:"* ]]; then
+        COOKIE="$(xclip -selection clipboard -o)"
+        echo "Imported cookie from clipboard: $COOKIE"
+    fi
+    # 3. Saved from previous tasks
+    mkdir -p "$DBDIR/cookies"
+    if [[ -e "$DBDIR/cookies/$URLHOST" ]]; then
+        SAVEDCOOKIE="$(cat "$DBDIR/cookies/$URLHOST")"
+        if [[ "$SAVEDCOOKIE" == "Cookie: "* ]]; then
+            COOKIE="$SAVEDCOOKIE"
+        else
+            echo "ERROR: Saved cookie '$DBDIR/cookies/$URLHOST' is malformed."
+        fi
+    fi
+    # And keep the latest cookie
+    echo "Saving cookie to cache '$DBDIR/cookies/$URLHOST'."
+    echo "$COOKIE" > "$DBDIR/cookies/$URLHOST"
+    ### Real Works
     echo "Saving webpage '$URL' snapshot as '$SHOTID'"
     _insertUrlsDict "$URL"
     _makeSnapshot "$URL" "$SHOTID"
     _fetchWebpageContent "$URL" "$SHOTID"
-    # SC_find "$URL"
+    ### Hook post-save
+    HOOKPATH="$DBDIR/hooks/post-save/$URLHOST"
+    if [[ -e "$HOOKPATH" ]]; then
+        source "$HOOKPATH"
+    fi
+
+    if [[ "$AUTOREVIEW" == "y" ]]; then
+        SC_find "$URL"
+    fi
 }
 function SC_write() {
     URL="$1"
@@ -460,10 +501,14 @@ function SC_cache() {
     for URL in $(cat "$DBDIR/dict.txt"); do
         URLHASH="$(_genUrlHash "$URL")"
         PAGETITLE="$(cat "$DBDIR/urls/$URLHASH/title")"
+        SHOTSLIST=""
+        for SHOTID in $(cat "$DBDIR/urls/$URLHASH/snapshots"); do
+            SHOTSLIST="$SHOTSLIST $SHOTID"
+        done
         echo "$ARRITEMPRECOMMA{
             \"url\": \"$URL\",
             \"title\": \"$PAGETITLE\",
-            \"snapshots\": \"$(cat "$DBDIR/urls/$URLHASH/snapshots")\" }" >> "$DBDIR/cache.json"
+            \"snapshots\": \"$SHOTSLIST\" }" >> "$DBDIR/cache.json"
         ARRITEMPRECOMMA=","
         COUNT=$((COUNT+1))
     done
@@ -471,12 +516,34 @@ function SC_cache() {
     echo "]" >> "$DBDIR/cache.json"
     echo "Operation completed."
 }
+function SC_rm() {
+    SHOTID="$1"
+    URL="$(cat "$DBDIR/snapshots/$SHOTID/metadata/url")"
+    URLHASH="$(_genUrlHash "$URL")"
+    rm -r "$DBDIR/snapshots/$SHOTID"
+    SHOTSLIST=$(cat "$DBDIR/urls/$URLHASH/snapshots")
+    rm "$DBDIR/urls/$URLHASH/snapshots"
+    for ID in $SHOTSLIST; do
+        if [[ "$ID" != "$SHOTID" ]]; then
+            echo "$ID" >> "$DBDIR/urls/$URLHASH/snapshots"
+        fi
+    done
+    echo "Removed snapshot '$SHOTID' from '$URL'."
+    SC_ls "$URL"
+}
+function SC_test() {
+    echo "TEST COMMAND"
+    echo "Internal use only. Do not touch."
+}
 
 
 
 
 case $1 in
-    help|save|write|import|ls|find|read|search|cache )
+    help|save|write|import|ls|find|read|search|cache|rm )
+        SC_$1 $2 $3 $4
+        ;;
+    test)
         SC_$1 $2 $3 $4
         ;;
     *)
@@ -492,4 +559,7 @@ esac
 ###########################################################
 #
 # - Should I use URLID instead of URLHASH in the filesystem?
-#
+# - Cookie input fallback order:
+#   - Environment variable $COOKIE
+#   - Clipboard content "Cookie: "
+#   - Saved cookie in $DBDIR/cookies/$URLHOST
