@@ -58,7 +58,7 @@ function ndrsyncpull() {
 ### ----------------------------------------------------------------------------
 ### Portage
 # alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
-alias fullupdate="sudo emerge -avuDN --tree --keep-going @world"
+alias fullupdate="sudo emerge -vuDN --tree --keep-going @world"
 
 ### ----------------------------------------------------------------------------
 ### Kernel
