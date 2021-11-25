@@ -328,6 +328,12 @@ function _getHostFromUrl() {
     URLHOST="$(echo "$URL" | awk -F/ '{print $3}')"
     printf "$URLHOST"
 }
+function _probeHookDirs() {
+    HOOKSLIST="pre-save post-save"
+    for HOOK in $HOOKSLIST; do
+        mkdir -p "$DBDIR/hooks/$HOOK"
+    done
+}
 
 
 ### Preprocessing
@@ -531,6 +537,10 @@ function SC_rm() {
     echo "Removed snapshot '$SHOTID' from '$URL'."
     SC_ls "$URL"
 }
+function SC_count() {
+    echo "Webpages: $(wc -l < "$DBDIR/dict.txt")"
+    echo "Snapshots: $(ls "$DBDIR/snapshots" | wc -l)"
+}
 function SC_test() {
     echo "TEST COMMAND"
     echo "Internal use only. Do not touch."
@@ -540,7 +550,8 @@ function SC_test() {
 
 
 case $1 in
-    help|save|write|import|ls|find|read|search|cache|rm )
+    help|save|write|import|ls|find|read|search|cache|rm|count )
+        _probeHookDirs
         SC_$1 $2 $3 $4
         ;;
     test)
