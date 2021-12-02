@@ -347,6 +347,10 @@ case $SUBCOMMAND in
         # 0:NAME 1:VAL
         OP_setforce $ARG0 $ARG1
         ;;
+    rm|remove )
+        # 0:NAME
+        OP_remove $ARG0
+        ;;
     p|print )
         OP_print $ARG0
         ;;
