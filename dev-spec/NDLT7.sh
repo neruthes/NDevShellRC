@@ -65,7 +65,7 @@ alias fullupdate="sudo emerge --ask=n --autounmask-write -vuDN --tree --keep-goi
 function buildMyKernelNow() {
     cd /usr/src/linux
     source /etc/portage/make.conf
-    sudo make -j3 all
+    sudo make -j6 all
     sudo make modules_install
     sudo make install
     sudo emerge @module-rebuild --ask=n
