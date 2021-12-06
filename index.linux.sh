@@ -24,7 +24,7 @@ source $DEV_HOME_DIR/NDevShellRC/components/pbcopy.sh
 
 ########## END ##########
 printf "\n" >/dev/stderr
-neofetch >/dev/stderr
+# neofetch >/dev/stderr
 if [[ -r $DEV_HOME_DIR/NDevShellRC/dev-spec/$HOSTNAME.sh ]]; then
     # echo "--------------------------------------------------------------"
     echo "Executing the device-specific script for $HOSTNAME" >/dev/stderr
