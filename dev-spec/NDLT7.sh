@@ -112,4 +112,8 @@ alias pa_z420="env PULSE_SERVER=10.0.233.20"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
+    daemonize /usr/bin/sudo /sbin/rc-service ntp-client restart
 fi
+
+### Homoweb Components Tree
+export HOMOWEBREPO="/home/neruthes/EWS/stn/homoweb/homoweb-tree/TREE"
