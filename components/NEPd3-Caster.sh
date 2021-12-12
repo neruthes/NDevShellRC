@@ -14,8 +14,7 @@ function NEPd3-mount() {
         sudo cryptsetup open /dev/disk/by-partlabel/Pd3Pv6 NEPd3Pv6 --key-file ~/.MyLuksKey
         sudo cryptsetup open /dev/disk/by-partlabel/Pd3Pv7 NEPd3Pv7 --key-file ~/.MyLuksKey
 
-        sudo vgcreate NEPd3Vg1 /dev/mapper/NEPd3Pv{1,2,3,4,5,6,7}
-        sudo lvcreate -l 100%FREE -n NEPd3Lv1 NEPd3Vg1
+        sudo lvchange -a y /dev/NEPd3Vg1/NEPd3Lv1
         sudo mount $MOUNTOPTS /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
 
         ### AOSC: NEPd3A Root
