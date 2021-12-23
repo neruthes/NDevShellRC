@@ -72,6 +72,7 @@ function buildMyKernelNow() {
     pregenkernel
     sudo genkernel initramfs
     sudo grub-mkconfig -o /boot/grub/grub.cfg
+    sudo eclean-kernel -n 7
 }
 
 ### ----------------------------------------------------------------------------
