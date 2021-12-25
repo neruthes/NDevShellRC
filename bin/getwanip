@@ -6,7 +6,7 @@
 UUID=1c3cfea5fcbc4e51bb5957a9ee94b42a
 PREFIX=/tmp/getwanip.$USER.$UUID
 
-curl -s http://1.1.1.1/cdn-cgi/trace | grep ip= | cut -d "=" -f 2 > $PREFIX.ip1
+curl -s https://1.1.1.1/cdn-cgi/trace | grep ip= | cut -d "=" -f 2 > $PREFIX.ip1
 curl -s ifconfig.io > $PREFIX.ip2
 curl -s http://pv.sohu.com/cityjson | grep -Po '\d+\.\d+\.\d+\.\d+' > $PREFIX.ip3
 
