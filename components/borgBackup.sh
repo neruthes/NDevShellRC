@@ -6,7 +6,9 @@ fi
 function borgBackup() {
     # $1 = system|neruthes
 
-    if [[ -r /mnt/NEPd3_Caster/LS/BorgHome/NDLT7 ]]; then
+    # if [[ -r /mnt/NEPd3_Caster/LS/BorgHome/NDLT7 ]]; then
+
+
         echo ""
         echo "Borg backup starting..."
         echo ""
@@ -20,9 +22,16 @@ function borgBackup() {
             printf $DateX
         }
 
-        export REPO_PREFIX="/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"
+        # export REPO_PREFIX="/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"                  ### For NDLT7 local backup
+        export REPO_PREFIX="ssh://neruthes@10.0.233.10:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"    ### When NEPd3 is connected at NDLT6G
 
+        if [[ "$(NDevVar get syslock-borgBackup 2>/dev/null)" == "LOCKED" ]]; then
+            echo "ERROR: An existing backup session is active"
+            return 1
+        fi
         NDevVar set syslock-borgBackup LOCKED
+
+        echo "Starting backup job..."
         case "$1" in
             system )
                 sudo borg create --stats \
@@ -34,7 +43,7 @@ function borgBackup() {
                     --exclude '/var/tmp' \
                     --compression zstd,22 \
                     --one-file-system \
-                    ${REPO_PREFIX}/system::$(stddatetime) \
+                    "${REPO_PREFIX}/system::$(stddatetime)" \
                     /etc /usr /var /boot
                 ;;
             neruthes )
@@ -48,7 +57,7 @@ function borgBackup() {
                     --exclude '/home/neruthes/*/.cache' \
                     --compression zstd,22 \
                     --one-file-system \
-                    ${REPO_PREFIX}/neruthes::$(stddatetime) \
+                    "${REPO_PREFIX}/neruthes::$(stddatetime)" \
                     /home/neruthes
                 ;;
         esac
@@ -57,7 +66,12 @@ function borgBackup() {
 
         echo ""
         echo "Borg backup completed."
-    else
-        echo "Error: Path '/mnt/NEPd3_Caster/LS/BorgHome/NDLT7' cannot be found!"
-    fi
+    
+    
+    
+    
+    
+    # else
+        # echo "Error: Path '/mnt/NEPd3_Caster/LS/BorgHome/NDLT7' cannot be found!"
+    # fi
 }

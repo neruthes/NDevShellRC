@@ -31,13 +31,16 @@ function rsyncBackupNDev--NEPd3_LS_BorgHome--NEPd2_Data() {
     fi
 }
 function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
-    if [[ -e /mnt/NEPd3_Caster/LS/.fsroot ]]; then
+    #if [[ -e neruthes@10.0.233.10:/mnt/NEPd3_Caster/LS/.fsroot ]]; then
         for i in etc usr var root opt lib lib64 boot srv bin sbin home; do
-            sudo rsync -avp --one-file-system --delete --progress /$i/ /mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/$i/
+            sudo rsync -avp --one-file-system --delete --progress /$i/ root@10.0.233.10:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/$i/
         done
-    else
-        echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
-    fi
+    #else
+    #    echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
+    #fi
+}
+function rsyncBackupNDev--NDLT7--NEPd3--home() {
+    sudo rsync -avp --one-file-system --delete --progress /home/ root@10.0.233.10:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
 }
 # From and to NDLT6
 function ndrsyncpush() {
@@ -67,10 +70,18 @@ function fullupdate() {
 
 ### ----------------------------------------------------------------------------
 ### Kernel
+function saveKernelConfig() {
+    sudo cp /usr/src/linux/.config /usr/src/.kernel-config
+}
+function loadKernelConfig() {
+    sudo cp /usr/src/.kernel-config /usr/src/linux/.config
+}
 function buildMyKernelNow() {
     cd /usr/src/linux
+    sudo cp /usr/src/.kernel-config /usr/src/linux/.config
+    sudo make oldconfig
     source /etc/portage/make.conf
-    sudo make -j6 all
+    sudo make -j4 all
     sudo make modules_install
     sudo make install
     sudo emerge @module-rebuild --ask=n

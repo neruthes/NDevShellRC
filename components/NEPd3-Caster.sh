@@ -14,6 +14,11 @@ function NEPd3-mount() {
         sudo cryptsetup open /dev/disk/by-partlabel/Pd3Pv6 NEPd3Pv6 --key-file ~/.MyLuksKey
         sudo cryptsetup open /dev/disk/by-partlabel/Pd3Pv7 NEPd3Pv7 --key-file ~/.MyLuksKey
 
+        ### How to recongnize the LVM setup on a new machine
+        # sudo pvscan
+        # sudo vgsacn
+        # sudo lvscan
+
         sudo lvchange -a y /dev/NEPd3Vg1/NEPd3Lv1
         sudo mount $MOUNTOPTS /dev/NEPd3Vg1/NEPd3Lv1 /mnt/NEPd3_Caster/LS
 
