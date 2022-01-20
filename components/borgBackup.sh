@@ -34,6 +34,7 @@ function borgBackup() {
         echo "Starting backup job..."
         case "$1" in
             system )
+                export REPO_PREFIX="ssh://root@10.0.233.10:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"
                 sudo borg create --stats \
                     --list \
                     --exclude '/etc/mtab' \

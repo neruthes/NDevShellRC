@@ -1,0 +1,53 @@
+#!/bin/bash
+
+APPVER="0.1.0-pre1"
+
+
+
+
+
+function _makeHosts() {
+    sudo cat /etc/hosts.d/*
+}
+
+
+
+
+
+function SC_help() {
+    echo "hostsctl ($APPVER)"
+    echo "Copyright (c) 2022 Neruthes."
+    echo ""
+    echo "This program reads '/etc/hosts.d/*' to produce a '/etc/hosts' file."
+    echo ""
+    echo "Subcommands:"
+    echo "      help                Prints this help message."
+    echo "      gen                 Generate hosts file and write to '/etc/hosts'."
+    echo "      preview             Preview the generated hosts file."
+}
+
+function SC_gen() {
+    echo "This operation needs sudo. You may need to authorize with a password."
+    sudo mkdir -p /etc/hosts.d
+    echo "Generating content..."
+    TMPFILE="/tmp/tmp-675268344-hosts.d-content"
+    _makeHosts > "$TMPFILE"
+    sudo bash -c "cat $TMPFILE > /etc/hosts"
+    echo "The new '/etc/hosts' file has been generated."
+}
+function SC_preview() {
+    _makeHosts
+}
+
+
+
+SUBCOMMAND="$1"
+
+case "$SUBCOMMAND" in
+    help|gen|preview)
+        SC_$SUBCOMMAND
+        ;;
+    *)
+        SC_help
+        ;;
+esac
