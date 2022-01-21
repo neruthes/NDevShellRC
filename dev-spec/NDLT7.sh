@@ -126,6 +126,7 @@ function _checkMortalityAlert() {
 _checkMortalityAlert
 
 alias pa_z420="env PULSE_SERVER=10.0.233.20"
+alias termusic="termusic ~/AUD/music"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
