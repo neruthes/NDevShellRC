@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ "$HOSTNAME" != "NDLT7" ]]; then
-    echo "Not NDLT7!"
+if [[ "$HOSTNAME" != "NDLT6G" ]]; then
+    echo "Not NDLT6G!"
     exit 1
 fi
 
