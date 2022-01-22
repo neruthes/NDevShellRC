@@ -110,12 +110,14 @@ function _checkMortalityAlert() {
 }
 _checkMortalityAlert
 
-alias pa_z420="env PULSE_SERVER=10.0.233.20"
+alias pa_Z420="PULSE_SERVER=10.0.233.20"
+alias pa_NDLT6G="PULSE_SERVER=10.0.233.10"
 alias termusic="termusic ~/AUD/music"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
     daemonize /usr/bin/sudo /sbin/rc-service ntp-client restart
+    daemonize /usr/bin/sudo /sbin/rc-service shadowsocks-rust.client restart
 fi
 
 
