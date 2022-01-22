@@ -6,6 +6,7 @@ if [[ "$HOSTNAME" != "NDLT7" ]]; then
 fi
 
 source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-desktop.sh
+source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-gentoo.sh
 
 if [[ -e $HOME/Pictures ]]; then
     rsync -av $HOME/Pictures/ $HOME/PIC/Default/
@@ -58,38 +59,7 @@ function ndrsyncpull() {
 }
 
 
-### ----------------------------------------------------------------------------
-### Portage
-function fullupdate() {
-    # alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
-    # alias fullupdate="sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world"
-    sudo emerge --sync
-    sudo eix-update
-    sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world
-}
 
-### ----------------------------------------------------------------------------
-### Kernel
-function saveKernelConfig() {
-    sudo cp /usr/src/linux/.config /usr/src/.kernel-config
-}
-function loadKernelConfig() {
-    sudo cp /usr/src/.kernel-config /usr/src/linux/.config
-}
-function buildMyKernelNow() {
-    cd /usr/src/linux
-    sudo cp /usr/src/.kernel-config /usr/src/linux/.config
-    sudo make oldconfig
-    source /etc/portage/make.conf
-    sudo make -j4 all
-    sudo make modules_install
-    sudo make install
-    sudo emerge @module-rebuild --ask=n
-    pregenkernel
-    sudo genkernel initramfs
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
-    sudo eclean-kernel -n 7
-}
 
 ### ----------------------------------------------------------------------------
 ### Miscellaneous
@@ -132,6 +102,10 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
     daemonize /usr/bin/sudo /sbin/rc-service ntp-client restart
 fi
+
+
+
+
 
 ### Homoweb Components Tree
 export HOMOWEBREPO="/home/neruthes/EWS/stn/homoweb/homoweb-tree/TREE"
