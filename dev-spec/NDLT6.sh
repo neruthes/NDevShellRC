@@ -2,7 +2,6 @@
 
 if [[ "$HOSTNAME" != "NDLT6" ]]; then
     echo "Not NDLT6!"
-    exit 1
 fi
 
 # source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-desktop.sh
