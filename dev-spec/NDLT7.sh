@@ -14,6 +14,30 @@ fi
 
 export BROWSER="firefox-bin"
 
+
+
+
+### ----------------------------------------------------------------------------
+### LAN filesystems
+function mountsshfs() {
+    REMOTE_HOST="$1"
+    if [[ "$REMOTE_HOST" == "ND"* ]]; then
+        SSH_USER="root"
+    else
+        SSH_USER="$USER"
+    fi
+    DIRPATH="/mnt/sshfs/${REMOTE_HOST}"
+    sudo mkdir -p "$DIRPATH"
+    sudo chown root:wheel "$DIRPATH"
+    sudo chmod 775 "$DIRPATH"
+    echo sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
+    sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
+}
+
+
+
+
+
 ### ----------------------------------------------------------------------------
 ### Data backup operations
 function rsyncBackupNDev--NEPd2_Data_WWW--NEPd3_LS() {
