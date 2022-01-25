@@ -27,11 +27,21 @@ function mountsshfs() {
         SSH_USER="$USER"
     fi
     DIRPATH="/mnt/sshfs/${REMOTE_HOST}"
-    sudo mkdir -p "$DIRPATH"
-    sudo chown root:wheel "$DIRPATH"
-    sudo chmod 775 "$DIRPATH"
-    echo sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
-    sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
+
+    ### Create directory
+    if [[ ! -e "$DIRPATH" ]]; then
+        sudo mkdir -p "$DIRPATH"
+        sudo chown root:wheel "$DIRPATH"
+        sudo chmod 775 "$DIRPATH"
+    fi
+
+    ### Mount if not mounted
+    if [[ "$(mount | grep "on $DIRPATH")" == "" ]]; then
+        echo sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
+        sshfs "$SSH_USER@${REMOTE_HOST}:/" "$DIRPATH"
+    else
+        echo "Directory '$DIRPATH' has already been mounted."
+    fi
 }
 
 
