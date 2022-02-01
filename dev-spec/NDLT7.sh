@@ -90,6 +90,11 @@ function ndrsyncpull() {
         neruthes@10.0.233.126:/Users/Neruthes/Documents/Design/ \
         /home/neruthes/DOC/Design/
 }
+# NAS on NDLT6G
+function NAS_push-music() {
+    rsync -av --delete --progress $HOME/AUD/music/ $USER@NDLT6G:/home/neruthes/AUD/music/
+    ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music/ /mnt/NEPd3_Caster/LS/NAS/Music/Base/'
+}
 
 
 ### ----------------------------------------------------------------------------
@@ -145,7 +150,7 @@ _checkMortalityAlert
 
 alias pa_Z420="PULSE_SERVER=10.0.233.20"
 alias pa_NDLT6G="PULSE_SERVER=10.0.233.10"
-alias termusic="termusic ~/AUD/music"
+alias ttermusic="termusic ~/AUD/music"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
