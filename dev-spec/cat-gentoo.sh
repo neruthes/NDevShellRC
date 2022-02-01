@@ -26,7 +26,7 @@ function buildMyKernelNow() {
     sudo make oldconfig
     saveKernelConfig
     source /etc/portage/make.conf
-    sudo make -j4 all
+    sudo make -j6 all
     sudo make modules_install
     sudo make install
     sudo emerge @module-rebuild --ask=n
