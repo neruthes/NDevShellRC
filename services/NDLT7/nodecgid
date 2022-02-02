@@ -16,6 +16,3 @@ function restart() {
 function getpid() {
     cat "$PIDFILE" 2>/dev/null
 }
-function S_status() {
-    echo "Hello World"
-}
