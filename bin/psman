@@ -106,7 +106,7 @@ function _svcaction() {
     if [[ "$SVCACTION" == "start" ]]; then
         _requireStateNot "$SVCNAME" started
     fi
-    if [[ "$SVCACTION" == "stop" ]] || [[ "$SVCACTION" == "restart" ]]; then
+    if [[ "$SVCACTION" == "stop" ]]; then
         _requireStateNot "$SVCNAME" stopped
     fi
 
@@ -137,19 +137,18 @@ if [[ -z $1 ]]; then
 fi
 
 # Operation
-case "$SVCACTION" in
-    start|stop|restart|getpid)
-        printf ""
-        ;;
-    *)
-        echo "[ERROR] ACTION must be start/stop/restart"
-        exit 1
-        ;;
-esac
-if [[ -e "$svcdir/$_svcaction" ]]; then
-    _svcaction $SVCNAME $SVCACTION
-    sleep 1
-    _printServiceStatusLine "$SVCNAME"
+
+if [[ -e "$svcdir/$SVCNAME" ]]; then
+    case "$SVCACTION" in
+        start|stop|restart|getpid)
+            _svcaction $SVCNAME $SVCACTION
+            sleep 0.1
+            _printServiceStatusLine "$SVCNAME"
+            ;;
+        *)
+            _svcaction $SVCNAME S_$SVCACTION
+            ;;
+    esac
 else
     echo "[ERROR] Cannot find service '$SVCNAME'."
 fi

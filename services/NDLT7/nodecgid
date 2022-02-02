@@ -1,0 +1,21 @@
+PIDFILE=/tmp/.nodecgid-$USER.pid
+LOGDIR=/tmp/.psman-log-$USER
+LOGFILE=$LOGDIR/nodecgid
+
+function start() {
+    mkdir -p $LOGDIR
+    daemonize -p "$PIDFILE" -o $LOGFILE -- /usr/bin/node $HOME/DEV/nodecgid/nodecgid.js
+}
+function stop() {
+    start-stop-daemon --stop --pidfile "$PIDFILE" --user "$USER" --verbose
+}
+function restart() {
+    stop
+    start
+}
+function getpid() {
+    cat "$PIDFILE" 2>/dev/null
+}
+function S_status() {
+    echo "Hello World"
+}
