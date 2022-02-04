@@ -1,0 +1,122 @@
+#!/bin/bash
+
+#
+# Portage emerge log analytics
+#
+
+ARGV=($@)
+if [[ " ${ARGV[*]} " =~ " -q " ]]; then
+    ARG_QUIET=true
+fi
+
+
+echo "This script needs sudo" >&2
+sudo printf ""
+
+isWARNED_tooOld=false
+DATENOW="$(date +%s)"
+
+LOGPATH=/var/log/emerge.log
+KVDIR=/tmp/.emergeloganalytics.kv
+sudo rm -rf $KVDIR 2>/dev/null
+mkdir -p $KVDIR
+touch $KVDIR/_
+
+######################################
+### Parse log
+######################################
+function _setTaskBeginTime() {
+    # Line example:     1643954990:  === (2 of 2) Compiling/Merging (app-portage/pfl-3.2-r2::/var/db/repos/gentoo/app-portage/pfl/pfl-3.2-r2.ebuild)
+    LINE="$1"
+    TASK_ID="$(echo "$LINE" | cut -d'(' -f3 | sed 's/::.*//')"
+    TASK_HASH="$(echo "$TASK_ID" | sha1sum)"
+    TASK_HASH="${TASK_HASH:0:40}"
+    if [[ -e $KVDIR/$TASK_HASH.begin ]] && [[ $ARG_QUIET != true ]]; then
+        echo "[WARNING] Found duplicate tasks for '$TASK_ID'."
+    fi
+    echo "$RECORD_TS" > $KVDIR/$TASK_HASH.begin
+    echo "$TASK_ID" >> $KVDIR/_taskid.list
+}
+function _setTaskEndTime() {
+    # Line example:     1643954997:  ::: completed emerge (2 of 2) app-portage/pfl-3.2-r2 to /
+    LINE="$1"
+    TASK_ID="$(echo "$LINE" | sed 's/ to.*$//' | sed 's/.* //')"
+    TASK_HASH="$(echo "$TASK_ID" | sha1sum)"
+    TASK_HASH="${TASK_HASH:0:40}"
+    echo "$RECORD_TS" > $KVDIR/$TASK_HASH.end
+}
+function _parseLine() {
+    LINE="$1"
+    export RECORD_TS="$(echo "$LINE" | sed 's/:.*$//')"
+    DATEDISTANCE="$((DATENOW-RECORD_TS))"
+    # if [[ "$DATEDISTANCE" -gt "$((14*42*3600))" ]]; then
+    #     if [[ $isWARNED_tooOld != true ]]; then
+    #         isWARNED_tooOld=true
+    #         echo "[WARNING] Some records are older than 14 days. You may want to clean your 'emerge.log' file."
+    #     fi
+    #     return 0
+    # fi
+    ### Detect begin time
+    if [[ "$LINE" == *") Compiling/Merging ("* ]]; then
+        _setTaskBeginTime "$LINE"
+    fi
+    ### Detect end time
+    if [[ "$LINE" == *"::: completed emerge ("* ]]; then
+        _setTaskEndTime "$LINE"
+    fi
+}
+
+### Make a readable copy
+sudo bash -c "cat '$LOGPATH' > '$KVDIR/emerge.log'; chown $USER:$USER $KVDIR/emerge.log"
+
+### Start parsing
+LINECOUNT="$(wc -l "$KVDIR/emerge.log" | sed 's/ .*//')"
+while IFS= read -r LINE; do
+    LINECOUNT=$((LINECOUNT+1))
+    _parseLine "$LINE"
+done < $KVDIR/emerge.log
+
+echo "Read $LINECOUNT lines from log." >&2
+if [[ $LINECOUNT -gt 1200 ]]; then
+    echo "You may want to clean up the log file at '$LOGPATH'." >&2
+fi
+
+
+######################################
+### Iterate through
+######################################
+function _renderTaskReportLine() {
+    TASK_HASH="$(echo "$TASK_ID" | sha1sum)"
+    TASK_HASH="${TASK_HASH:0:40}"
+
+    TASK_BEGIN="$(cat $KVDIR/$TASK_HASH.begin)"
+    if [[ -e $KVDIR/$TASK_HASH.end ]]; then
+        TASK_END="$(cat $KVDIR/$TASK_HASH.end)"
+        BUILDTIME="$((TASK_END-TASK_BEGIN))"
+        B_min="$((BUILDTIME/60))"
+        if [[ "$B_min" -lt "$LEAST_MIN" ]]; then
+            return 0
+        fi
+        echo "$(printf "%8s" "$B_min min")    $TASK_ID"
+    else
+        echo "[ERROR] Task '$TASK_ID' did not end gracefully." >&2
+        echo "$(printf "%8s" "? min")    $TASK_ID"
+    fi
+    
+    
+}
+
+if [[ -z "$LEAST_MIN" ]]; then
+    LEAST_MIN=2
+fi
+if [[ " ${ARGV[*]} " =~ " -a " ]]; then
+    LEAST_MIN=0
+fi
+if [[ "$LEAST_MIN" != 0 ]]; then
+    echo "Only showing tasks longer than $LEAST_MIN minutes." >&2
+fi
+
+echo "Duration    Task"
+for TASK_ID in $(cat $KVDIR/_taskid.list); do
+    _renderTaskReportLine "$TASK_ID"
+done
