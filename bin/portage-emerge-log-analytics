@@ -3,24 +3,29 @@
 #
 # Portage emerge log analytics
 #
+# Copyright (c) 2022 Neruthes.
+# Published with GNU GPLv2.
+#
 
+
+### Parse arguments to flags
 ARGV=($@)
 if [[ " ${ARGV[*]} " =~ " -q " ]]; then
     ARG_QUIET=true
 fi
 
+### Some arguments?
+function _setmod() {
+    chmod -R 777 $KVDIR 2>/dev/null
+}
 
-echo "This script needs sudo" >&2
-sudo printf ""
-
-isWARNED_tooOld=false
-DATENOW="$(date +%s)"
 
 LOGPATH=/var/log/emerge.log
-KVDIR=/tmp/.emergeloganalytics.kv
-sudo rm -rf $KVDIR 2>/dev/null
+KVDIR=/tmp/.emergeloganalytics.session
 mkdir -p $KVDIR
-touch $KVDIR/_
+rm -rf $KVDIR/*
+date -Is > $KVDIR/date
+_setmod
 
 ######################################
 ### Parse log
@@ -47,15 +52,7 @@ function _setTaskEndTime() {
 }
 function _parseLine() {
     LINE="$1"
-    export RECORD_TS="$(echo "$LINE" | sed 's/:.*$//')"
-    DATEDISTANCE="$((DATENOW-RECORD_TS))"
-    # if [[ "$DATEDISTANCE" -gt "$((14*42*3600))" ]]; then
-    #     if [[ $isWARNED_tooOld != true ]]; then
-    #         isWARNED_tooOld=true
-    #         echo "[WARNING] Some records are older than 14 days. You may want to clean your 'emerge.log' file."
-    #     fi
-    #     return 0
-    # fi
+    RECORD_TS="$(echo "$LINE" | sed 's/:.*$//')"
     ### Detect begin time
     if [[ "$LINE" == *") Compiling/Merging ("* ]]; then
         _setTaskBeginTime "$LINE"
@@ -67,16 +64,21 @@ function _parseLine() {
 }
 
 ### Make a readable copy
-sudo bash -c "cat '$LOGPATH' > '$KVDIR/emerge.log'; chown $USER:$USER $KVDIR/emerge.log"
+
+if [[ ! -r "$LOGPATH" ]]; then
+    echo "Cannot read log file '$LOGPATH'. Please sudo or chmod."
+    exit 1
+fi
+
 
 ### Start parsing
-LINECOUNT="$(wc -l "$KVDIR/emerge.log" | sed 's/ .*//')"
+LINECOUNT="$(wc -l "$LOGPATH" | sed 's/ .*//')"
 while IFS= read -r LINE; do
     LINECOUNT=$((LINECOUNT+1))
     _parseLine "$LINE"
-done < $KVDIR/emerge.log
+done < $LOGPATH
 
-echo "Read $LINECOUNT lines from log." >&2
+echo "Processed $LINECOUNT lines from log." >&2
 if [[ $LINECOUNT -gt 1200 ]]; then
     echo "You may want to clean up the log file at '$LOGPATH'." >&2
 fi
@@ -107,7 +109,7 @@ function _renderTaskReportLine() {
 }
 
 if [[ -z "$LEAST_MIN" ]]; then
-    LEAST_MIN=2
+    LEAST_MIN=3
 fi
 if [[ " ${ARGV[*]} " =~ " -a " ]]; then
     LEAST_MIN=0
@@ -118,5 +120,11 @@ fi
 
 echo "Duration    Task"
 for TASK_ID in $(cat $KVDIR/_taskid.list); do
-    _renderTaskReportLine "$TASK_ID"
+    _renderTaskReportLine "$TASK_ID" > $KVDIR/result.txt
 done
+
+cat "$KVDIR/result.txt"
+
+echo -e '\n\n'"This report has been cached at $KVDIR/result.txt"
+
+_setmod
