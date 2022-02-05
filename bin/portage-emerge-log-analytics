@@ -14,7 +14,7 @@ if [[ " ${ARGV[*]} " =~ " -q " ]]; then
     ARG_QUIET=true
 fi
 
-### Some arguments?
+### Some global functions
 function _setmod() {
     chmod -R 777 $KVDIR 2>/dev/null
 }
@@ -27,6 +27,7 @@ rm -rf $KVDIR/*
 date -Is > $KVDIR/date
 _setmod
 
+
 ######################################
 ### Parse log
 ######################################
@@ -37,7 +38,7 @@ function _setTaskBeginTime() {
     TASK_HASH="$(echo "$TASK_ID" | sha1sum)"
     TASK_HASH="${TASK_HASH:0:40}"
     if [[ -e $KVDIR/$TASK_HASH.begin ]] && [[ $ARG_QUIET != true ]]; then
-        echo "[WARNING] Found duplicate tasks for '$TASK_ID'."
+        echo "[WARNING] Found duplicate tasks for '$TASK_ID'." >&2
     fi
     echo "$RECORD_TS" > $KVDIR/$TASK_HASH.begin
     echo "$TASK_ID" >> $KVDIR/_taskid.list
@@ -79,8 +80,8 @@ while IFS= read -r LINE; do
 done < $LOGPATH
 
 echo "Processed $LINECOUNT lines from log." >&2
-if [[ $LINECOUNT -gt 1200 ]]; then
-    echo "You may want to clean up the log file at '$LOGPATH'." >&2
+if [[ $LINECOUNT -gt 6000 ]]; then
+    echo "    You may want to clean up the log file at '$LOGPATH'." >&2
 fi
 
 
@@ -104,8 +105,6 @@ function _renderTaskReportLine() {
         echo "[ERROR] Task '$TASK_ID' did not end gracefully." >&2
         echo "$(printf "%8s" "? min")    $TASK_ID"
     fi
-    
-    
 }
 
 if [[ -z "$LEAST_MIN" ]]; then
@@ -124,7 +123,6 @@ for TASK_ID in $(cat $KVDIR/_taskid.list); do
 done
 
 cat "$KVDIR/result.txt"
-
-echo -e '\n\n'"This report has been cached at $KVDIR/result.txt"
+echo -e '\n\n'"This report has been cached at $KVDIR/result.txt"'\n'
 
 _setmod
