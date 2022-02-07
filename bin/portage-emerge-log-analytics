@@ -8,6 +8,8 @@
 #
 
 
+
+
 ### Parse arguments to flags
 ARGV=($@)
 if [[ " ${ARGV[*]} " =~ " -q " ]]; then
@@ -17,6 +19,14 @@ fi
 ### Some global functions
 function _setmod() {
     chmod -R 777 $KVDIR 2>/dev/null
+}
+function _copyright() {
+    echo "portage-emerge-log-analytics (version 0.1.1)
+
+    Copyright (c) 2022 Neruthes.
+    This program is free software. Published with GNU GPLv2.
+    Source code is available at <https://github.com/neruthes/NDevShellRC>.
+"
 }
 
 
@@ -28,6 +38,7 @@ date -Is > $KVDIR/date
 _setmod
 
 
+_copyright
 ######################################
 ### Parse log
 ######################################
