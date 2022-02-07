@@ -1,19 +1,18 @@
-#!/bin/node
+#!/usr/bin/node
 
 const fs = require('fs');
 const child_process = require('child_process');
 
-var mydir = process.argv[2];
-child_process.exec(`ls -Flh ${mydir}`, function (err, stdin, stderr) {
-    //console.log(stdin.split('\n')[1].slice(49));
-    //return 0;
-    var files = stdin.split('\n').slice(1).map(function (line) {
-        return line.slice(49).replace(/\*$/, '');
-    }).filter(function (line) {
-        return line.split('').reverse()[0] !== '/';
-    }).join('\n').trim().split('\n');
-    //console.log(files);
+const mydir = process.argv[2];
 
-    var r = Math.floor(Math.random() * files.length);
-    console.log(files[r]);
-});
+const getFilesList = function (source) {
+    return fs.readdirSync(source, { withFileTypes: true })
+        .filter(node => !node.isDirectory())
+        .map(node => node.name)
+        .filter(nodeName => nodeName[0] !== '.');
+};
+
+const filesList = getFilesList(mydir);
+const r = Math.floor(Math.random() * filesList.length);
+
+console.log(filesList[r]);

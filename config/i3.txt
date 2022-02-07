@@ -41,23 +41,32 @@ client.background       #ffffff
 
 # Workspaces
 assign [class="Alacritty"] 1
+
+### WS2: Editors
 assign [class="Atom"] 2
 assign [class="VSCodium"] 2
 assign [class="libreoffice"] 2
 assign [class="Gimp"] 2
+assign [class="Inkscape"] 2
+### WS3: Web
 assign [class="Firefox"] 3
 assign [class="Nightly"] 3
 assign [class="Firefox Nightly"] 3
 assign [class="Chromium-browser"] 3
+### WS4: Messaging
 assign [class="discord"] 4
 assign [class="Telegram"] 4
+### WS5: Games
 assign [class="Minecraft Launcher"] 5
+assign [class="Lutris"] 5
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
-#assign [class="VirtualBox Manager"] 8
+assign [class="vlc"] 7
+assign [class="explorer.exe"] 8
+### WS9: VM
 assign [class="Virt-manager"] 9
 
 # Screens
@@ -65,7 +74,7 @@ assign [class="Virt-manager"] 9
 # Screenshot
 # Multi-screen screenshots with scrot
 #bindsym --release Print exec --no-startup-id scrot-take
-bindsym --release Print exec --no-startup-id spectacle
+bindsym --release Print exec --no-startup-id flameshot gui
 #bindsym --release $mod+Shift+p exec --no-startup-id "scrot-take & scrot-gimp"
 bindsym --release Ctrl+Print exec --no-startup-id "scrot-take & scrot-gimp"
 bindsym --release Ctrl+Shift+Print exec --no-startup-id "scrot-take-full & scrot-gimp"
@@ -108,7 +117,8 @@ bindsym $mod+Shift+Return exec konsole
 bindsym $mod+Shift+q kill
 
 # lock screen
-bindsym $mod+Shift+l exec --no-startup-id i3lock -n -i /home/neruthes/PIC/My_Wallpapers/elm_Cryo.png
+#bindsym $mod+Shift+l exec --no-startup-id i3lock -i /home/neruthes/PIC/My_Wallpapers/elm_Cryo.png
+bindsym $mod+Shift+l exec --no-startup-id myi3lock
 
 # start dmenu (a program launcher)
 #bindsym $mod+d exec dmenu_run
@@ -206,7 +216,9 @@ bar {
 
 
 # Startup programs
+exec --no-startup-id dunst
 exec --no-startup-id fcitx
+exec --no-startup-id cabledropd
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 #exec --no-startup-id alacritty
 #exec --no-startup-id
@@ -223,6 +235,8 @@ gaps vertical 80
 gaps inner 0
 workspace 2 gaps outer 0
 workspace 3 gaps outer 0
+workspace 7 gaps outer 0
+workspace 8 gaps outer 0
 workspace 9 gaps outer 0
 bindsym $mod+Shift+u exec --no-startup-id i3exgap
 bindsym $mod+Shift+i exec --no-startup-id i3biggap

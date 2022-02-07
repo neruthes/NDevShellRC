@@ -102,8 +102,8 @@ function _renderTaskReportLine() {
         fi
         echo "$(printf "%8s" "$B_min min")    $TASK_ID"
     else
-        echo "[ERROR] Task '$TASK_ID' did not end gracefully." >&2
-        echo "$(printf "%8s" "? min")    $TASK_ID"
+        echo "[ERROR] Task '$TASK_ID' did not end gracefully (or is still running)." >&2
+        echo "$(printf "%8s" "??? min")    $(printf "%-60s" "$TASK_ID") (cannot find end time)"
     fi
 }
 
@@ -117,11 +117,12 @@ if [[ "$LEAST_MIN" != 0 ]]; then
     echo "Only showing tasks longer than $LEAST_MIN minutes." >&2
 fi
 
-echo "Duration    Task"
 for TASK_ID in $(cat $KVDIR/_taskid.list); do
-    _renderTaskReportLine "$TASK_ID" > $KVDIR/result.txt
+    _renderTaskReportLine "$TASK_ID" >> $KVDIR/result.txt
 done
 
+
+echo -e '\n'"Duration    Task"
 cat "$KVDIR/result.txt"
 echo -e '\n\n'"This report has been cached at $KVDIR/result.txt"'\n'
 

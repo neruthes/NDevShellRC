@@ -1,4 +1,4 @@
-#!/bin/node
+#!/usr/bin/node
 
 const { execSync } = require('child_process');
 const fs = require('fs');

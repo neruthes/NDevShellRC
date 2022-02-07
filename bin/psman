@@ -142,7 +142,7 @@ if [[ -e "$svcdir/$SVCNAME" ]]; then
     case "$SVCACTION" in
         start|stop|restart|getpid)
             _svcaction $SVCNAME $SVCACTION
-            sleep 0.1
+            sleep 0.6
             _printServiceStatusLine "$SVCNAME"
             ;;
         *)
