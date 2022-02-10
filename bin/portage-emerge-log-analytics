@@ -21,7 +21,7 @@ function _setmod() {
     chmod -R 777 $KVDIR 2>/dev/null
 }
 function _copyright() {
-    echo "portage-emerge-log-analytics (version 0.1.1)
+    echo "portage-emerge-log-analytics (version 0.1.2)
 
     Copyright (c) 2022 Neruthes.
     This program is free software. Published with GNU GPLv2.
@@ -42,6 +42,16 @@ _copyright
 ######################################
 ### Parse log
 ######################################
+function _warnDuplicateTask() {
+    TASK_ID="$1"
+    SKIPLIST="x11-drivers/nvidia-drivers"
+    for ITEM in $SKIPLIST; do
+        if [[ "$TASK_ID" == "$ITEM-"* ]]; then
+            return 0
+        fi
+    done
+    echo "[WARNING] Found duplicate tasks for '$TASK_ID'." >&2
+}
 function _setTaskBeginTime() {
     # Line example:     1643954990:  === (2 of 2) Compiling/Merging (app-portage/pfl-3.2-r2::/var/db/repos/gentoo/app-portage/pfl/pfl-3.2-r2.ebuild)
     LINE="$1"
@@ -49,7 +59,7 @@ function _setTaskBeginTime() {
     TASK_HASH="$(echo "$TASK_ID" | sha1sum)"
     TASK_HASH="${TASK_HASH:0:40}"
     if [[ -e $KVDIR/$TASK_HASH.begin ]] && [[ $ARG_QUIET != true ]]; then
-        echo "[WARNING] Found duplicate tasks for '$TASK_ID'." >&2
+        _warnDuplicateTask "$TASK_ID"
     fi
     echo "$RECORD_TS" > $KVDIR/$TASK_HASH.begin
     echo "$TASK_ID" >> $KVDIR/_taskid.list
@@ -125,7 +135,7 @@ if [[ " ${ARGV[*]} " =~ " -a " ]]; then
     LEAST_MIN=0
 fi
 if [[ "$LEAST_MIN" != 0 ]]; then
-    echo "Only showing tasks longer than $LEAST_MIN minutes." >&2
+    echo "Only showing tasks lasting $LEAST_MIN minutes or more." >&2
 fi
 
 for TASK_ID in $(cat $KVDIR/_taskid.list); do

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+IFNAME="$1"
+OFNAME="$2"
+
+if [[ -z "$2" ]]; then
+    echo "Usage:        $(basename $0)   input.pdf   output.jpg"
+    exit 0
+fi
+
+FORMAT="jpeg"
+case "$OFNAME" in
+    *.png | *.PNG )
+        FORMAT="png16m"
+        ;;
+esac
+echo "FORMAT = $FORMAT"
+
+
+gs \
+    -dNOPAUSE \
+    -dBATCH \
+    -sDEVICE="$FORMAT" \
+    -r300 \
+    -dGraphicsAlphaBits=4 \
+    -dTextAlphaBits=4 \
+    -sOutputFile="$OFNAME" \
+    "$IFNAME"

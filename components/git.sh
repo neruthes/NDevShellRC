@@ -23,11 +23,11 @@ function gcl() {
     git clone git@$RHOST:$REPOID.git
 }
 function gitnuke() {
-    cp .git/config .gitconf
+    cp .git/config gitconfig
     rm -rf .git
     git init
-    cat .gitconf > .git/config
-    rm .gitconf
+    cat gitconfig > .git/config
+    rm gitconfig
     git add .
     git commit -m "GITNUKE"
     echo "Git history nuked"

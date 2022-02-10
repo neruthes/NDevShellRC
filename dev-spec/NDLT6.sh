@@ -3,8 +3,9 @@
 if [[ "$HOSTNAME" != "NDLT6" ]]; then
     echo "Not NDLT6!"
 fi
+FORK=y psman-init
 
-# source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-desktop.sh
+source $DEV_HOME_DIR/NDevShellRC/dev-spec/cat-desktop.sh
 
 ### ----------------------------------------------------------------------------
 ### Data backup operations
