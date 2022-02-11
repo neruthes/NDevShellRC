@@ -95,6 +95,21 @@ function NAS_push-music() {
     rsync -av --delete --progress $HOME/AUD/music/ $USER@NDLT6G:/home/neruthes/AUD/music/
     ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music/ /mnt/NEPd3_Caster/LS/NAS/Music/Base/'
 }
+function NAS_push-local() {
+    rsync -av --delete $HOME/DLD/.nas/ $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_local/NDLT7/
+}
+
+
+### ----------------------------------------------------------------------------
+### Proxy services
+function saveOmegaPac() {
+    FILENAME="OmegaProfile_AutoSwitch.pac"
+    FROMDIR="$HOME/DLD/Latest"
+    TODIR="$HOME/DLD/.nas"
+    mkdir -p $TODIR
+    cat "$FROMDIR/$FILENAME" > "$TODIR/$FILENAME"
+    NAS_push-local
+}
 
 
 ### ----------------------------------------------------------------------------
@@ -116,7 +131,6 @@ fi
 
 ### ----------------------------------------------------------------------------
 ### Miscellaneous
-# alias startlutris="INSIDE CHROOT    sudo -u player daemonize $(which proxychains) lutris"
 function _checkMortalityAlert() {
     if [[ "$USER" != "neruthes" ]]; then
         ### Not for any other user
