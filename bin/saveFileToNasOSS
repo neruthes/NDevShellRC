@@ -7,11 +7,9 @@ fi
 
 FILEFULLPATH="$(realpath $1)"
 FNMAIN="$(basename -- "$FILEFULLPATH")"
-FNEXT="${FNMAIN##*.}"
-FNMAIN="${FNMAIN%.*}"
 PATHHASH="$(echo "$RandomSalt001:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
-NEWFN="$PATHHASH-$FNMAIN.$FNEXT"
+NEWFN="$PATHHASH-$FNMAIN"
 
 scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/._objStore/"$NEWFN"
 
