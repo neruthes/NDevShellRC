@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [[ "$HOSTNAME" != "NDLT7" ]]; then
+    echo "ERROR: This script may only be used on 'NDLT7'. Current device is '$HOSTNAME'."
+    exit 0
+fi
+
+FILEFULLPATH="$(realpath $1)"
+FNMAIN="$(basename -- "$FILEFULLPATH")"
+FNEXT="${FNMAIN##*.}"
+FNMAIN="${FNMAIN%.*}"
+PATHHASH="$(echo "$RandomSalt001:$FILEFULLPATH" | sha256sum)"
+PATHHASH="${PATHHASH:0:32}"
+NEWFN="$PATHHASH-$FNMAIN.$FNEXT"
+
+scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/._objStore/"$NEWFN"
+
+echo "http://nas.ndlt6g.lan/._objStore/$NEWFN"

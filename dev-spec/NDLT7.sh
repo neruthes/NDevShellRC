@@ -65,16 +65,16 @@ function rsyncBackupNDev--NEPd3_LS_BorgHome--NEPd2_Data() {
     fi
 }
 function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
-    #if [[ -e neruthes@10.0.233.10:/mnt/NEPd3_Caster/LS/.fsroot ]]; then
+    #if [[ -e neruthes@NDLT6G:/mnt/NEPd3_Caster/LS/.fsroot ]]; then
         for i in etc usr var root opt lib lib64 boot srv bin sbin home; do
-            sudo rsync -avp --one-file-system --delete --progress /$i/ root@10.0.233.10:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/$i/
+            sudo rsync -avp --one-file-system --delete --progress /$i/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/$i/
         done
     #else
     #    echo "Error: Disk volume 'NEPd3_LS' is not mounted!"
     #fi
 }
 function rsyncBackupNDev--NDLT7--NEPd3--home() {
-    sudo rsync -avp --one-file-system --delete --progress /home/ root@10.0.233.10:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
+    sudo rsync -avp --one-file-system --delete --progress /home/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
 }
 # From and to NDLT6
 function ndrsyncpush() {
@@ -107,8 +107,13 @@ function saveOmegaPac() {
     FROMDIR="$HOME/DLD/Latest"
     TODIR="$HOME/DLD/.nas"
     mkdir -p $TODIR
+    if [[ ! -e "$FROMDIR/$FILENAME" ]]; then
+        echo "ERROR: Cannot find file '$FROMDIR/$FILENAME'."
+        return 1
+    fi
     cat "$FROMDIR/$FILENAME" > "$TODIR/$FILENAME"
     NAS_push-local
+    rm "$FROMDIR/$FILENAME"
 }
 
 
@@ -163,7 +168,7 @@ function _checkMortalityAlert() {
 _checkMortalityAlert
 
 alias pa_Z420="PULSE_SERVER=10.0.233.20"
-alias pa_NDLT6G="PULSE_SERVER=10.0.233.10"
+alias pa_NDLT6G="PULSE_SERVER=NDLT6G"
 alias ttermusic="termusic ~/AUD/music"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
