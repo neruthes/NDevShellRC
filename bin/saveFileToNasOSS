@@ -13,4 +13,4 @@ NEWFN="$PATHHASH-$FNMAIN"
 
 scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/._objStore/"$NEWFN"
 
-echo "http://nas.ndlt6g.lan/._objStore/$NEWFN"
+echo "https://oss.neruthes.xyz:2096/$NEWFN"
