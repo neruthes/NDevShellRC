@@ -11,6 +11,6 @@ PATHHASH="$(echo "$RandomSalt001:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
 NEWFN="$PATHHASH-$FNMAIN"
 
-scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/._objStore/"$NEWFN"
+scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/OSS/"$NEWFN"
 
 echo "https://oss.neruthes.xyz:2096/$NEWFN"
