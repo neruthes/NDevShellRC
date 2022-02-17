@@ -5,12 +5,16 @@ if [[ "$HOSTNAME" != "NDLT7" ]]; then
     exit 0
 fi
 
+DATEMARK="$(date +%Y-%m-%d)"
+REALSALT="$RandomSalt001:$DATEMARK"   # A new salt every day; files need GC!
+
 FILEFULLPATH="$(realpath $1)"
 FNMAIN="$(basename -- "$FILEFULLPATH")"
-PATHHASH="$(echo "$RandomSalt001:$FILEFULLPATH" | sha256sum)"
+PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
-NEWFN="$PATHHASH-$FNMAIN"
+EXTNAME="${FNMAIN/*./}"
+NEWFN="$DATEMARK--$FNMAIN-$PATHHASH.$EXTNAME"
 
 scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/OSS/"$NEWFN"
 
-echo "https://oss.neruthes.xyz:2096/$NEWFN"
+echo "https://oss.udon.pw:2096/$NEWFN"
