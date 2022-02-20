@@ -14,4 +14,4 @@ fi
 
 export BROWSER="firefox-bin"
 
-alias termusic="termusic ~/AUD/music"
+alias ttermusic="termusic ~/AUD/music"

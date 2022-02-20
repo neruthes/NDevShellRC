@@ -5,16 +5,31 @@ if [[ "$HOSTNAME" != "NDLT7" ]]; then
     exit 0
 fi
 
-DATEMARK="$(date +%Y-%m-%d)"
-REALSALT="$RandomSalt001:$DATEMARK"   # A new salt every day; files need GC!
+function _save() {
+    FILEFULLPATH="$1"
+    NEWFN="$2"
+    scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/OSS/"$NEWFN" >/dev/null 2>&1
+    echo "https://oss.udon.pw:2096/$NEWFN"
+}
 
+## Common
 FILEFULLPATH="$(realpath $1)"
 FNMAIN="$(basename -- "$FILEFULLPATH")"
+
+
+## Volatile version
+DATEMARK="$(date +%Y-%m-%d)"
+REALSALT="$RandomSalt001:$DATEMARK"     # A new salt every day; files need GC!
 PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
 EXTNAME="${FNMAIN/*./}"
 NEWFN="$DATEMARK--$FNMAIN-$PATHHASH.$EXTNAME"
+_save "$FILEFULLPATH" "e/$NEWFN"
 
-scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/OSS/"$NEWFN"
-
-echo "https://oss.udon.pw:2096/$NEWFN"
+## Persistent version
+if [[ $2 == -p ]]; then
+    PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
+    PATHHASH="${PATHHASH:0:32}"
+    NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"
+    _save "$FILEFULLPATH" "p/$NEWFN"
+fi
