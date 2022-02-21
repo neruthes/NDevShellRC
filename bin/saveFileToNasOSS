@@ -1,15 +1,33 @@
 #!/bin/bash
 
-if [[ "$HOSTNAME" != "NDLT7" ]]; then
-    echo "ERROR: This script may only be used on 'NDLT7'. Current device is '$HOSTNAME'."
-    exit 0
+# if [[ "$HOSTNAME" != "NDLT7" ]]; then
+#     echo "ERROR: This script may only be used on 'NDLT7'. Current device is '$HOSTNAME'."
+#     exit 0
+# fi
+if [[ -z "$OSS_SERVERS_LIST" ]]; then
+    OSS_SERVERS_LIST='
+    {"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.udon.pw:2096"}
+    {"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.udon.pw:2087"}
+    '
 fi
 
 function _save() {
     FILEFULLPATH="$1"
-    NEWFN="$2"
-    scp "$FILEFULLPATH" $USER@NDLT6G:/mnt/NEPd3_Caster/LS/OSS/"$NEWFN" >/dev/null 2>&1
-    echo "https://oss.udon.pw:2096/$NEWFN"
+    SUBDIR="$2"
+    NEWFN="$3"
+    RELPATH="${SUBDIR}${NEWFN}"
+    for SERVER in $OSS_SERVERS_LIST; do
+        REMOTE_HOST="$(jq -r .host <<< "$SERVER")"
+        REMOTE_PATH="$(jq -r .path <<< "$SERVER")"
+        REMOTE_SSH="$REMOTE_HOST:$REMOTE_PATH"
+        REMOTE_WEB="$(jq -r .web <<< "$SERVER")"
+        # echo "[INFO] Pushing to service '$REMOTE_WEB'"
+        if [[ ! -z "$OSS_SUBDIR" ]]; then
+            ssh "$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
+        fi
+        scp "$FILEFULLPATH" "${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
+        echo "${REMOTE_WEB}/${RELPATH}"
+    done
 }
 
 ## Common
@@ -24,12 +42,12 @@ PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
 EXTNAME="${FNMAIN/*./}"
 NEWFN="$DATEMARK--$FNMAIN-$PATHHASH.$EXTNAME"
-_save "$FILEFULLPATH" "e/$NEWFN"
+_save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
 
 ## Persistent version
 if [[ $2 == -p ]]; then
     PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
     PATHHASH="${PATHHASH:0:32}"
     NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"
-    _save "$FILEFULLPATH" "p/$NEWFN"
+    _save "$FILEFULLPATH" "p/${OSS_SUBDIR}" "${NEWFN}"
 fi

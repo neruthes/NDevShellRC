@@ -177,6 +177,11 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
     daemonize /usr/bin/sudo /sbin/rc-service shadowsocks-rust.client restart
 fi
 
+# For OSS
+OSS_SERVERS_LIST='
+{"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.udon.pw:2096"}
+{"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.udon.pw:2087"}
+'
 
 
 
