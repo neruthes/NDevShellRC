@@ -173,8 +173,8 @@ alias ttermusic="termusic ~/AUD/music"
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init
-    daemonize /usr/bin/sudo /sbin/rc-service ntp-client restart
-    daemonize /usr/bin/sudo /sbin/rc-service shadowsocks-rust.client restart
+    daemonize /usr/bin/sudo /sbin/rc-service ntp-client start
+    daemonize /usr/bin/sudo /sbin/rc-service shadowsocks-rust.client start
 fi
 
 # For OSS

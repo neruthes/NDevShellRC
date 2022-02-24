@@ -11,6 +11,10 @@ if [[ -z "$OSS_SERVERS_LIST" ]]; then
     '
 fi
 
+if [[ -z "$OSS_SUBDIR" ]]; then
+    OSS_SUBDIR=misc/
+fi
+
 function _save() {
     FILEFULLPATH="$1"
     SUBDIR="$2"
