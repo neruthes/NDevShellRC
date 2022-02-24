@@ -151,7 +151,7 @@ function _checkMortalityAlert() {
     NOWDATE="$(date +%s)"
     DELTASECS="$((NOWDATE-OLDDATE))"
     DELTAHOURS="$((DELTASECS/3600))"
-    if [[ "$DELTAHOURS" -lt "24" ]]; then
+    if [[ "$DELTAHOURS" -lt "$(24*4)" ]]; then
         cd "$RealPWD"
         return 0
     fi
