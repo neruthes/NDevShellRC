@@ -18,6 +18,28 @@ export BROWSER="firefox-bin"
 
 
 ### ----------------------------------------------------------------------------
+### System dev and maintain
+function importOverlayPkg() {
+    if [[ $PWD != "/var/db/repos/"* ]]; then
+        echo "You must be inside /var/db/repos/*"
+        return 0
+    fi
+    PKGSPEC="$1"                # Example: "sys-apps/sysvinit/"
+    if [[ $PKGSPEC != *"/" ]]; then
+        echo "Inavlid argument"
+        return 0
+    fi
+    MYREPODIR="/home/neruthes/DEV/portage-overlay-neruthes"
+    FINALDIR="$MYREPODIR/$PKGSPEC"
+    mkdir -p "$FINALDIR"
+    rsync -av --delete  $PWD/$1  "$FINALDIR"
+    return 0
+    # cd /var/db/repos/gentoo-zh; importOverlayPkg net-proxy/shadowsocks-rust-bin/
+}
+
+
+
+### ----------------------------------------------------------------------------
 ### LAN filesystems
 function mountsshfs() {
     REMOTE_HOST="$1"
