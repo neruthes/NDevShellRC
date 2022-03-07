@@ -1,0 +1,50 @@
+#!/bin/bash
+
+REPONAME="$(basename $(realpath .))"
+GDIR="/home/neruthes/DEV/githubdistweb"
+
+if [[ ! -d "$PWD/_dist" ]]; then
+    echo "[ERROR] Cannot find a '_dist' directory here."
+    exit 1
+fi
+
+### Sync out files and create tarvalls
+tar cvf _dist/dist.tar --exclude 'private' --exclude 'tex-tmp' --exclude '.git' --exclude 'dist.tar' _dist
+
+rsync -av --delete _dist/ /home/neruthes/DEV/WEB/githubdist/$REPONAME/ --exclude={'tex-tmp','.*','private','.git'}
+
+date -Is > $GDIR/trigger
+pwd >> $GDIR/trigger
+
+
+
+### Push to Vercel only if last commit was old enough
+function _doPush() {
+    echo "[INFO] Pushing..."
+    cd $GDIR
+    git add .
+    git commit -m 'autobuild'
+    git push
+}
+function _attemptPush() {
+    cd $GDIR
+    OLDDATE="$(git log -1 --format=%at)"
+    NOWDATE="$(date +%s)"
+    DELTASECS="$((NOWDATE-OLDDATE))"
+    DELTAHOURS="$((DELTASECS/3600))"
+    echo "[INFO] $DELTAHOURS hours since last push to GitHub + Vercel."
+    if [[ "$DELTAHOURS" -lt "12" ]]; then
+        echo "[INFO] Less than 12 hours; not pushing."
+        return 0
+    else
+        _doPush
+    fi
+}
+_attemptPush
+
+
+
+if [[ $1 == --now ]]; then
+    echo "[INFO] Manually forced pushing."
+    _doPush
+fi

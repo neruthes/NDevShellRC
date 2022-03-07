@@ -1,0 +1,12 @@
+#!/bin/bash
+
+REALPATH="$1"
+PAGES_RANGE="$2"
+PDFFN="$(basename "$REALPATH")"
+RANGED_PDF_PATH="/tmp/${PDFFN/.pdf/}_page$PAGES_RANGE.pdf"
+pdftk "$REALPATH" cat $PAGES_RANGE output "$RANGED_PDF_PATH"
+du -h "$RANGED_PDF_PATH"
+
+if [[ $OSS == y ]]; then
+    OSS_SUBDIR=pdfrange/ saveFileToNasOSS "$RANGED_PDF_PATH"
+fi

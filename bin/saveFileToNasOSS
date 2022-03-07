@@ -38,6 +38,11 @@ function _save() {
 FILEFULLPATH="$(realpath $1)"
 FNMAIN="$(basename -- "$FILEFULLPATH")"
 
+if [[ "$FNMAIN" != *"."* ]]; then
+    echo "[ERROR] File must have extension name."
+    exit 1
+fi
+
 
 ## Volatile version
 DATEMARK="$(date +%Y-%m-%d)"
@@ -45,7 +50,7 @@ REALSALT="$RandomSalt001:$DATEMARK"     # A new salt every day; files need GC!
 PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
 PATHHASH="${PATHHASH:0:32}"
 EXTNAME="${FNMAIN/*./}"
-NEWFN="$DATEMARK--$FNMAIN-$PATHHASH.$EXTNAME"
+NEWFN="$FNMAIN--$DATEMARK-$PATHHASH.$EXTNAME"
 _save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
 
 ## Persistent version
