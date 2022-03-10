@@ -22,6 +22,10 @@ while [[ $# -gt 0 ]]; do
         PAGES_RANGE="${1/--range=/}"
         shift # past argument
         ;;
+    --rname=*)
+        RANGED_NAME="${1/--rname=/}"
+        shift # past argument
+        ;;
     -*|--*)
         echo "Unknown option $1"
         exit 1
@@ -98,5 +102,5 @@ if [[ ! -z "$PAGES_RANGE" ]]; then
     # if [[ $TONASOOS == y ]]; then
     #     OSS_SUBDIR=ntexdb-ranged/ saveFileToNasOSS "$RANGED_PDF_PATH"
     # fi
-    OSS=y pdfrange "$REALPATH" "$PAGES_RANGE"
+    RANGED_NAME="$RANGED_NAME" OSS=y pdfrange "$REALPATH" "$PAGES_RANGE"
 fi
