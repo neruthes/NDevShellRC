@@ -44,7 +44,7 @@ _attemptPush
 
 
 
-if [[ $1 == --now ]]; then
+if [[ " $@ " == *"--now"* ]]; then
     echo "[INFO] Manually forced pushing."
     _doPush
 fi
