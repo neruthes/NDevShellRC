@@ -40,9 +40,11 @@ function _attemptPush() {
         _doPush
     fi
 }
-_attemptPush
-
-
+if [[ " $@ " != *"--wait"* ]]; then
+    _attemptPush
+else
+    echo "[INFO] Not pushing to git remote; will wait for the next run."
+fi
 
 if [[ " $@ " == *"--now"* ]]; then
     echo "[INFO] Manually forced pushing."

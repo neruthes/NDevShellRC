@@ -80,7 +80,10 @@ fi
 ### --jpg | --png
 case "$TOIMG" in
     jpg|png)
-        IMGPATH="/tmp/$(basename "$REALPATH").$TOIMG"
+        mkdir -p /tmp/http/nteximg
+        chmod 777 /tmp/http/nteximg
+        FHASH1="$(echo "$REALPATH" | sha256sum)"
+        IMGPATH="/tmp/http/nteximg/$(basename "$REALPATH")-${FHASH1:0:12}.$TOIMG"
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
