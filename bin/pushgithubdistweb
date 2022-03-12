@@ -37,14 +37,17 @@ function _attemptPush() {
         echo "[INFO] Less than 12 hours; not pushing."
         return 0
     else
-        _doPush
+        if [[ $ifWAIT == y ]]; then
+            echo "[INFO] Not pushing to git remote; will wait for the next run."
+        else
+            _doPush
+        fi
     fi
 }
 if [[ " $@ " != *"--wait"* ]]; then
-    _attemptPush
-else
-    echo "[INFO] Not pushing to git remote; will wait for the next run."
+    ifWAIT=y
 fi
+_attemptPush
 
 if [[ " $@ " == *"--now"* ]]; then
     echo "[INFO] Manually forced pushing."
