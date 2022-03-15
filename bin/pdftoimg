@@ -21,7 +21,7 @@ gs \
     -dNOPAUSE \
     -dBATCH \
     -sDEVICE="$FORMAT" \
-    -r300 \
+    -r600 \
     -dGraphicsAlphaBits=4 \
     -dTextAlphaBits=4 \
     -sOutputFile="$OFNAME" \
