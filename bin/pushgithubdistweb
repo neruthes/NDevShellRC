@@ -1,21 +1,35 @@
 #!/bin/bash
 
+
+MAINPWD="$PWD"
+
 REPONAME="$(basename $(realpath .))"
 GDIR="/home/neruthes/DEV/githubdistweb"
+WEBDIR="/home/neruthes/DEV/WEB/githubdist"
+
 
 if [[ ! -d "$PWD/_dist" ]]; then
     echo "[ERROR] Cannot find a '_dist' directory here."
     exit 1
 fi
 
-### Sync out files and create tarvalls
-tar cvf _dist/dist.tar --exclude 'private' --exclude 'tex-tmp' --exclude '.git' --exclude 'dist.tar' _dist
 
-rsync -av --delete _dist/ /home/neruthes/DEV/WEB/githubdist/$REPONAME/ --exclude={'tex-tmp','.*','private','.git'}
-
+### Sync out files
+rsync -av --delete _dist/ $WEBDIR/$REPONAME/ --exclude={'tex-tmp','.*','private','.git','*.tar'}
+rsync -av --delete   $WEBDIR/   NDLT6G:/mnt/NEPd3_Caster/LS/NAS/githubdistweb/
 date -Is > $GDIR/trigger
 pwd >> $GDIR/trigger
 
+
+### Create tarball
+rm $WEBDIR.tar 2>/dev/null
+cd $WEBDIR
+cd ..
+tar cvf /tmp/githubdist.tar --exclude 'dist.tar' githubdist
+saveFileToNasOSS /tmp/githubdist.tar -p
+rm /tmp/githubdist.tar
+cd "$MAINPWD"
+exit 0
 
 
 ### Push to Vercel only if last commit was old enough
@@ -44,12 +58,16 @@ function _attemptPush() {
         fi
     fi
 }
-if [[ " $@ " != *"--wait"* ]]; then
+
+
+if [[ "  $@  " != *" --wait "* ]]; then
     ifWAIT=y
+    echo "[INFO] Found arg '--wait'"
 fi
 _attemptPush
 
-if [[ " $@ " == *"--now"* ]]; then
+
+if [[ "  $@  " == *" --now "* ]]; then
     echo "[INFO] Manually forced pushing."
     _doPush
 fi
