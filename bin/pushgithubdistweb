@@ -61,7 +61,6 @@ function _attemptPush() {
 
 if [[ "  $@  " == *" --wait "* ]]; then
     ifWAIT=y
-    echo "[INFO] Found arg '--wait'"
 fi
 _attemptPush
 
