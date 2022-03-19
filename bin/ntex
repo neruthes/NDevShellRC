@@ -26,6 +26,10 @@ while [[ $# -gt 0 ]]; do
         RANGED_NAME="${1/--rname=/}"
         shift # past argument
         ;;
+    --altfn=*)
+        INPUT_ALTFN="${1/--altfn=/}.pdf"
+        shift # past argument
+        ;;
     -*|--*)
         echo "Unknown option $1"
         exit 1
@@ -65,6 +69,9 @@ PDFFN="$(basename "$REALPATH")"
 echo -e "\nDocument Size:"
 du -h "$REALPATH"
 
+### Send to /tmp/http
+CLASSNAME="$(basename "$PWD")" ALTFN="$INPUT_ALTFN" cptmphttp "$REALPATH"
+
 
 ### --oss
 if [[ $TONASOOS == y ]]; then
@@ -80,15 +87,16 @@ fi
 ### --jpg | --png
 case "$TOIMG" in
     jpg|png)
-        mkdir -p /tmp/http/nteximg
-        chmod 777 /tmp/http/nteximg
+        # mkdir -p /tmp/http/nteximg
+        # chmod 777 /tmp/http/nteximg
         FHASH1="$(echo "$REALPATH" | sha256sum)"
-        IMGPATH="/tmp/http/nteximg/$(basename "$REALPATH")-${FHASH1:0:12}.$TOIMG"
+        IMGPATH="/tmp/$(basename "$REALPATH")-${FHASH1:0:12}.$TOIMG"
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
         pdftoimg "$REALPATH" "$IMGPATH" >/dev/null 2>&1
-        echo "Made image:" "$IMGPATH"
+        # echo "Made image:" "$IMGPATH"
+        CLASSNAME=nteximg cptmphttp $IMGPATH
         if [[ $TONASOOS == y ]]; then
             echo -e "\nImage URLs:"
             OSS_SUBDIR="$REPOID-img/" saveFileToNasOSS "$IMGPATH"
