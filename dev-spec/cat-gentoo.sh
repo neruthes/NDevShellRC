@@ -33,6 +33,7 @@ function buildMyKernelNow() {
     sudo emerge @module-rebuild --ask=n
     pregenkernel
     sudo genkernel initramfs
+    sudo rm /boot/*.old
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo eclean-kernel -n 7
 }

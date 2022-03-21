@@ -8,6 +8,9 @@ GDIR="/home/neruthes/DEV/githubdistweb"
 WEBDIR="/home/neruthes/DEV/WEB/githubdist"
 
 
+ALREADY_PUSHED=n
+
+
 if [[ ! -d "$PWD/_dist" ]]; then
     echo "[ERROR] Cannot find a '_dist' directory here."
     exit 1
@@ -22,30 +25,38 @@ pwd >> $GDIR/trigger
 
 
 ### Create tarball
-rm $WEBDIR.tar 2>/dev/null
-cd $WEBDIR
-cd ..
-tar cf /tmp/githubdist.tar --exclude 'dist.tar' githubdist
-saveFileToNasOSS /tmp/githubdist.tar -p
-rm /tmp/githubdist.tar
-cd "$MAINPWD"
-
+function _uploadTarball() {
+    echo "[INFO] Creating tarball..."
+    rm /tmp/githubdist.tar 2>/dev/null
+    cd $WEBDIR
+    cd ..
+    tar cvf /tmp/githubdist.tar --exclude 'dist.tar' githubdist
+    saveFileToNasOSS /tmp/githubdist.tar -p
+    rm /tmp/githubdist.tar
+    cd "$MAINPWD"
+}
 
 ### Push to Vercel only if last commit was old enough
-function _doPush() {
+function _pushnow() {
+    if [[ $ALREADY_PUSHED == y ]]; then
+        return 0
+    fi
+    _uploadTarball
     echo "[INFO] Pushing..."
     cd $GDIR
     git add .
     git commit -m 'autobuild'
     git push
+    ALREADY_PUSHED=y
 }
 function _attemptPush() {
     cd $GDIR
     OLDDATE="$(git log -1 --format=%at)"
     NOWDATE="$(date +%s)"
     DELTASECS="$((NOWDATE-OLDDATE))"
+    DELTAMINS="$((DELTASECS/60))"
     DELTAHOURS="$((DELTASECS/3600))"
-    echo "[INFO] $DELTAHOURS hours since last push to GitHub + Vercel."
+    echo "[INFO] $DELTAHOURS hours ($DELTAMINS minutes) since last push to GitHub + Vercel."
     if [[ "$DELTAHOURS" -lt "12" ]]; then
         echo "[INFO] Less than 12 hours; not pushing."
         return 0
@@ -53,7 +64,7 @@ function _attemptPush() {
         if [[ $ifWAIT == y ]]; then
             echo "[INFO] Not pushing to git remote; will wait for the next run."
         else
-            _doPush
+            _pushnow
         fi
     fi
 }
@@ -67,5 +78,5 @@ _attemptPush
 
 if [[ "  $@  " == *" --now "* ]]; then
     echo "[INFO] Manually forced pushing."
-    _doPush
+    _pushnow
 fi
