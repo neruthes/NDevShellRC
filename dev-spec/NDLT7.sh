@@ -25,7 +25,7 @@ function importOverlayPkg() {
         return 0
     fi
     PKGSPEC="$1"                # Example: "sys-apps/sysvinit/"
-    if [[ $PKGSPEC != *"/" ]]; then
+    if [[ ! -e ${PKGSPEC}metadata.xml ]]; then
         echo "Inavlid argument"
         return 0
     fi

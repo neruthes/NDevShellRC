@@ -1,12 +1,14 @@
 #!/bin/bash
 
-if [[ -e "$HOME/.config/wppath" ]]; then
-    WPPATH="$(cat $HOME/.config/wppath)"
-    if [[ -e "$WPPATH" ]]; then
-        feh --bg-fill "$WPPATH"
-    else
-        echo "ERROR: Cannot find $WPPATH"
-    fi
-else
-    echo "ERROR: Cannot find $HOME/.config/wppath"
-fi
+# if [[ -e "$HOME/.config/wppath" ]]; then
+#     WPPATH="$(cat $HOME/.config/wppath)"
+#     if [[ -e "$WPPATH" ]]; then
+#         feh --bg-fill "$WPPATH"
+#     else
+#         echo "ERROR: Cannot find $WPPATH"
+#     fi
+# else
+#     echo "ERROR: Cannot find $HOME/.config/wppath"
+# fi
+
+source $HOME/.fehbg

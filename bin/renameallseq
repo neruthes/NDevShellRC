@@ -4,9 +4,9 @@
 #
 #   renameallseq
 #
-#   version 0.1.0
+#   version 0.1.1
 #
-#   Copyright (c) 2021 Neruthes.
+#   Copyright (c) 2021-2022 Neruthes.
 #   Published with GNU GPLv2.
 #
 ############################################
@@ -17,7 +17,7 @@ COUNTERLENGTH=$2
 FNPREFIX=$3
 
 function _showHelp() {
-    echo "renameallseq (v0.1.0)"
+    echo "renameallseq (v0.1.2)"
     echo ""
     echo "Usage:"
     echo ""
@@ -30,10 +30,6 @@ function _showHelp() {
     echo "      some_file.png  ->  img-001.png"
 }
 
-if [[ -z $1 ]]; then
-    _showHelp
-    exit 1
-fi
 if [[ -z $2 ]]; then
     _showHelp
     exit 1

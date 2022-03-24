@@ -14,12 +14,10 @@ function fullupdate() {
 ### ----------------------------------------------------------------------------
 ### Kernel
 function saveKernelConfig() {
-    echo "cp /usr/src/linux/.config /usr/src/.kernel-config"
-    sudo cp /usr/src/linux/.config /usr/src/.kernel-config
+    sudo cp -v /usr/src/linux/.config /usr/src/.kernel-config
 }
 function loadKernelConfig() {
-    echo "cp /usr/src/.kernel-config /usr/src/linux/.config"
-    sudo cp /usr/src/.kernel-config /usr/src/linux/.config
+    sudo cp -v /usr/src/.kernel-config /usr/src/linux/.config
 }
 function buildMyKernelNow() {
     cd /usr/src/linux

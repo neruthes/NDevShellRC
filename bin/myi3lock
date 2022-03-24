@@ -1,18 +1,5 @@
 #!/bin/bash
 
-# suspend message display
-pkill -u "$USER" -USR1 dunst
+# convert /home/neruthes/DEV/neruthes.github.io/neruthes-forceCircle-padded-transparent.small.png -gravity Center -background black -extent "3840x2160" /home/neruthes/PIC/LOCK.png
 
-# Get resolution
-SCREEN_RESOLUTION="$(xdpyinfo | grep dimensions | cut -d' ' -f7)"
-# echo "'$SCREEN_RESOLUTION'"
-
-# lock the screen
-convert /home/neruthes/DEV/neruthes.github.io/neruthes-forceCircle-padded-transparent.small.png \
-    -gravity Center \
-    -background 0,0,0 \
-    -extent "$SCREEN_RESOLUTION" \
-    RGB:- | i3lock --raw "$SCREEN_RESOLUTION":rgb -c 00ff33 -i /dev/stdin
-
-# resume message display
-pkill -u "$USER" -USR2 dunst
+betterlockscreen -l
