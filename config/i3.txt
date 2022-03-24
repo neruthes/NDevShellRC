@@ -43,15 +43,12 @@ client.background       #ffffff
 assign [class="Alacritty"] 1
 
 ### WS2: Editors
-assign [class="Atom"] 2
 assign [class="VSCodium"] 2
 assign [class="libreoffice"] 2
 assign [class="Gimp"] 2
 assign [class="Inkscape"] 2
 ### WS3: Web
-assign [class="Firefox"] 3
-assign [class="Nightly"] 3
-assign [class="Firefox Nightly"] 3
+assign [class="firefox"] 3
 assign [class="Chromium-browser"] 3
 ### WS4: Messaging
 assign [class="discord"] 4
@@ -216,6 +213,7 @@ bar {
 
 
 # Startup programs
+exec --no-startup-id pulseaudio -D
 exec --no-startup-id dunst
 exec --no-startup-id fcitx
 exec --no-startup-id cabledropd
