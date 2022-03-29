@@ -30,6 +30,10 @@ while [[ $# -gt 0 ]]; do
         INPUT_ALTFN="${1/--altfn=/}.pdf"
         shift # past argument
         ;;
+    --sync)
+        SYNC_HTTPTMP=y
+        shift # past argument
+        ;;
     -*|--*)
         echo "Unknown option $1"
         exit 1
@@ -114,4 +118,13 @@ if [[ ! -z "$PAGES_RANGE" ]]; then
     #     OSS_SUBDIR=ntexdb-ranged/ saveFileToNasOSS "$RANGED_PDF_PATH"
     # fi
     RANGED_NAME="$RANGED_NAME" OSS=y pdfrange "$REALPATH" "$PAGES_RANGE"
+fi
+
+
+
+
+### --sync
+if [[ "$SYNC_HTTPTMP" == y ]]; then
+    echo "Generating ranged subset."
+    synctmphttptonas
 fi

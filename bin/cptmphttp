@@ -16,6 +16,6 @@ mkdir -p "/tmp/http/$CLASSNAME"
 chmod 777 "/tmp/http/$CLASSNAME"
 
 # cat "$LOCALPATH" > "/tmp/http/$CLASSNAME/$DESTFN"
-ln -svf "$LOCALPATH" "/tmp/http/$CLASSNAME/$DESTFN"
+cp -af "$LOCALPATH" "/tmp/http/$CLASSNAME/$DESTFN"
 
 echo "http://127.0.0.1:7999/$CLASSNAME/$DESTFN"

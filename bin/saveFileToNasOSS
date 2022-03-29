@@ -27,9 +27,9 @@ function _save() {
         REMOTE_WEB="$(jq -r .web <<< "$SERVER")"
         # echo "[INFO] Pushing to service '$REMOTE_WEB'"
         if [[ ! -z "$OSS_SUBDIR" ]]; then
-            ssh "$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
+            ssh oss@"$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
         fi
-        scp "$FILEFULLPATH" "${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
+        scp "$FILEFULLPATH" oss@"${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
         echo "${REMOTE_WEB}/${RELPATH}"
     done
 }
@@ -54,7 +54,7 @@ NEWFN="$FNMAIN--$DATEMARK-$PATHHASH.$EXTNAME"
 _save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
 
 ## Persistent version
-if [[ $2 == -p ]]; then
+if [[ " $@ " == *" -p "* ]]; then
     PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
     PATHHASH="${PATHHASH:0:32}"
     NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"
