@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function _dosync() {
-    rsync -av --delete /tmp/http/ NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_dev/NDLT7/tmp/http/
+    rsync -av   /tmp/http/   NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_dev/NDLT7/tmp/http/
 }
 
 case $HOSTNAME in
