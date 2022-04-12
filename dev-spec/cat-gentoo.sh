@@ -3,7 +3,7 @@
 function fullupdate() {
     # alias fullupdate="sudo emerge --verbose --update --newuse --tree --complete-graph --ask=n --with-bdeps=y --autounmask-continue --keep-going @world"
     # alias fullupdate="sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world"
-    sudo emerge --sync
+    sudo proxychains emerge --sync
     sudo eix-update
     sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world
     sudo emerge @preserved-rebuild
