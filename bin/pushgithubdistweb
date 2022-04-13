@@ -46,7 +46,8 @@ function _pushnow() {
     cd $GDIR
     git add .
     git commit -m 'autobuild'
-    git push
+    # exit 0      # Uncomment for debugging
+    proxychains git push
     ALREADY_PUSHED=y
 }
 function _attemptPush() {
