@@ -5,7 +5,7 @@ function fullupdate() {
     # alias fullupdate="sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world"
     sudo proxychains emerge --sync
     sudo eix-update
-    sudo emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world
+    sudo proxychains emerge --ask=n --autounmask-write --autounmask-backtrack=y --backtrack=999 -vuDN --tree --complete-graph --keep-going @world
     sudo emerge @preserved-rebuild
     sudo eclean-dist
     sudo eclean-pkg
