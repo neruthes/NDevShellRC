@@ -1,0 +1,8 @@
+#!/bin/bash
+
+START_POINT="$1"
+END_POINT="$2"
+
+STREAM_CONTENT="$(cat /dev/stdin)"
+
+printf "${STREAM_CONTENT:$START_POINT:$END_POINT}"
