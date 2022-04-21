@@ -34,4 +34,6 @@ function buildMyKernelNow() {
     sudo rm /boot/*.old
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo eclean-kernel -n 7
+    KERNEL_LOCAL_VER="$(basename $(dirname $(realpath /usr/src/linux/.config)))"
+    cat /usr/src/linux/.config > "$DEV_HOME_DIR/NDevShellRC/dev-local/$HOSTNAME/kernel-config/$KERNEL_LOCAL_VER"
 }
