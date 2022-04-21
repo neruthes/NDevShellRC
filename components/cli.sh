@@ -2,9 +2,7 @@
 
 function ps1gitbr() {
     git branch --show-current > "/tmp/.L_GBSC_$USER" 2>&1
-    # git rev-parse --abbrev-ref HEAD > /tmp/.L_GBSC_$USER 2>&1
     L_GBSC="$(cat /tmp/.L_GBSC_$USER)"
-#    echo "$L_GBSC"
     if [[ "${L_GBSC::5}" == 'fatal' ]]; then
         printf ""
     else
