@@ -1,7 +1,15 @@
 #!/bin/bash
 
+APPVER="v0.1.0"
+
+CONFDIR="$HOME/.config/tcrypt"
+mkdir -p "$CONFDIR"
+### CSV delimiter is whitespace
+touch "$CONFDIR/contacts.csv"       ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY}"
+touch "$CONFDIR/known_keys.csv"     ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY} {COUNT}"
+
 export tcrypt="$(realpath $0)"
-export SCryptSession="/tmp/.tcryptUtilSession-$(uuidgen v4)"
+export TCryptSession="/tmp/tcryptUtilSession-$(uuidgen v4)"
 
 export FULLNAME="$(getent passwd $USER | cut -d':' -f5)"
 if [[ "$FULLNAME" == '' ]]; then
@@ -17,22 +25,29 @@ fi
 
 
 
-APPVER="v0.1.0-pre1"
-
 function _help() {
 echo "tcrypt ($APPVER)
-Copyright (c) 2022 Neruthes <https://neruthes.xyz>.
-This script is a free software, licensed under GNU GPLv2.
+
+    Copyright (c) 2022 Neruthes <https://neruthes.xyz>.
+    This script is a free software, licensed under GNU GPLv2.
+
+    This script can be found at:
+    https://github.com/neruthes/NDevShellRC/blob/master/bin/tcrypt
+
 
 SYNOPSIS:
 
     tcrypt help                                     Print this help message.
 
-    tcrypt keygen                                   Generate a keypair (ed25519).
+    tcrypt keygen                                   Generate a keypair (ssh-ed25519).
 
     tcrypt clearsign                                Sign a clear text file from stdin.
 
-    tcrypt clearsignfile FILE_PATH                  Sign a clear text file FILE_PATH.
+    tcrypt clearsignfile FILE_PATH                  Sign clear text file FILE_PATH.
+
+    tcrypt verifyclearsign                          Verify clearsign from stdin.
+
+    tcrypt verifyclearsignfile FILE_PATH            Verify clearsign file FILE_PATH.
 "
 }
 
@@ -45,54 +60,150 @@ fi
 
 ### Warn for keypair absence
 if [[ ! -e "$HOME/.ssh/$PREFERRED_KEYNAME" ]]; then
-    if [[ "$SCRYPT_SPAWN" != y ]]; then
+    if [[ "$TCRYPT_SPAWN" != y ]]; then
         echo "[WARNING] You do not have a keypair '$HOME/.ssh/$PREFERRED_KEYNAME' yet. Use 'tcrypt keygen' to create it."
     fi
 fi
 
+function _clearSession() {
+    # hello >/dev/null
+    rm $TCryptSession.* 2>/dev/null
+    # echo "rm" "$TCryptSession."* >&2
+}
+
 ### Exit if absolutely no keypair
 function _panicIfNoKeypair() {
     if [[ ! -e "$PRIVKEYPATH" ]]; then
-    echo "[ERROR] Cannot find at least '$PRIVKEYPATH'. You need to run 'tcrypt keygen' before proceeding."
-    exit 1
-fi
+        echo "[ERROR] Cannot find at least '$PRIVKEYPATH'. You need to run 'tcrypt keygen' before proceeding."
+        exit 1
+    fi
 }
 
-export SCRYPT_SPAWN=y
+export TCRYPT_SPAWN=y
 case "$1" in
     ### Normal usage entries
     help)
         _help
         ;;
+
     keygen)
         ssh-keygen -t ed25519 -f "$HOME/.ssh/$PREFERRED_KEYNAME"
         ;;
-    clearsign)
+
+    cs|clearsign)
         _panicIfNoKeypair
-        cat /dev/stdin > $SCryptSession.stdin
-        cat $SCryptSession.stdin | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        cat /dev/stdin > $TCryptSession.stdin
+        cat $TCryptSession.stdin | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        _clearSession
         ;;
-    clearsignfile)
+
+    csf|clearsignfile)
         _panicIfNoKeypair
         cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign > "$2.signed.txt"
         echo "[INFO] Signed file '$2' and written to '$2.signed.txt'."
         ;;
+
+    vcs|verifyclearsign)
+        cat /dev/stdin > $TCryptSession.verifyclearsign
+        $tcrypt u_verifyClearSign $TCryptSession.verifyclearsign
+        _clearSession
+        ;;
+
+    vcsf|verifyclearsignfile)
+        $tcrypt u_verifyClearSign $2
+        _clearSession
+        ;;
+
     ### Reserved for internal calls
     u_makeMsgBodyForClearSig)
-        cat /dev/stdin > $SCryptSession.stdin
-        echo "#>MsgClearSig>$(TZ=UTC date +%Y%m%d.%H%M%S)>$(uuidgen v4 | sed 's/-//g' | cut -b-10)"
+        cat /dev/stdin > $TCryptSession.u_makeMsgBodyForClearSig
+        MSGTS="$(TZ=UTC date +%Y%m%d.%H%M%S)"
+        SMALLHASH_1="$(sha256sum $TCryptSession.u_makeMsgBodyForClearSig | cut -b1-40)"
+        SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -b1-40)"
+        SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -b1-16)"
+        echo "#>MsgClearSig>$MSGTS>$SMALLHASH"
+        echo "#signer=$FULLNAME"
         echo "#sigkey=$(cat "$PRIVKEYPATH.pub" | cut -d' ' -f1-2 | sed 's| |.|')"
-        echo "----------------------------------------"
-        cat $SCryptSession.stdin
+        echo "----------------------------------------------"
+        cat $TCryptSession.u_makeMsgBodyForClearSig
+        _clearSession
         ;;
+
     u_finalSign)
-        cat /dev/stdin > $SCryptSession.stdin
-        cat $SCryptSession.stdin
-        cat $SCryptSession.stdin | ssh-keygen -Y sign -f "$PRIVKEYPATH" -n MsgSigV1 2>/dev/null
+        cat /dev/stdin > $TCryptSession.u_finalSign
+        cat $TCryptSession.u_finalSign
+        cat $TCryptSession.u_finalSign | ssh-keygen -Y sign -f "$PRIVKEYPATH" -n MsgSigV1 > $TCryptSession.u_finalSign_out 2>/dev/null
+        cat $TCryptSession.u_finalSign_out
+        _clearSession
         ;;
+
+    u_extractMsgBody)
+        cat /dev/stdin > $TCryptSession.stdin
+        LINECOUNT="$(wc -l $TCryptSession.stdin | cut -d' ' -f1)"
+        LINECOUNT="$((LINECOUNT-6))"
+        head -n"$LINECOUNT" $TCryptSession.stdin
+        _clearSession
+        ;;
+
+    u_extractMsgSignature)
+        cat /dev/stdin | tail -n6
+        ;;
+        
+    u_verifyClearSign)
+        INPUTFN="$2"
+        vSIGNER="$(grep '#signer=' $INPUTFN | cut -b9-)"
+        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9- | sed 's/\./ /')"
+        echo "$vSIGNER $vSIGKEY" > $TCryptSession.fakeSignersList
+        
+        cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
+        cat $INPUTFN | $tcrypt u_extractMsgSignature > $TCryptSession.msgSig
+
+        printf "\n===== VERIFYING MESSAGE =====\n\n"
+        cat $TCryptSession.msgBody
+        # cat $TCryptSession.msgSig
+
+        printf "\n\n===== VERIFICATION RESULT =====\n\n"
+        VERIFY_RESULT="$(ssh-keygen -Y verify -f $TCryptSession.fakeSignersList -I "$vSIGNER" -n MsgSigV1 -s $TCryptSession.msgSig < $TCryptSession.msgBody)"
+        echo "[INFO] OpenSSH says: $VERIFY_RESULT"
+        if [[ "$VERIFY_RESULT" == 'Good "MsgSigV1" signature for'* ]]; then
+            echo "[INFO] Signature from '$vSIGKEY' is valid."
+            ### Can we find the SigKey in contacts?
+            if [[ "$(grep -v '^#' $CONFDIR/contacts.csv | grep "$vSIGKEY")" != "" ]]; then
+                ### Found the sigkey
+                echo "[INFO] The signer is in Contacts."
+                KEY_SAVED_NAME="$(grep "$vSIGKEY" $CONFDIR/contacts.csv | cut -d' ' -f1)"
+                if [[ "$KEY_SAVED_NAME" != "$vSIGNER" ]]; then
+                    echo "[WARNING] This contact is known as '$KEY_SAVED_NAME' and not '$vSIGNER'. Consider updating the saved name in '$CONFDIR/contacts.csv'."
+                fi
+            else
+                ### Did we previously verify their message?
+                GREP_RESULT="$(grep "$vSIGKEY" $CONFDIR/known_keys.csv)"
+                if [[ "$GREP_RESULT" != "" ]]; then
+                    MSG_COUNT="$(echo "$GREP_RESULT" | cut -d' ' -f4)"
+                    CACHED_NAME="$(echo "$GREP_RESULT" | cut -d' ' -f1)"
+                    echo "[INFO] We had verified $MSG_COUNT messages from this signer (previously known as '$CACHED_NAME') before. Consider saving them as a contact in '$CONFDIR/contacts.csv'."
+                    ### Update the number
+                    sed -i "s|$vSIGNER $vSIGKEY $MSG_COUNT|$vSIGNER $vSIGKEY $((MSG_COUNT+1))|" $CONFDIR/known_keys.csv
+                else
+                    ### This is the first message from them
+                    ### Save into known_keys
+                    echo "$vSIGNER $vSIGKEY 1" >> "$CONFDIR/known_keys.csv"
+                fi
+            fi
+        else
+            echo "[FATAL] The signature is invalid!"
+        fi
+
+        printf "\n\n"
+        echo ""
+        ;;
+
     *)
-        echo "[ERROR] No such usage '$1'."
+        # echo "[ERROR] No such usage '$1'."
+        _help
         ;;
+
 esac
 
-rm "$SCryptSession".* 2>/dev/null
+# rm $TCryptSession.* 2>/dev/null
+
