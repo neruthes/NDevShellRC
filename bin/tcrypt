@@ -27,6 +27,12 @@ This script is a free software, licensed under GNU GPLv2.
 SYNOPSIS:
 
     tcrypt help                                     Print this help message.
+
+    tcrypt keygen                                   Generate a keypair (ed25519).
+
+    tcrypt clearsign                                Sign a clear text file from stdin.
+
+    tcrypt clearsignfile FILE_PATH                  Sign a clear text file FILE_PATH.
 "
 }
 
@@ -54,6 +60,7 @@ fi
 
 export SCRYPT_SPAWN=y
 case "$1" in
+    ### Normal usage entries
     help)
         _help
         ;;
@@ -67,8 +74,10 @@ case "$1" in
         ;;
     clearsignfile)
         _panicIfNoKeypair
-        cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign > "$2.signed.txt"
+        echo "[INFO] Signed file '$2' and written to '$2.signed.txt'."
         ;;
+    ### Reserved for internal calls
     u_makeMsgBodyForClearSig)
         cat /dev/stdin > $SCryptSession.stdin
         echo "#>MsgClearSig>$(TZ=UTC date +%Y%m%d.%H%M%S)>$(uuidgen v4 | sed 's/-//g' | cut -b-10)"
