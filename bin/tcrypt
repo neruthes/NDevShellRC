@@ -1,0 +1,89 @@
+#!/bin/bash
+
+export tcrypt="$(realpath $0)"
+export SCryptSession="/tmp/.tcryptUtilSession-$(uuidgen v4)"
+
+export FULLNAME="$(getent passwd $USER | cut -d':' -f5)"
+if [[ "$FULLNAME" == '' ]]; then
+    export FULLNAME="$USER"
+else
+    export FULLNAME="$(printf "$FULLNAME" | cut -d',' -f1)"
+fi
+
+PRIVKEYPATH="$HOME/.ssh/$FULLNAME"
+if [[ ! -e "$PRIVKEYPATH" ]]; then
+    PRIVKEYPATH="$HOME/.ssh/id_ed25519"
+fi
+
+
+
+APPVER="v0.1.0-pre1"
+
+function _help() {
+echo "tcrypt ($APPVER)
+Copyright (c) 2022 Neruthes <https://neruthes.xyz>.
+This script is a free software, licensed under GNU GPLv2.
+
+SYNOPSIS:
+
+    tcrypt help                                     Print this help message.
+"
+}
+
+if [[ "$FULLNAME" != "$USER" ]]; then
+    PREFERRED_KEYNAME="$FULLNAME"
+else
+    PREFERRED_KEYNAME="$USER"
+fi
+
+
+### Warn for keypair absence
+if [[ ! -e "$HOME/.ssh/$PREFERRED_KEYNAME" ]]; then
+    if [[ "$SCRYPT_SPAWN" != y ]]; then
+        echo "[WARNING] You do not have a keypair '$HOME/.ssh/$PREFERRED_KEYNAME' yet. Use 'tcrypt keygen' to create it."
+    fi
+fi
+
+### Exit if absolutely no keypair
+function _panicIfNoKeypair() {
+    if [[ ! -e "$PRIVKEYPATH" ]]; then
+    echo "[ERROR] Cannot find at least '$PRIVKEYPATH'. You need to run 'tcrypt keygen' before proceeding."
+    exit 1
+fi
+}
+
+export SCRYPT_SPAWN=y
+case "$1" in
+    help)
+        _help
+        ;;
+    keygen)
+        ssh-keygen -t ed25519 -f "$HOME/.ssh/$PREFERRED_KEYNAME"
+        ;;
+    clearsign)
+        _panicIfNoKeypair
+        cat /dev/stdin > $SCryptSession.stdin
+        cat $SCryptSession.stdin | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        ;;
+    clearsignfile)
+        _panicIfNoKeypair
+        cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        ;;
+    u_makeMsgBodyForClearSig)
+        cat /dev/stdin > $SCryptSession.stdin
+        echo "#>MsgClearSig>$(TZ=UTC date +%Y%m%d.%H%M%S)>$(uuidgen v4 | sed 's/-//g' | cut -b-10)"
+        echo "#sigkey=$(cat "$PRIVKEYPATH.pub" | cut -d' ' -f1-2 | sed 's| |.|')"
+        echo "----------------------------------------"
+        cat $SCryptSession.stdin
+        ;;
+    u_finalSign)
+        cat /dev/stdin > $SCryptSession.stdin
+        cat $SCryptSession.stdin
+        cat $SCryptSession.stdin | ssh-keygen -Y sign -f "$PRIVKEYPATH" -n MsgSigV1 2>/dev/null
+        ;;
+    *)
+        echo "[ERROR] No such usage '$1'."
+        ;;
+esac
+
+rm "$SCryptSession".* 2>/dev/null
