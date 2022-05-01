@@ -1,12 +1,17 @@
 #!/bin/bash
 
-APPVER="v0.1.1-pre1"
+APPVER="v0.1.2"
+
+function debug() {
+    printf ""
+    echo "$1"
+}
 
 CONFDIR="$HOME/.config/tcrypt"
-mkdir -p "$CONFDIR"
+mkdir -p "$CONFDIR"/{mykeys,}
 ### CSV delimiter is whitespace
-touch "$CONFDIR/contacts.csv"       ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY}"
-touch "$CONFDIR/known_keys.csv"     ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY} {COUNT}"
+touch "$CONFDIR/contacts.csv"
+touch "$CONFDIR/known_signers.csv"     ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY} {COUNT}"
 
 export tcrypt="$(realpath $0)"
 export TCryptSession="/tmp/tcryptUtilSession-$(uuidgen v4)"
@@ -14,15 +19,14 @@ export TCryptSession="/tmp/tcryptUtilSession-$(uuidgen v4)"
 export FULLNAME="$(getent passwd $USER | cut -d':' -f5)"
 if [[ "$FULLNAME" == '' ]]; then
     export FULLNAME="$USER"
+    export isAssumedFullName=y
 else
     export FULLNAME="$(printf "$FULLNAME" | cut -d',' -f1)"
 fi
-
-PRIVKEYPATH="$HOME/.ssh/$FULLNAME"
-if [[ ! -e "$PRIVKEYPATH" ]]; then
-    PRIVKEYPATH="$HOME/.ssh/id_ed25519"
+if [[ ! -z "$MYNAME" ]]; then
+    export FULLNAME="$MYNAME"
 fi
-
+PRIVKEYPATH="$CONFDIR/mykeys/$FULLNAME"
 
 
 function _help() {
@@ -59,9 +63,9 @@ fi
 
 
 ### Warn for keypair absence
-if [[ ! -e "$HOME/.ssh/$PREFERRED_KEYNAME" ]]; then
-    if [[ "$TCRYPT_SPAWN" != y ]]; then
-        echo "[WARNING] You do not have a keypair '$HOME/.ssh/$PREFERRED_KEYNAME' yet. Use 'tcrypt keygen' to create it."
+if [[ ! -e "$PRIVKEYPATH" ]]; then
+    if [[ "$TCRYPT_SPAWN" != y ]] && [[ "$1" != keygen ]]; then
+        echo "[WARNING] You do not have a keypair '$PRIVKEYPATH' yet. Use 'tcrypt keygen' to create it."
     fi
 fi
 
@@ -72,7 +76,7 @@ function _clearSession() {
 ### Exit if absolutely no keypair
 function _panicIfNoKeypair() {
     if [[ ! -e "$PRIVKEYPATH" ]]; then
-        echo "[ERROR] Cannot find at least '$PRIVKEYPATH'. You need to run 'tcrypt keygen' before proceeding."
+        echo "[ERROR] Cannot find identity '$PRIVKEYPATH'. You need to run 'tcrypt keygen' before proceeding."
         exit 1
     fi
 }
@@ -85,7 +89,28 @@ case "$1" in
         ;;
 
     keygen)
-        ssh-keygen -t ed25519 -f "$HOME/.ssh/$PREFERRED_KEYNAME"
+        if [[ "$isAssumedFullName" == y ]]; then
+            echo "Please specify your fullname:"
+            printf '> '
+            read FULLNAME
+            export FULLNAME="$FULLNAME"
+            PRIVKEYPATH="$CONFDIR/mykeys/$FULLNAME"
+        fi
+        if [[ -e "$PRIVKEYPATH" ]] && [[ "$2" != '-f' ]]; then
+            echo "[ERROR] Identity '$PRIVKEYPATH' already exists! Append '-f' to overwrite."
+            exit 1
+        fi
+        rm "$PRIVKEYPATH" "$PRIVKEYPATH".* 2>/dev/null
+        echo "[INFO] Generating private key at '$PRIVKEYPATH'."
+
+        ### Create signature key with OpenSSH
+        ssh-keygen -t ed25519 -f "$PRIVKEYPATH.ed25519"
+        cat "$PRIVKEYPATH.ed25519.pub" | cut -d' ' -f2 > "$PRIVKEYPATH.ed25519.pub.new"
+        mv "$PRIVKEYPATH.ed25519.pub.new" "$PRIVKEYPATH.ed25519.pub"
+        ### Create encryption key with OpenSSL
+        openssl genpkey -out "$PRIVKEYPATH.x25519" -algorithm X25519
+        openssl pkey -pubout -in "$PRIVKEYPATH.x25519" -out "$PRIVKEYPATH.x25519.pub"
+        cat "$PRIVKEYPATH".* > "$PRIVKEYPATH"
         ;;
 
     cs|clearsign)
@@ -109,6 +134,28 @@ case "$1" in
 
     vcsf|verifyclearsignfile)
         $tcrypt u_verifyClearSign $2
+        ;;
+
+    addcontactfromclearsign)
+        cat /dev/stdin > $TCryptSession.clearSignMsg
+        INPUTFN="$TCryptSession.clearSignMsg"
+        ### Note: Contacts CSV fields = [ Name | SSH public key body | Signer fingerprint | X25519 encryption key ]
+        vSIGNER="$(grep '#signer=' $INPUTFN | cut -b9-)"
+        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9-)"
+        vFP="$(grep '#fingerprint=' $INPUTFN | cut -b14-)"
+        vENCKEY="$(grep '#enckey=' $INPUTFN | cut -b9-)"
+        if [[ "$(grep "$vSIGKEY" $CONFDIR/contacts.csv)" != '' ]]; then
+            echo "[ERROR] The public key '$vSIGKEY' is already a contact, known as '$(grep "$vSIGKEY" $CONFDIR/contacts.csv | head -n1 | cut -d'|' -f1)'."
+            echo "        Edit the file '$CONFDIR/contacts.csv' if you have worries."
+            exit 1
+        fi
+        echo "[INFO] Importing contact information:"
+        echo "    Name:             $vSIGNER"
+        echo "    Fingerprint:      $vFP"
+        echo "    Signing Key:      $vSIGKEY"
+        echo "    Encryption Key:   $vENCKEY"
+        # echo "    Name: $vSIGNER|$vSIGKEY|$vFP|$vENCKEY"
+        echo "$vSIGNER|$vSIGKEY|$vFP|$vENCKEY" >> $CONFDIR/contacts.csv
         _clearSession
         ;;
 
@@ -121,16 +168,26 @@ case "$1" in
         SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -b1-16)"
         echo "#>MsgClearSig>$MSGTS>$SMALLHASH"
         echo "#signer=$FULLNAME"
-        echo "#sigkey=$(cat "$PRIVKEYPATH.pub" | cut -d' ' -f1-2 | sed 's| |.|')"
+        echo "#fingerprint=$($tcrypt u_calcSignerKeyFingerprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
+        echo "#sigkey=$(cat "$PRIVKEYPATH.ed25519.pub")"
+        echo "#enckey=$(cat "$PRIVKEYPATH.x25519.pub" | head -n2 | tail -n1)"
         echo "----------------------------------------------"
+        echo ""
         cat $TCryptSession.u_makeMsgBodyForClearSig
         _clearSession
+        ;;
+
+    u_base64tohex)
+        while read fileline; do
+            echo $fileline | base64 -d -i | hexdump -v -e '/1 "%02x" ' >> /dev/stdout
+            echo "" >> /dev/stdout
+        done < /dev/stdin
         ;;
 
     u_finalSign)
         cat /dev/stdin > $TCryptSession.u_finalSign
         cat $TCryptSession.u_finalSign
-        cat $TCryptSession.u_finalSign | ssh-keygen -Y sign -f "$PRIVKEYPATH" -n MsgSigV1 > $TCryptSession.u_finalSign_out 2>/dev/null
+        cat $TCryptSession.u_finalSign | ssh-keygen -Y sign -f "$PRIVKEYPATH.ed25519" -n MsgSigV1 > $TCryptSession.u_finalSign_out 2>/dev/null
         cat $TCryptSession.u_finalSign_out
         _clearSession
         ;;
@@ -146,19 +203,24 @@ case "$1" in
     u_extractMsgSignature)
         cat /dev/stdin | tail -n6
         ;;
+
+    u_calcSignerKeyFingerprint)
+        # argv: Ed25519 public key (key body only, single-line)
+        TMPSTR="$(printf "$2" | sha256sum | cut -b1-32)"
+        printf -- "${TMPSTR^^}"
+        ;;
         
     u_verifyClearSign)
         INPUTFN="$2"
         vSIGNER="$(grep '#signer=' $INPUTFN | cut -b9-)"
-        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9- | sed 's/\./ /')"
-        echo "$vSIGNER $vSIGKEY" > $TCryptSession.fakeSignersList
+        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9-)"
+        echo "$vSIGNER ssh-ed25519 $vSIGKEY" > $TCryptSession.fakeSignersList
         
         cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
         cat $INPUTFN | $tcrypt u_extractMsgSignature > $TCryptSession.msgSig
 
-        printf "\n===== VERIFYING MESSAGE =====\n\n"
+        printf "\n===== INCOMING MESSAGE =====\n\n"
         cat $TCryptSession.msgBody
-
         printf "\n\n===== VERIFICATION RESULT =====\n\n"
         VERIFY_RESULT="$(ssh-keygen -Y verify -f $TCryptSession.fakeSignersList -I "$vSIGNER" -n MsgSigV1 -s $TCryptSession.msgSig < $TCryptSession.msgBody)"
         echo "[INFO] OpenSSH says: $VERIFY_RESULT"
@@ -167,24 +229,27 @@ case "$1" in
             ### Can we find the SigKey in contacts?
             if [[ "$(grep -v '^#' $CONFDIR/contacts.csv | grep "$vSIGKEY")" != "" ]]; then
                 ### Found the sigkey
-                KEY_SAVED_NAME="$(grep "$vSIGKEY" $CONFDIR/contacts.csv | cut -d' ' -f1)"
-                echo "[INFO] The signer is a contact, known as '$KEY_SAVED_NAME'."
+                KEY_SAVED_NAME="$(grep "$vSIGKEY" $CONFDIR/contacts.csv | cut -d'|' -f1)"
+                CALCULATED_SAVED_FP="$($tcrypt u_calcSignerKeyFingerprint "$vSIGKEY")"
+                EXTRACTED_SAVED_FP="$(grep '#fingerprint=' $INPUTFN | cut -b14-)"
+                echo "[INFO] The signer is a contact, known as '$KEY_SAVED_NAME' (Fingerprint: $CALCULATED_SAVED_FP)."
                 if [[ "$KEY_SAVED_NAME" != "$vSIGNER" ]]; then
                     echo "[WARNING] This contact is known as '$KEY_SAVED_NAME' and not '$vSIGNER'. Consider updating the saved name in '$CONFDIR/contacts.csv'."
                 fi
             else
+                echo "[INFO] BEWARE! Signer is not a contact! To add as contact, pipe the message to 'tcrypt addcontactfromclearsign'."
                 ### Did we previously verify their message?
-                GREP_RESULT="$(grep "$vSIGKEY" $CONFDIR/known_keys.csv)"
+                GREP_RESULT="$(grep "$vSIGKEY" $CONFDIR/known_signers.csv)"
                 if [[ "$GREP_RESULT" != "" ]]; then
                     MSG_COUNT="$(echo "$GREP_RESULT" | cut -d' ' -f4)"
                     CACHED_NAME="$(echo "$GREP_RESULT" | cut -d' ' -f1)"
-                    echo "[INFO] We had verified $MSG_COUNT messages from this signer (previously known as '$CACHED_NAME') before. Consider saving them as a contact in '$CONFDIR/contacts.csv'."
+                    echo "[INFO] We had verified $MSG_COUNT messages from this signer (previously known as '$CACHED_NAME') before."
                     ### Update the number
-                    sed -i "s|$vSIGNER $vSIGKEY $MSG_COUNT|$vSIGNER $vSIGKEY $((MSG_COUNT+1))|" $CONFDIR/known_keys.csv
+                    sed -i "s|$vSIGNER $vSIGKEY $MSG_COUNT|$vSIGNER $vSIGKEY $((MSG_COUNT+1))|" $CONFDIR/known_signers.csv
                 else
                     ### This is the first message from them
-                    ### Save into known_keys
-                    echo "$vSIGNER $vSIGKEY 1" >> "$CONFDIR/known_keys.csv"
+                    ### Save into known_signers
+                    echo "$vSIGNER $vSIGKEY 1" >> "$CONFDIR/known_signers.csv"
                 fi
             fi
         else
