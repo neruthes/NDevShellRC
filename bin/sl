@@ -1,0 +1,61 @@
+#!/bin/bash
+
+####################################################
+# Scriptlet commander
+####################################################
+
+
+#
+# Functions
+#
+function _help() {
+echo "sl: scriptlet runner
+
+Usage:
+
+    sl                                 Show this help message
+    sl NAME                            Execute scriptlet 'NAME'
+    sl . NAME                          Create scriptlet 'NAME'
+"
+}
+function _createScriptlet() {
+    SLNAME="$1"
+    SLPATH=".scriptlets/$1"
+    if [[ -e "$SLPATH" ]]; then
+        echo "[ERROR] Scriptlet '$SLNAME' already exists"
+        exit 0
+    fi
+    echo "#!$SHELL" > $SLPATH
+    chmod +x $SLPATH
+    nano $SLPATH
+    echo "[INFO] Created scriplet '$1'."
+}
+
+#
+# Main
+#
+
+mkdir -p .scriptlets
+
+case "$1" in
+    '')
+        _help
+        ;;
+    '.')
+        if [[ -z "$2" ]]; then
+            _help
+            exit 0
+        fi
+        _createScriptlet "$2"
+        ;;
+    *)
+        if [[ -e ".scriptlets/$1" ]]; then
+            exec ".scriptlets/$1" $@
+        else
+            echo "[ERROR] Cannot find scriptlet '$1'."
+            echo "        You may run 'sl . $1' to create it."
+        fi
+        ;;
+esac
+        
+
