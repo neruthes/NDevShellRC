@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APPVER="v0.1.3"
+APPVER="v0.1.4-pre1"
 
 function debug() {
     printf ""
@@ -25,6 +25,9 @@ else
 fi
 if [[ ! -z "$MYNAME" ]]; then
     export FULLNAME="$MYNAME"
+fi
+if [[ -e $CONFDIR/myname ]]; then
+    export FULLNAME="$(cat $CONFDIR/myname)"
 fi
 PRIVKEYPATH="$CONFDIR/mykeys/$FULLNAME"
 
@@ -126,6 +129,7 @@ case "$1" in
             read FULLNAME
             export FULLNAME="$FULLNAME"
             PRIVKEYPATH="$CONFDIR/mykeys/$FULLNAME"
+            echo "$FULLNAME" > $CONFDIR/myname
         fi
         if [[ -e "$PRIVKEYPATH" ]] && [[ "$2" != '-f' ]]; then
             echo "[ERROR] Identity '$PRIVKEYPATH' already exists! Append '-f' to overwrite."

@@ -11,23 +11,17 @@ function ps1gitbr() {
 }
 
 function ps1devnickname() {
-    case $HOSTNAME in
-        NDVS*)
-            printf -- ' (VPS)'
-            ;;
-        NDLT6)
-            printf -- ' (Betelgeuse)'
-            ;;
-        NDLT7)
-            printf -- ' (Sirius)'
-            ;;
-        NDLT7W)
-            printf -- ' (Sirius-WSL)'
-            ;;
-        NEPd2U)
-            printf -- ' (Archer-Ubuntu)'
-            ;;
-    esac
+HOSTNAME_MAP="h=NDLT6|a=Betelgeuse
+h=NDLT6G|a=Betelgeuse-Gentoo
+h=NDLT7|a=Sirius
+h=NDLT7W|a=Sirius-WSL
+h=Z420|a=Catten"
+    MATCHED="$(echo "$HOSTNAME_MAP" | grep "h=$HOSTNAME" | head -n1)"
+    if [[ ! -z "$MATCHED" ]]; then
+        printf -- " ($(echo "$MATCHED" | cut -d'|' -f2 | cut -b3-))"
+    else
+        printf ""
+    fi
 }
 
 function ps1getsymbol() {
