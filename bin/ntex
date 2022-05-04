@@ -83,6 +83,7 @@ if [[ $TONASOOS == y ]]; then
     echo -e "\nDocument URLs:"
     OSS_SUBDIR="$REPOID/" saveFileToNasOSS "$REALPATH" -p > $TMPFILE
     cat $TMPFILE
+    cat $TMPFILE | pushclip push neruthes
     echo "$TYPE_SLASH$PDFFN  $(grep "oss.udon.pw:2096/p/" $TMPFILE)" >> .osslist
     sort -u .osslist -o .osslist
     rm $TMPFILE

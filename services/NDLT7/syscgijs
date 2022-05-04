@@ -1,13 +1,13 @@
-PIDFILE=/run/syscgijs-$USER.pid
+PIDFILE=/tmp/syscgijs-$USER.pid
 LOGDIR=/tmp/.psman-log-$USER
 LOGFILE=$LOGDIR/syscgijs
 
 function start() {
     mkdir -p $LOGDIR
-    sudo daemonize -p "$PIDFILE" -o $LOGFILE -- /usr/bin/node $HOME/DEV/syscgijs/syscgijs.js
+    daemonize -p "$PIDFILE" -o $LOGFILE -- /usr/bin/node $HOME/DEV/syscgijs/syscgijs.js
 }
 function stop() {
-    sudo start-stop-daemon --stop --pidfile "$PIDFILE" --user "$USER" --verbose
+    start-stop-daemon --stop --pidfile "$PIDFILE" --user "$USER" --verbose
 }
 function restart() {
     stop
