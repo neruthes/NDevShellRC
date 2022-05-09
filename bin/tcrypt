@@ -55,8 +55,8 @@ MATCHTABLE="@lstpos=1,@fdname=name,@firstc=7
     BY_FIELDVAL="$2"
     GET_FIELDNAME="$3"
     MATCHED="$(echo "$MATCHTABLE" | grep "@fdname=$GET_FIELDNAME" | head -n1 )"
-    FIELD_POS="$(echo "$MATCHED" | cut -d',' -f1 | cut -c9-)"
-    FIRST_CHAR="$(echo "$MATCHED" | cut -d',' -f3 | cut -c9-)"
+    FIELD_POS="$(echo "$MATCHED" | cut -d',' -f1 | cut -d= -f2-)"
+    FIRST_CHAR="$(echo "$MATCHED" | cut -d',' -f3 | cut -d= -f2-)"
     grep "@$BY_FIELDNAME=$BY_FIELDVAL" $CONFDIR/contacts.csv | head -n1 | cut -d'|' -f"$FIELD_POS" | cut -c"$FIRST_CHAR"-
 }
 function u_calcSignerKeyFingerprint() {
@@ -71,8 +71,8 @@ function u_calcSignerKeyPawprint() {
 }
 function u_verifyClearSign() {
     INPUTFN="$1"
-    vSIGNER="$(grep '#signer=' $INPUTFN | cut -c9-)"
-    vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -c9-)"
+    vSIGNER="$(grep '#signer=' $INPUTFN | cut -d= -f2-)"
+    vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -d= -f2-)"
     echo "$vSIGNER ssh-ed25519 $vSIGKEY" > $TCryptSession.fakeSignersList
     
     cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
@@ -265,7 +265,7 @@ echo "tcrypt ($APPVER)
 
 BASIC USAGE:
     tcrypt help                                     Print this help message.
-    tcrypt keygen                                   Generate a keypair (ssh-ed25519).
+    tcrypt keygen                                   Generate an identity (signature/encryption keypairs).
     tcrypt i|interpret                              Try interpreting a message from stdin.
     tcrypt if|interpretfile FILE_PATH               Try interpreting a message from FIEL_PATH.
 
@@ -352,21 +352,22 @@ case "$1" in
 
     i|interpret)
         cat /dev/stdin > $TCryptSession.stdin
-        INITIAL_CHARS="$(head -n1 $TCryptSession.stdin)"
+        PAYLOAD_TYPE_MARK="$(head -n1 $TCryptSession.stdin | cut -d'>' -f2)"
         ### Decide which operation to execute
-        if [[ "$INITIAL_CHARS" == "#>MsgClearSig>"* ]]; then
+        if [[ "$PAYLOAD_TYPE_MARK" == "MsgClearSig" ]]; then
             $tcrypt vcs < $TCryptSession.stdin
         fi
         _clearSession
         ;;
 
     if|interpretfile)
-        INITIAL_CHARS="$(head -n1 "$2")"
+        PAYLOAD_TYPE_MARK="$(head -n1 $TCryptSession.stdin | cut -d'>' -f2)"
         ### Decide which operation to execute
-        if [[ "$INITIAL_CHARS" == "#>MsgClearSig>"* ]]; then
+        if [[ "$PAYLOAD_TYPE_MARK" == "MsgClearSig" ]]; then
             $tcrypt vcsf "$2"
         fi
         ;;
+
     cs|clearsign)
         _panicIfNoKeypair
         cat /dev/stdin > $TCryptSession.stdin
@@ -377,7 +378,7 @@ case "$1" in
     csf|clearsignfile)
         _panicIfNoKeypair
         cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign > "$2.signed.txt"
-        echo "[INFO] Signed file '$2' and written to '$2.signed.txt'."
+        echo "[INFO] Signed file '$2' and written to '$2.signed.txt'." >&2
         ;;
 
     vcs|verifyclearsign)
@@ -391,12 +392,20 @@ case "$1" in
         ;;
 
     e|encrypt)
+        if [[ -z $2 ]]; then
+            _help | grep 'e|encrypt'
+            exit 0
+        fi
         cat /dev/stdin > $TCryptSession.stdin
         FP_LIST="$2" u_ecdhEncryptFile
         _clearSession
         ;;
 
     ef|encryptfile)
+        if [[ -z $3 ]]; then
+            _help | grep 'ef|encryptfile'
+            exit 0
+        fi
         cat "$3" > $TCryptSession.stdin
         FP_LIST="$2" u_ecdhEncryptFile > $3.enc
         _clearSession
@@ -408,14 +417,24 @@ case "$1" in
         _clearSession
         ;;
 
+    df|decryptfile)
+        if [[ -z $2 ]]; then
+            _help | grep 'e|encrypt'
+            exit 0
+        fi
+        cat "$2" > $TCryptSession.stdin
+        u_ecdhDecryptFile
+        _clearSession
+        ;;
+
     accs|addcontactfromclearsign)
         cat /dev/stdin > $TCryptSession.clearSignMsg
         INPUTFN="$TCryptSession.clearSignMsg"
         ### Note: Contacts CSV fields = [ Name | SSH public key body | Signer fingerprint | X25519 encryption key ]
-        vSIGNER="$(grep '#signer=' $INPUTFN | cut -c9-)"
-        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -c9-)"
-        vFP="$(grep '#fingerprint=' $INPUTFN | cut -c14-)"
-        vENCKEY="$(grep '#enckey=' $INPUTFN | cut -c9-)"
+        vSIGNER="$(grep '#signer=' $INPUTFN | cut -d'=' -f2-)"
+        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -d'=' -f2-)"
+        vFP="$(grep '#fingerprint=' $INPUTFN | cut -d'=' -f2-)"
+        vENCKEY="$(grep '#enckey=' $INPUTFN | cut -d'=' -f2-)"
         if [[ "$(grep "$vSIGKEY" $CONFDIR/contacts.csv)" != '' ]]; then
             echo "[ERROR] The public key '$vSIGKEY' is already a contact, known as '$(_getContactField sigkey "$vSIGKEY" name)'."
             echo "        Edit the file '$CONFDIR/contacts.csv' if you have worries."
@@ -428,13 +447,21 @@ case "$1" in
         echo "    Encryption Key:   $vENCKEY"
         echo "@name=$vSIGNER|@fp=$vFP|@sigkey=$vSIGKEY|@enckey=$vENCKEY"
         vSIGNER=$vSIGNER vFP=$vFP vSIGKEY=$vSIGKEY vENCKEY=$vENCKEY _addContact
-        # echo "@name=$vSIGNER|@fp=$vFP|@sigkey=$vSIGKEY|@enckey=$vENCKEY" >> $CONFDIR/contacts.csv
+        echo "@name=$vSIGNER|@fp=$vFP|@sigkey=$vSIGKEY|@enckey=$vENCKEY" >> $CONFDIR/contacts.csv
         _clearSession
         ;;
     ls|listcontacts)
         echo "[INFO] List of contacts:" >&2
-        CONTACTS_LIST="$( cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='      ' | sed 's/=/= /g' | sed 's|@fp=||g' )"
-        echo "$CONTACTS_LIST"
+        NAMES_LIST="$(cat $CONFDIR/contacts.csv | cut -d'|' -f1 | cut -d'=' -f2-)"
+        IFS=$'\n'
+        SPACELINE='                              '
+        echo "  Name                                | Fingerprint"
+        echo "  ------------------------------------+---------------------------------"
+        for CONTACT_NAME in $NAMES_LIST; do
+            # IFS=' '
+            vFP="$(_getContactField name "$CONTACT_NAME" fp)"
+            echo "  $CONTACT_NAME     ${SPACELINE:${#CONTACT_NAME}} | $vFP"
+        done
         ;;
 
     ic|inspectcontact)
