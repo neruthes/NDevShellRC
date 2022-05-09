@@ -456,7 +456,7 @@ case "$1" in
         IFS=$'\n'
         SPACELINE='                              '
         echo "  Name                                | Fingerprint"
-        echo "  ------------------------------------+---------------------------------"
+        echo "  ------------------------------------|---------------------------------"
         for CONTACT_NAME in $NAMES_LIST; do
             # IFS=' '
             vFP="$(_getContactField name "$CONTACT_NAME" fp)"
