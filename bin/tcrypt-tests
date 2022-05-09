@@ -1,0 +1,40 @@
+#!/bin/bash
+
+ALLGOOD=y
+
+PGDIR=/tmp/tcrypt-tests-playground
+mkdir -p $PGDIR
+cd $PGDIR
+
+echo "# Test File
+
+Hello world! This ia a test file, created at $(date -Is)." > file.txt
+
+
+
+### Encryption and Decryption
+echo "### Encryption and Decryption"
+if [[ ! -z "$(cat file.txt | tcrypt encrypt 0A980CF5253C7EFEE51271989BF19C88 | tcrypt decrypt | diff file.txt /dev/stdin)" ]]; then
+    echo "[ERROR] Encryption or decryption filed."
+    ALLGOOD=n
+fi
+
+
+### Signature and Verification
+echo "### Signature and Verification"
+if [[ ! -z "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep '[INFO] OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519 key SHA256:gUmF1EPA2Q3Pb02VNgW7YwFXDeUaJYoZbeP9DZPaySM')" ]]; then
+    echo "[ERROR] Signature or verification failed."
+    ALLGOOD=n
+fi
+
+
+
+
+
+echo -e "\n\n\n\n"
+### Final report
+if [[ $ALLGOOD == y ]]; then
+    echo "All tests passed."
+else
+    echo "Some tests failed."
+fi
