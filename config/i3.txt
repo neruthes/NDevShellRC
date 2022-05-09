@@ -53,16 +53,18 @@ assign [class="Chromium-browser"] 3
 ### WS4: Messaging
 assign [class="discord"] 4
 assign [class="Telegram"] 4
-### WS5: Games
+### WS5: Games & Drawing
 assign [class="Minecraft Launcher"] 5
 assign [class="Lutris"] 5
+assign [class="krita"] 5
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
 #assign [class="Placeholder"] 1
+### WS7: Player & Reader
+assign [class="mupdf"] 7
 assign [class="vlc"] 7
-assign [class="explorer.exe"] 8
 ### WS9: VM
 assign [class="Virt-manager"] 9
 
@@ -233,6 +235,7 @@ gaps vertical 80
 gaps inner 0
 workspace 2 gaps outer 0
 workspace 3 gaps outer 0
+workspace 5 gaps outer 0
 workspace 7 gaps outer 0
 workspace 8 gaps outer 0
 workspace 9 gaps outer 0
