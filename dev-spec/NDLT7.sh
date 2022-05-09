@@ -191,7 +191,10 @@ _checkMortalityAlert
 
 alias pa_Z420="PULSE_SERVER=10.0.233.20"
 alias pa_NDLT6G="PULSE_SERVER=NDLT6G"
-alias ttermusic="termusic ~/AUD/music"
+function ttermusic() {
+    sed -i 's|playlist_display_symbol = true|playlist_display_symbol = false|' $HOME/.config/termusic/config.toml
+    termusic $HOME/AUD/music
+}
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
     FORK=y psman-init

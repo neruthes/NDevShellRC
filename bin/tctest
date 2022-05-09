@@ -1,0 +1,52 @@
+#!/bin/bash
+
+echo "This script is only a playground and is not designed for any real usage."; exit 0
+
+MSGPATH=msg.txt
+EPHEKEY="./ephemeral.pem"
+PUBKEY="$HOME/.config/tcrypt/mykeys/Neruthes.x25519.pub"
+SHSEC="shsec"
+MSGKEY=./msgkey
+MSGIV=./msgiv
+RSKEY=./rskey
+
+# Section 1: For the message
+
+### Step 1: Create message
+# echo "Hello world! This is a test file. $(date -Is)" > $MSGPATH
+cat $MSGPATH
+
+### Step 2: Generate random AES key/iv (msgkey, msgiv) as binary
+# dd if=/dev/urandom of=$MSGKEY bs=32 count=1 2>/dev/null
+# dd if=/dev/urandom of=$MSGIV bs=16 count=1 2>/dev/null
+MSGKEY_VAL="$(hexdump -v -e '/1 "%02x" ' $MSGKEY)"
+MSGIV_VAL="$(hexdump -v -e '/1 "%02x" ' $MSGIV)"
+echo "debug: msgiv=$MSGIV_VAL"
+echo "debug: msgkey=$(hexdump -v -e '/1 "%02x" ' $MSGKEY)"
+
+### Step 3: Encrpyt message
+openssl enc -aes-256-cbc -nosalt -e -in $MSGPATH -out $MSGPATH.enc -K "$MSGKEY_VAL" -iv "$MSGIV_VAL"
+echo base64 $MSGPATH.enc
+base64 $MSGPATH.enc
+
+# Section 2: For each recipient
+
+### Step 4: Generate ephemeral keypair (ephekey)
+
+# openssl genpkey -algorithm X25519 -out $EPHEKEY
+# openssl pkey -pubout -in $EPHEKEY -out ./ephemeral.pub
+echo cat ./ephemeral.pub
+cat ./ephemeral.pub
+
+### Step 5: Calculate shared secret (shsec)
+
+# openssl pkeyutl -derive -inkey $EPHEKEY -peerkey $PUBKEY -out $SHSEC
+SHSEC_VAL="$(hexdump -v -e '/1 "%02x" ' $SHSEC)"
+echo "debug: shsec=$SHSEC_VAL"
+
+### Step 6: Encrypt msgkey with AES(shsec, msgiv)
+# openssl enc -aes-256-cbc -nosalt -e -in $MSGKEY -out $RSKEY -K "$SHSEC_VAL" -iv "$MSGIV_VAL"
+# file $RSKEY
+# echo "debug: rskey=$(hexdump -v -e '/1 "%02x" ' $RSKEY)"
+echo base64 $RSKEY
+base64 $RSKEY

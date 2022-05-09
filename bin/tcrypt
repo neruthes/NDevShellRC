@@ -7,8 +7,12 @@ function debug() {
     echo ">>> debug: $1"
 }
 
-CONFDIR="$HOME/.config/tcrypt"
-mkdir -p "$CONFDIR"/{mykeys,}
+### Change CONFDIR by specifying an environment variable
+if [[ -z "$CONFDIR" ]]; then
+    CONFDIR="$HOME/.config/tcrypt"
+fi
+
+mkdir -p "$CONFDIR"/mykeys
 ### CSV delimiter is whitespace
 touch "$CONFDIR/contacts.csv"
 touch "$CONFDIR/known_signers.csv"     ### CSV format: "{NAME} ssh-ed25519 {SSHPUBKEY} {COUNT}"
@@ -51,11 +55,199 @@ MATCHTABLE="@lstpos=1,@fdname=name,@firstc=7
     BY_FIELDVAL="$2"
     GET_FIELDNAME="$3"
     MATCHED="$(echo "$MATCHTABLE" | grep "@fdname=$GET_FIELDNAME" | head -n1 )"
-    FIELD_POS="$(echo "$MATCHED" | cut -d',' -f1 | cut -b9-)"
-    FIRST_CHAR="$(echo "$MATCHED" | cut -d',' -f3 | cut -b9-)"
-    grep "@$BY_FIELDNAME=$BY_FIELDVAL" $CONFDIR/contacts.csv | head -n1 | cut -d'|' -f"$FIELD_POS" | cut -b"$FIRST_CHAR"-
+    FIELD_POS="$(echo "$MATCHED" | cut -d',' -f1 | cut -c9-)"
+    FIRST_CHAR="$(echo "$MATCHED" | cut -d',' -f3 | cut -c9-)"
+    grep "@$BY_FIELDNAME=$BY_FIELDVAL" $CONFDIR/contacts.csv | head -n1 | cut -d'|' -f"$FIELD_POS" | cut -c"$FIRST_CHAR"-
 }
+function u_calcSignerKeyFingerprint() {
+    # $1: Ed25519 public key (key body only, single-line)
+    TMPSTR="$( printf "$1" | sha256sum | cut -c1-32 )"
+    printf -- "${TMPSTR^^}"
+}
+function u_calcSignerKeyPawprint() {
+    # $1: Ed25519 public key (key body only, single-line)
+    TMPSTR="$( printf "$1" | sha512sum | cut -d' ' -f1 | xxd -r -p | base64 | tr '\n' '|' | sed 's/[|=]//g' )"
+    printf -- "${TMPSTR}"
+}
+function u_verifyClearSign() {
+    INPUTFN="$1"
+    vSIGNER="$(grep '#signer=' $INPUTFN | cut -c9-)"
+    vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -c9-)"
+    echo "$vSIGNER ssh-ed25519 $vSIGKEY" > $TCryptSession.fakeSignersList
+    
+    cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
+    cat $INPUTFN | $tcrypt u_extractMsgSignature > $TCryptSession.msgSig
 
+    printf "\n===== INCOMING MESSAGE =====\n\n"
+    cat $TCryptSession.msgBody
+    printf "\n\n===== VERIFICATION RESULT =====\n\n"
+    VERIFY_RESULT="$(ssh-keygen -Y verify -f $TCryptSession.fakeSignersList -I "$vSIGNER" -n MsgSigV1 -s $TCryptSession.msgSig < $TCryptSession.msgBody)"
+    echo "[INFO] OpenSSH says: $VERIFY_RESULT"
+    if [[ "$VERIFY_RESULT" == 'Good "MsgSigV1" signature for'* ]]; then
+        echo "[INFO] Signature from '$vSIGKEY' is valid."
+        ### Can we find the SigKey in contacts?
+        if [[ "$(grep -v '^#' $CONFDIR/contacts.csv | grep "=$vSIGKEY")" != "" ]]; then
+            ### Found the sigkey
+            KEY_SAVED_NAME="$(_getContactField sigkey "$vSIGKEY" name)"
+            CALCULATED_SAVED_FP="$(u_calcSignerKeyFingerprint "$vSIGKEY")"
+            EXTRACTED_SAVED_FP="$(grep '#fingerprint=' $INPUTFN | cut -c14-)"
+            echo "[INFO] The signer is a contact, known as '$KEY_SAVED_NAME' (Fingerprint: $CALCULATED_SAVED_FP)."
+            if [[ "$KEY_SAVED_NAME" != "$vSIGNER" ]]; then
+                echo "[WARNING] This contact is known as '$KEY_SAVED_NAME' and not '$vSIGNER'. Consider updating the saved name in '$CONFDIR/contacts.csv'."
+            fi
+        else
+            echo "[INFO] BEWARE! Signer is not a contact! To add as contact, pipe the message to 'tcrypt addcontactfromclearsign'."
+            ### Did we previously verify their message?
+            GREP_RESULT="$(grep "$vSIGKEY" $CONFDIR/known_signers.csv)"
+            if [[ "$GREP_RESULT" != "" ]]; then
+                MSG_COUNT="$(echo "$GREP_RESULT" | cut -d' ' -f4)"
+                CACHED_NAME="$(_getContactField sigkey "$vSIGKEY" name)"
+                echo "[INFO] We had verified $MSG_COUNT messages from this signer (previously known as '$CACHED_NAME') before."
+                ### Update the number
+                sed -i "s|$vSIGNER $vSIGKEY $MSG_COUNT|$vSIGNER $vSIGKEY $((MSG_COUNT+1))|" $CONFDIR/known_signers.csv
+            else
+                ### This is the first message from them
+                ### Save into known_signers
+                echo "$vSIGNER $vSIGKEY 1" >> "$CONFDIR/known_signers.csv"
+            fi
+        fi
+    else
+        echo "[FATAL] The signature is invalid!"
+    fi
+    printf "\n\n"
+    _clearSession
+}
+function u_base64tohex() {
+    INPUTFN="$1"
+    OUTPUTFN="$2"
+    while read fileline; do
+        echo $fileline | base64 -d -i | hexdump -v -e '/1 "%02x" ' >> "$OUTPUTFN"
+        echo "" >> "$OUTPUTFN"
+    done < "$INPUTFN"
+}
+function _encEcdhMkRskey() {
+    PUBKEY="$1"
+    PRIVKEY_PATH="$2"
+    echo "-----BEGIN PUBLIC KEY-----
+$PUBKEY
+-----END PUBLIC KEY-----" > $TCryptSession.PUBKEY_PATH.$COUNT
+
+    openssl pkeyutl -derive -inkey $PRIVKEY_PATH -peerkey $TCryptSession.PUBKEY_PATH.$COUNT -out $TCryptSession.shsec.$COUNT
+    SHSEC_VAL="$( cat $TCryptSession.shsec.$COUNT | hexdump -v -e '/1 "%02x" ' )"
+    # echo "debug: Recipient-specific shared secret (shsec) for '$( _getContactField enckey "$PUBKEY" name )': '$SHSEC_VAL'" >&2
+
+    openssl enc -aes-256-cbc -nosalt -e -in $TCryptSession.msgkey -out $TCryptSession.rskeyBody.$COUNT -K "$SHSEC_VAL" -iv "$MSGIV_VAL"
+    rskeyBody="$(base64 $TCryptSession.rskeyBody.$COUNT)"
+    echo "$rskeyBody"
+}
+function u_ecdhEncryptFile() {
+    ### Hybrid ECDH
+
+    MSGTS="$(TZ=UTC date +%Y%m%d.%H%M%S)"
+    SMALLHASH_1="$(sha256sum $TCryptSession.stdin | cut -c1-40)"
+    SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -c1-40)"
+    SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -c1-16)"
+
+    ### Generate symmetric message key (msgkey, msgiv)
+    dd if=/dev/urandom of=$TCryptSession.msgkey bs=32 count=1 2>/dev/null
+    dd if=/dev/urandom of=$TCryptSession.msgiv bs=16 count=1 2>/dev/null
+    MSGKEY_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.msgkey)"
+    MSGIV_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.msgiv)"
+    # echo "debug: msgiv=$MSGIV_VAL" >&2
+    # echo "debug: msgkey=$(base64 $TCryptSession.msgkey)" >&2
+
+    ### Generate ephemeral keypair
+    openssl genpkey -algorithm X25519 -out "$TCryptSession.ephemeral.pem"
+    openssl pkey -pubout -in "$TCryptSession.ephemeral.pem" -out "$TCryptSession.ephemeral.pub"
+    EPHE_PUB="$(head -n2 "$TCryptSession.ephemeral.pub" | tail -n1)"
+    # echo "debug: EPHE_PUB=$EPHE_PUB" >&2
+
+    ### Generate recipient-specific key (rskey) list
+    COUNT=0
+    for vFP in $(echo "$FP_LIST" | sed 's|,| |g'); do
+        # echo "$fp"
+        ENCKEY="$(_getContactField fp "$vFP" enckey)"
+        # echo "#rskey=$(_encEcdhMkRskey "$fp" "$MSGKEY_VAL")" >> $TCryptSession.rskeyList
+        echo "#rskey=$(_encEcdhMkRskey "$ENCKEY" "$TCryptSession.ephemeral.pem")" >> $TCryptSession.rskeyList
+        COUNT="$((COUNT+1))"
+    done
+
+    ### Encrypt message
+    openssl enc -aes-256-cbc -nosalt -e -in $TCryptSession.stdin -out $TCryptSession.msg.enc -K "$MSGKEY_VAL" -iv "$MSGIV_VAL"
+
+    ### Final output
+    echo "#>MsgEnc>$MSGTS>$SMALLHASH" > $TCryptSession.stdout
+    echo "#ephepub=$EPHE_PUB" >> $TCryptSession.stdout
+    # echo "#msgkey=$MSGKEY_VAL" >> $TCryptSession.stdout       # Debug only; should not include in the payload
+    echo "#aesiv=$MSGIV_VAL" >> $TCryptSession.stdout
+    cat $TCryptSession.rskeyList >> $TCryptSession.stdout
+    echo "-------------------------------" >> $TCryptSession.stdout
+    base64 $TCryptSession.msg.enc >> $TCryptSession.stdout
+
+    cat $TCryptSession.stdout
+    # exit 0
+}
+function u_ecdhDecryptFile() {
+    ### Get symEncBody (removing the header)
+    ENDHEADER=n
+    HLINES=1
+    while [[ $ENDHEADER == n ]]; do
+        if [[ "$(sed "${HLINES}q;d" "$TCryptSession.stdin" | cut -c1)" == "#" ]]; then
+            ### Continue
+            HLINES="$((HLINES+1))"
+        else
+            ### Break
+            ENDHEADER=y
+        fi
+        if [[ $HLINES == "30" ]]; then
+            ### Break anyway when reaching a threshold
+            ENDHEADER=y
+        fi
+    done
+    tail -n +$((HLINES+1)) "$TCryptSession.stdin"  | base64 -d > $TCryptSession.symEncBody
+
+    ### Get ephepub
+    # grep '#msgkey=' $TCryptSession.stdin >&2        # Debug only; will not find msgkey in the payload
+    # grep '#aesiv=' $TCryptSession.stdin >&2
+    vEPHEPUB="$(grep '#ephepub=' $TCryptSession.stdin | cut -d'=' -f2-)"
+    MSGIV_VAL="$(grep '#aesiv=' $TCryptSession.stdin | cut -d'=' -f2-)"
+    # echo "debug: vEPHEPUB=$vEPHEPUB" >&2
+    # echo "debug: MSGIV_VAL=$MSGIV_VAL" >&2
+
+    echo "-----BEGIN PUBLIC KEY-----
+$vEPHEPUB
+-----END PUBLIC KEY-----" > $TCryptSession.ephepub
+
+    ### Derive shared secret (shsec)
+    SHSEC_VAL="$( openssl pkeyutl -derive -inkey $PRIVKEYPATH.x25519 -peerkey $TCryptSession.ephepub -out /dev/stdout | hexdump -v -e '/1 "%02x" ' )"
+    # echo "debug: SHSEC_VAL=$SHSEC_VAL" >&2
+    ### Try decrypting any rskey with shsec
+    SUCCESS_ITR=null
+    COUNT=0
+    for rskeyBody in $(grep '#rskey=' $TCryptSession.stdin | cut -d'=' -f2-); do
+        echo "$rskeyBody" | base64 -d > $TCryptSession.rskeyBody.$COUNT
+        openssl enc -aes-256-cbc -nosalt -d -in $TCryptSession.rskeyBody.$COUNT -out $TCryptSession.rskeyBody.$COUNT.out -K "$SHSEC_VAL" -iv "$MSGIV_VAL" 2>/dev/null
+        if [[ $? == 0 ]]; then
+            SUCCESS_ITR=$COUNT
+        # else
+            # echo "debug: Decryption failed at $COUNT" >&2
+        fi
+        COUNT="$((COUNT+1))"
+    done
+    if [[ "$SUCCESS_ITR" == null ]]; then
+        echo "[ERROR] Cannot decrypt the payload. Did the sender really encrypt for you?"
+        echo "        Or try using a different identity by specifying MYNAME environment variable."
+        return 1
+    else
+        # echo "debug: SUCCESS_ITR=$SUCCESS_ITR" >&2
+        MSGKEY_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.rskeyBody.$SUCCESS_ITR.out)"
+        # echo "debug: MSGKEY_VAL=$MSGKEY_VAL" >&2
+
+        ### Now decrypt the message body with MSGKEY_VAL and MSGKIV_VAL
+        openssl enc -aes-256-cbc -nosalt -d -in $TCryptSession.symEncBody -out $TCryptSession.symEncBody.out -K "$MSGKEY_VAL" -iv "$MSGIV_VAL"
+        cat $TCryptSession.symEncBody.out
+    fi
+}
 
 
 
@@ -83,8 +275,18 @@ SIGNATURE:
     tcrypt vcs|verifyclearsign                      Verify clearsign from stdin.
     tcrypt vcsf|verifyclearsignfile FILE_PATH       Verify clearsign file FILE_PATH.
 
+SIGNATURE:
+    tcrypt e|encrypt FP_LIST                        Encrypt a file for listed recipients.
+    tcrypt ef|encryptfile FP_LIST FILE_PATH         Encrypt file FILE_PATH for listed recipients.
+    tcrypt d|decrypt                                Decrypt from stdin.
+    tcrypt df|decryptfile FILE_PATH                 Decrypt file FILE_PATH.
+
+    Notes:
+        - FP_LIST is a comma-delimited list of fingerprints.
+
 DATA MANAGEMENT:
     tcrypt ls|listcontacts                          Show the list of contacts.
+    tcrypt ic|inspectcontact FINGERPRINT            Inspect contact info.
     tcrypt addcontactfromclearsign                  Read clearsign msg from stdin; add signer as contact.
 "
 }
@@ -180,22 +382,40 @@ case "$1" in
 
     vcs|verifyclearsign)
         cat /dev/stdin > $TCryptSession.verifyclearsign
-        $tcrypt u_verifyClearSign $TCryptSession.verifyclearsign
+        u_verifyClearSign $TCryptSession.verifyclearsign
         _clearSession
         ;;
 
     vcsf|verifyclearsignfile)
-        $tcrypt u_verifyClearSign $2
+        u_verifyClearSign $2
         ;;
 
-    addcontactfromclearsign)
+    e|encrypt)
+        cat /dev/stdin > $TCryptSession.stdin
+        FP_LIST="$2" u_ecdhEncryptFile
+        _clearSession
+        ;;
+
+    ef|encryptfile)
+        cat "$3" > $TCryptSession.stdin
+        FP_LIST="$2" u_ecdhEncryptFile > $3.enc
+        _clearSession
+        ;;
+
+    d|decrypt)
+        cat /dev/stdin > $TCryptSession.stdin
+        u_ecdhDecryptFile
+        _clearSession
+        ;;
+
+    accs|addcontactfromclearsign)
         cat /dev/stdin > $TCryptSession.clearSignMsg
         INPUTFN="$TCryptSession.clearSignMsg"
         ### Note: Contacts CSV fields = [ Name | SSH public key body | Signer fingerprint | X25519 encryption key ]
-        vSIGNER="$(grep '#signer=' $INPUTFN | cut -b9-)"
-        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9-)"
-        vFP="$(grep '#fingerprint=' $INPUTFN | cut -b14-)"
-        vENCKEY="$(grep '#enckey=' $INPUTFN | cut -b9-)"
+        vSIGNER="$(grep '#signer=' $INPUTFN | cut -c9-)"
+        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -c9-)"
+        vFP="$(grep '#fingerprint=' $INPUTFN | cut -c14-)"
+        vENCKEY="$(grep '#enckey=' $INPUTFN | cut -c9-)"
         if [[ "$(grep "$vSIGKEY" $CONFDIR/contacts.csv)" != '' ]]; then
             echo "[ERROR] The public key '$vSIGKEY' is already a contact, known as '$(_getContactField sigkey "$vSIGKEY" name)'."
             echo "        Edit the file '$CONFDIR/contacts.csv' if you have worries."
@@ -213,37 +433,44 @@ case "$1" in
         ;;
     ls|listcontacts)
         echo "[INFO] List of contacts:" >&2
-            UUID="$(uuidgen v4)"
-            CONTACTS_LIST="$(cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,3-3 --output-delimiter='   ')"
-            echo "$CONTACTS_LIST"
-            # IFS=$'\n' for line in $CONTACTS_LIST; do
-                # echo "  $line"
-            # done
+        CONTACTS_LIST="$( cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='      ' | sed 's/=/= /g' | sed 's|@fp=||g' )"
+        echo "$CONTACTS_LIST"
         ;;
 
-    ### Reserved for internal calls
+    ic|inspectcontact)
+        if [[ -z $2 ]]; then
+            echo "[ERROR] No fingerprint specified."
+            exit 0
+        fi
+        echo "[INFO] Inspecting contact by fingerprint '$2':" >&2
+        # cat $CONFDIR/contacts.csv | grep "@fp=$2"
+        # cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='   ' | sed 's/=/= /g'
+        echo ""
+        echo "Name:         $(_getContactField fp "$2" name)"
+        echo "Fingerprint:  $(_getContactField fp "$2" fp)"
+        echo "sigkey:       $(_getContactField fp "$2" sigkey)"
+        echo "enckey:       $(_getContactField fp "$2" enckey)"
+        # CONTACTS_LIST="$( cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='   ' | sed 's/=/= /g' )"
+        # echo "$CONTACTS_LIST"
+        ;;
+
+    ### Reserved for internal recursive calls
     u_makeMsgBodyForClearSig)
         cat /dev/stdin > $TCryptSession.u_makeMsgBodyForClearSig
         MSGTS="$(TZ=UTC date +%Y%m%d.%H%M%S)"
-        SMALLHASH_1="$(sha256sum $TCryptSession.u_makeMsgBodyForClearSig | cut -b1-40)"
-        SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -b1-40)"
-        SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -b1-16)"
+        SMALLHASH_1="$(sha256sum $TCryptSession.u_makeMsgBodyForClearSig | cut -c1-40)"
+        SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -c1-40)"
+        SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -c1-16)"
         echo "#>MsgClearSig>$MSGTS>$SMALLHASH"
         echo "#signer=$FULLNAME"
-        echo "#fingerprint=$($tcrypt u_calcSignerKeyFingerprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
+        echo "#fingerprint=$(u_calcSignerKeyFingerprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
+        echo "#pawprint=$(u_calcSignerKeyPawprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
         echo "#sigkey=$(cat "$PRIVKEYPATH.ed25519.pub")"
         echo "#enckey=$(cat "$PRIVKEYPATH.x25519.pub" | head -n2 | tail -n1)"
         echo "----------------------------------------------"
         echo ""
         cat $TCryptSession.u_makeMsgBodyForClearSig
         _clearSession
-        ;;
-
-    u_base64tohex)
-        while read fileline; do
-            echo $fileline | base64 -d -i | hexdump -v -e '/1 "%02x" ' >> /dev/stdout
-            echo "" >> /dev/stdout
-        done < /dev/stdin
         ;;
 
     u_finalSign)
@@ -264,61 +491,6 @@ case "$1" in
 
     u_extractMsgSignature)
         cat /dev/stdin | tail -n6
-        ;;
-
-    u_calcSignerKeyFingerprint)
-        # argv: Ed25519 public key (key body only, single-line)
-        TMPSTR="$(printf "$2" | sha256sum | cut -b1-32)"
-        printf -- "${TMPSTR^^}"
-        ;;
-        
-    u_verifyClearSign)
-        INPUTFN="$2"
-        vSIGNER="$(grep '#signer=' $INPUTFN | cut -b9-)"
-        vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -b9-)"
-        echo "$vSIGNER ssh-ed25519 $vSIGKEY" > $TCryptSession.fakeSignersList
-        
-        cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
-        cat $INPUTFN | $tcrypt u_extractMsgSignature > $TCryptSession.msgSig
-
-        printf "\n===== INCOMING MESSAGE =====\n\n"
-        cat $TCryptSession.msgBody
-        printf "\n\n===== VERIFICATION RESULT =====\n\n"
-        VERIFY_RESULT="$(ssh-keygen -Y verify -f $TCryptSession.fakeSignersList -I "$vSIGNER" -n MsgSigV1 -s $TCryptSession.msgSig < $TCryptSession.msgBody)"
-        echo "[INFO] OpenSSH says: $VERIFY_RESULT"
-        if [[ "$VERIFY_RESULT" == 'Good "MsgSigV1" signature for'* ]]; then
-            echo "[INFO] Signature from '$vSIGKEY' is valid."
-            ### Can we find the SigKey in contacts?
-            if [[ "$(grep -v '^#' $CONFDIR/contacts.csv | grep "=$vSIGKEY")" != "" ]]; then
-                ### Found the sigkey
-                KEY_SAVED_NAME="$(_getContactField sigkey "$vSIGKEY" name)"
-                CALCULATED_SAVED_FP="$($tcrypt u_calcSignerKeyFingerprint "$vSIGKEY")"
-                EXTRACTED_SAVED_FP="$(grep '#fingerprint=' $INPUTFN | cut -b14-)"
-                echo "[INFO] The signer is a contact, known as '$KEY_SAVED_NAME' (Fingerprint: $CALCULATED_SAVED_FP)."
-                if [[ "$KEY_SAVED_NAME" != "$vSIGNER" ]]; then
-                    echo "[WARNING] This contact is known as '$KEY_SAVED_NAME' and not '$vSIGNER'. Consider updating the saved name in '$CONFDIR/contacts.csv'."
-                fi
-            else
-                echo "[INFO] BEWARE! Signer is not a contact! To add as contact, pipe the message to 'tcrypt addcontactfromclearsign'."
-                ### Did we previously verify their message?
-                GREP_RESULT="$(grep "$vSIGKEY" $CONFDIR/known_signers.csv)"
-                if [[ "$GREP_RESULT" != "" ]]; then
-                    MSG_COUNT="$(echo "$GREP_RESULT" | cut -d' ' -f4)"
-                    CACHED_NAME="$(_getContactField sigkey "$vSIGKEY" name)"
-                    echo "[INFO] We had verified $MSG_COUNT messages from this signer (previously known as '$CACHED_NAME') before."
-                    ### Update the number
-                    sed -i "s|$vSIGNER $vSIGKEY $MSG_COUNT|$vSIGNER $vSIGKEY $((MSG_COUNT+1))|" $CONFDIR/known_signers.csv
-                else
-                    ### This is the first message from them
-                    ### Save into known_signers
-                    echo "$vSIGNER $vSIGKEY 1" >> "$CONFDIR/known_signers.csv"
-                fi
-            fi
-        else
-            echo "[FATAL] The signature is invalid!"
-        fi
-        printf "\n\n"
-        _clearSession
         ;;
 
     *)
