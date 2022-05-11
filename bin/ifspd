@@ -9,7 +9,11 @@
 
 #!/bin/bash
 
-IFNAME=$1
+if [[ -z $1 ]]; then
+    IFNAME="$(ip route get 1.1.1.1 | grep -oE 'dev \w+' | cut -d' ' -f2)"
+else
+    IFNAME=$1
+fi
 if [ ! -d "/sys/class/net/$IFNAME/statistics" ]; then
 	echo "sysfs dir not exists: /sys/class/net/$IFNAME/statistics"
 	exit 1
