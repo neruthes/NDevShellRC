@@ -164,9 +164,22 @@ function u_ecdhEncryptFile() {
 
     ### Generate recipient-specific key (rskey) list
     COUNT=0
-    for vFP in $(echo "$FP_LIST" | sed 's|,| |g'); do
+    IFS=","
+    # for REC_CLAUSE in $(echo "$REC_LIST" | sed 's|,| |g'); do
+    # for REC_CLAUSE in $(echo "$REC_LIST"); do
+    for REC_CLAUSE in $REC_LIST; do
+        IFS=" "
         # echo "$fp"
-        ENCKEY="$(_getContactField fp "$vFP" enckey)"
+        if [[ "$(grep -cE '^[0-9A-F]{32}$' <<< "$REC_CLAUSE")" == 1 ]]; then
+            vFP="$REC_CLAUSE"
+            ENCKEY="$(_getContactField fp "$REC_CLAUSE" enckey)"
+            vNAME="$(_getContactField fp "$REC_CLAUSE" name)"
+        else
+            vNAME="$REC_CLAUSE"
+            ENCKEY="$(_getContactField name "$REC_CLAUSE" enckey)"
+            vFP="$(_getContactField name "$REC_CLAUSE" fp)"
+        fi
+        echo "[INFO] Encrypting for '$vNAME' ($vFP)..." >&2
         # echo "#rskey=$(_encEcdhMkRskey "$fp" "$MSGKEY_VAL")" >> $TCryptSession.rskeyList
         echo "#rskey=$(_encEcdhMkRskey "$ENCKEY" "$TCryptSession.ephemeral.pem")" >> $TCryptSession.rskeyList
         COUNT="$((COUNT+1))"
@@ -181,7 +194,7 @@ function u_ecdhEncryptFile() {
     # echo "#msgkey=$MSGKEY_VAL" >> $TCryptSession.stdout       # Debug only; should not include in the payload
     echo "#aesiv=$MSGIV_VAL" >> $TCryptSession.stdout
     cat $TCryptSession.rskeyList >> $TCryptSession.stdout
-    echo "-------------------------------" >> $TCryptSession.stdout
+    echo "-----------------------------------------" >> $TCryptSession.stdout
     base64 $TCryptSession.msg.enc >> $TCryptSession.stdout
 
     cat $TCryptSession.stdout
@@ -276,13 +289,13 @@ SIGNATURE:
     tcrypt vcsf|verifyclearsignfile FILE_PATH       Verify clearsign file FILE_PATH.
 
 SIGNATURE:
-    tcrypt e|encrypt FP_LIST                        Encrypt a file for listed recipients.
-    tcrypt ef|encryptfile FP_LIST FILE_PATH         Encrypt file FILE_PATH for listed recipients.
+    tcrypt e|encrypt REC_LIST                        Encrypt a file for listed recipients.
+    tcrypt ef|encryptfile REC_LIST FILE_PATH         Encrypt file FILE_PATH for listed recipients.
     tcrypt d|decrypt                                Decrypt from stdin.
     tcrypt df|decryptfile FILE_PATH                 Decrypt file FILE_PATH.
 
     Notes:
-        - FP_LIST is a comma-delimited list of fingerprints.
+        - REC_LIST is a comma-delimited list of fingerprints.
 
 DATA MANAGEMENT:
     tcrypt ls|listcontacts                          Show the list of contacts.
@@ -397,7 +410,7 @@ case "$1" in
             exit 0
         fi
         cat /dev/stdin > $TCryptSession.stdin
-        FP_LIST="$2" u_ecdhEncryptFile
+        REC_LIST="$2" u_ecdhEncryptFile
         _clearSession
         ;;
 
@@ -407,7 +420,7 @@ case "$1" in
             exit 0
         fi
         cat "$3" > $TCryptSession.stdin
-        FP_LIST="$2" u_ecdhEncryptFile > $3.enc
+        REC_LIST="$2" u_ecdhEncryptFile > $3.enc
         _clearSession
         ;;
 

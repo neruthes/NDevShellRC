@@ -7,8 +7,6 @@
 # <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
 #
 
-#!/bin/bash
-
 if [[ -z $1 ]]; then
     IFNAME="$(ip route get 1.1.1.1 | grep -oE 'dev \w+' | cut -d' ' -f2)"
 else
