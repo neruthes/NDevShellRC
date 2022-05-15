@@ -1,6 +1,9 @@
 # export EDITOR="$(which nano)"
 
 function ps1gitbr() {
+    if [[ -z "$(which git 2>/dev/null)" ]]; then
+        return 0
+    fi
     git branch --show-current > "/tmp/.L_GBSC_$USER" 2>&1
     L_GBSC="$(cat /tmp/.L_GBSC_$USER)"
     if [[ "${L_GBSC::5}" == 'fatal' ]]; then
