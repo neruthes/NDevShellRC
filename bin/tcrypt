@@ -1,10 +1,13 @@
 #!/bin/bash
 
-APPVER="v0.1.4-pre1"
+APPVER="v0.1.4"
 
 function debug() {
-    printf ""
-    echo ">>> debug: $1"
+    if [[ "$TCRYPT_DEBUG" == n ]]; then
+        return 0
+    fi
+    # printf ""
+    echo ">>> debug: $1" >/dev/stderr
 }
 
 ### Change CONFDIR by specifying an environment variable
@@ -125,6 +128,12 @@ function u_base64tohex() {
         echo "" >> "$OUTPUTFN"
     done < "$INPUTFN"
 }
+function _genRsiv() {
+    MSGIV_VAL="$1"
+    PUBKEY="$2"
+    COMBINED_HASH="$(sha256sum <<< "${MSGIV_VAL}:${PUBKEY}" | cut -d' ' -f1)"
+    printf "${COMBINED_HASH:0:32}"
+}
 function _encEcdhMkRskey() {
     PUBKEY="$1"
     PRIVKEY_PATH="$2"
@@ -134,11 +143,16 @@ $PUBKEY
 
     openssl pkeyutl -derive -inkey $PRIVKEY_PATH -peerkey $TCryptSession.PUBKEY_PATH.$COUNT -out $TCryptSession.shsec.$COUNT
     SHSEC_VAL="$( cat $TCryptSession.shsec.$COUNT | hexdump -v -e '/1 "%02x" ' )"
-    # echo "debug: Recipient-specific shared secret (shsec) for '$( _getContactField enckey "$PUBKEY" name )': '$SHSEC_VAL'" >&2
 
-    openssl enc -aes-256-cbc -nosalt -e -in $TCryptSession.msgkey -out $TCryptSession.rskeyBody.$COUNT -K "$SHSEC_VAL" -iv "$MSGIV_VAL"
-    rskeyBody="$(base64 $TCryptSession.rskeyBody.$COUNT)"
-    echo "$rskeyBody"
+    # Old rsiv behavior: random bytes
+    # dd if=/dev/urandom of=$TCryptSession.rsiv.$COUNT bs=16 count=1 2>/dev/null
+    # New rsiv behavior: sha256(msgiv+enckey)
+    rsiv_hex="$(_genRsiv "$MSGIV_VAL" "$PUBKEY")"
+
+    # Make rskey
+    openssl enc -aes-256-cbc -nosalt -e -in $TCryptSession.msgkey -out $TCryptSession.rskey.$COUNT -K "$SHSEC_VAL" -iv "$rsiv_hex"
+    rskey="$(base64 $TCryptSession.rskey.$COUNT)"
+    echo "$rskey"
 }
 function u_ecdhEncryptFile() {
     ### Hybrid ECDH
@@ -153,20 +167,18 @@ function u_ecdhEncryptFile() {
     dd if=/dev/urandom of=$TCryptSession.msgiv bs=16 count=1 2>/dev/null
     MSGKEY_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.msgkey)"
     MSGIV_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.msgiv)"
-    # echo "debug: msgiv=$MSGIV_VAL" >&2
-    # echo "debug: msgkey=$(base64 $TCryptSession.msgkey)" >&2
+    # debug "msgiv=$MSGIV_VAL"
+    # debug "msgkey=$(base64 $TCryptSession.msgkey)"
 
     ### Generate ephemeral keypair
     openssl genpkey -algorithm X25519 -out "$TCryptSession.ephemeral.pem"
     openssl pkey -pubout -in "$TCryptSession.ephemeral.pem" -out "$TCryptSession.ephemeral.pub"
     EPHE_PUB="$(head -n2 "$TCryptSession.ephemeral.pub" | tail -n1)"
-    # echo "debug: EPHE_PUB=$EPHE_PUB" >&2
+    # debug "EPHE_PUB=$EPHE_PUB"
 
     ### Generate recipient-specific key (rskey) list
     COUNT=0
     IFS=","
-    # for REC_CLAUSE in $(echo "$REC_LIST" | sed 's|,| |g'); do
-    # for REC_CLAUSE in $(echo "$REC_LIST"); do
     for REC_CLAUSE in $REC_LIST; do
         IFS=" "
         # echo "$fp"
@@ -179,8 +191,7 @@ function u_ecdhEncryptFile() {
             ENCKEY="$(_getContactField name "$REC_CLAUSE" enckey)"
             vFP="$(_getContactField name "$REC_CLAUSE" fp)"
         fi
-        echo "[INFO] Encrypting for '$vNAME' ($vFP)..." >&2
-        # echo "#rskey=$(_encEcdhMkRskey "$fp" "$MSGKEY_VAL")" >> $TCryptSession.rskeyList
+        debug "Encrypting for '$vNAME' ($vFP)..."
         echo "#rskey=$(_encEcdhMkRskey "$ENCKEY" "$TCryptSession.ephemeral.pem")" >> $TCryptSession.rskeyList
         COUNT="$((COUNT+1))"
     done
@@ -220,30 +231,25 @@ function u_ecdhDecryptFile() {
     tail -n +$((HLINES+1)) "$TCryptSession.stdin"  | base64 -d > $TCryptSession.symEncBody
 
     ### Get ephepub
-    # grep '#msgkey=' $TCryptSession.stdin >&2        # Debug only; will not find msgkey in the payload
-    # grep '#aesiv=' $TCryptSession.stdin >&2
     vEPHEPUB="$(grep '#ephepub=' $TCryptSession.stdin | cut -d'=' -f2-)"
     MSGIV_VAL="$(grep '#aesiv=' $TCryptSession.stdin | cut -d'=' -f2-)"
-    # echo "debug: vEPHEPUB=$vEPHEPUB" >&2
-    # echo "debug: MSGIV_VAL=$MSGIV_VAL" >&2
 
     echo "-----BEGIN PUBLIC KEY-----
 $vEPHEPUB
 -----END PUBLIC KEY-----" > $TCryptSession.ephepub
+    PUBKEY="$(head -n2 $PRIVKEYPATH.x25519.pub | tail -n1)"
 
     ### Derive shared secret (shsec)
     SHSEC_VAL="$( openssl pkeyutl -derive -inkey $PRIVKEYPATH.x25519 -peerkey $TCryptSession.ephepub -out /dev/stdout | hexdump -v -e '/1 "%02x" ' )"
-    # echo "debug: SHSEC_VAL=$SHSEC_VAL" >&2
     ### Try decrypting any rskey with shsec
     SUCCESS_ITR=null
     COUNT=0
-    for rskeyBody in $(grep '#rskey=' $TCryptSession.stdin | cut -d'=' -f2-); do
-        echo "$rskeyBody" | base64 -d > $TCryptSession.rskeyBody.$COUNT
-        openssl enc -aes-256-cbc -nosalt -d -in $TCryptSession.rskeyBody.$COUNT -out $TCryptSession.rskeyBody.$COUNT.out -K "$SHSEC_VAL" -iv "$MSGIV_VAL" 2>/dev/null
+    for rskeyFull in $(grep '#rskey=' $TCryptSession.stdin | cut -d'=' -f2-); do
+        echo "$rskeyFull" | cut -d':' -f1 | base64 -d > $TCryptSession.rskeyBody.$COUNT
+        rsiv_hex="$(_genRsiv "$MSGIV_VAL" "$PUBKEY")"
+        openssl enc -aes-256-cbc -nosalt -d -in $TCryptSession.rskeyBody.$COUNT -out $TCryptSession.rskeyBody.$COUNT.out -K "$SHSEC_VAL" -iv "$rsiv_hex" 2>/dev/null
         if [[ $? == 0 ]]; then
             SUCCESS_ITR=$COUNT
-        # else
-            # echo "debug: Decryption failed at $COUNT" >&2
         fi
         COUNT="$((COUNT+1))"
     done
@@ -252,9 +258,7 @@ $vEPHEPUB
         echo "        Or try using a different identity by specifying MYNAME environment variable."
         return 1
     else
-        # echo "debug: SUCCESS_ITR=$SUCCESS_ITR" >&2
         MSGKEY_VAL="$(hexdump -v -e '/1 "%02x" ' $TCryptSession.rskeyBody.$SUCCESS_ITR.out)"
-        # echo "debug: MSGKEY_VAL=$MSGKEY_VAL" >&2
 
         ### Now decrypt the message body with MSGKEY_VAL and MSGKIV_VAL
         openssl enc -aes-256-cbc -nosalt -d -in $TCryptSession.symEncBody -out $TCryptSession.symEncBody.out -K "$MSGKEY_VAL" -iv "$MSGIV_VAL"
@@ -289,13 +293,16 @@ SIGNATURE:
     tcrypt vcsf|verifyclearsignfile FILE_PATH       Verify clearsign file FILE_PATH.
 
 SIGNATURE:
-    tcrypt e|encrypt REC_LIST                        Encrypt a file for listed recipients.
-    tcrypt ef|encryptfile REC_LIST FILE_PATH         Encrypt file FILE_PATH for listed recipients.
+    tcrypt e|encrypt REC_LIST                       Encrypt a file for listed recipients.
+    tcrypt ef|encryptfile REC_LIST FILE_PATH        Encrypt file FILE_PATH for listed recipients.
     tcrypt d|decrypt                                Decrypt from stdin.
     tcrypt df|decryptfile FILE_PATH                 Decrypt file FILE_PATH.
 
-    Notes:
+    NOTES:
         - REC_LIST is a comma-delimited list of fingerprints.
+
+ADVANCED USAGE:
+    tcrypt sigenc REC_LIST                          Sign and encrypt file from stdin.
 
 DATA MANAGEMENT:
     tcrypt ls|listcontacts                          Show the list of contacts.
@@ -369,16 +376,44 @@ case "$1" in
         ### Decide which operation to execute
         if [[ "$PAYLOAD_TYPE_MARK" == "MsgClearSig" ]]; then
             $tcrypt vcs < $TCryptSession.stdin
+            _clearSession
+            exit 0
         fi
+        if [[ "$PAYLOAD_TYPE_MARK" == "MsgEnc" ]]; then
+            $tcrypt d < $TCryptSession.stdin > $TCryptSession.waitroom
+            if [[ "$(head -n1 $TCryptSession.waitroom | cut -d'>' -f2)" == "MsgClearSig" ]]; then
+                $tcrypt vcs < $TCryptSession.waitroom
+            else
+                cat $TCryptSession.waitroom
+            fi
+            _clearSession
+            exit 0
+        fi
+        echo "[ERROR] Cannot interpret this payload."
         _clearSession
         ;;
 
     if|interpretfile)
-        PAYLOAD_TYPE_MARK="$(head -n1 $TCryptSession.stdin | cut -d'>' -f2)"
+        INFILEPATH="$2"
+        PAYLOAD_TYPE_MARK="$(head -n1 "$INFILEPATH" | cut -d'>' -f2)"
         ### Decide which operation to execute
         if [[ "$PAYLOAD_TYPE_MARK" == "MsgClearSig" ]]; then
-            $tcrypt vcsf "$2"
+            $tcrypt vcsf "$INFILEPATH"
+            exit 0
         fi
+        if [[ "$PAYLOAD_TYPE_MARK" == "MsgEnc" ]]; then
+            # cat "$INFILEPATH" > $TCryptSession.stdin
+            $tcrypt d < "$INFILEPATH" > $TCryptSession.waitroom
+            if [[ "$(head -n1 $TCryptSession.waitroom | cut -d'>' -f2)" == "MsgClearSig" ]]; then
+                $tcrypt vcs < $TCryptSession.waitroom
+            else
+                cat $TCryptSession.waitroom
+            fi
+            _clearSession
+            exit 0
+        fi
+        echo "[ERROR] Cannot interpret this payload file."
+        _clearSession
         ;;
 
     cs|clearsign)
@@ -391,7 +426,7 @@ case "$1" in
     csf|clearsignfile)
         _panicIfNoKeypair
         cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign > "$2.signed.txt"
-        echo "[INFO] Signed file '$2' and written to '$2.signed.txt'." >&2
+        debug "Signed file '$2' and written to '$2.signed.txt'."
         ;;
 
     vcs|verifyclearsign)
@@ -437,6 +472,16 @@ case "$1" in
         fi
         cat "$2" > $TCryptSession.stdin
         u_ecdhDecryptFile
+        _clearSession
+        ;;
+
+    sigenc)
+        if [[ -z $2 ]]; then
+            _help | grep 'sigenc'
+            exit 0
+        fi
+        cat /dev/stdin > $TCryptSession.stdin
+        $tcrypt cs < $TCryptSession.stdin | $tcrypt e "$2"
         _clearSession
         ;;
 

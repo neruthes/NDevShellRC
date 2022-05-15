@@ -1,10 +1,44 @@
 #!/bin/bash
 
+export TCRYPT_DEBUG=n
+
 ALLGOOD=y
 
 PGDIR=/tmp/tcrypt-tests-playground
 mkdir -p $PGDIR
 cd $PGDIR
+rm $PGDIR/* 2>/dev/null
+
+CASE_INDEX=0
+function case_fail() {
+    CASE_COUNT_BAD="$((CASE_COUNT_BAD+1))"
+    echo "($CASE_INDEX) Test case   '$CASE_NAME':   FAILED !!"
+    ALLGOOD=n
+    CASE_INDEX="$((CASE_INDEX+1))"
+}
+function case_pass() {
+    CASE_COUNT_GOOD="$((CASE_COUNT_GOOD+1))"
+    echo "($CASE_INDEX) Test case   '$CASE_NAME':   ok"
+    CASE_INDEX="$((CASE_INDEX+1))"
+}
+function assert_empty() {
+    CASE_NAME="$1"
+    INPUTSTR="$2"
+    if [[ ! -z "$INPUTSTR" ]]; then
+        case_fail
+    else
+        case_pass
+    fi
+}
+function assert_nonempty() {
+    CASE_NAME="$1"
+    INPUTSTR="$2"
+    if [[ -z "$INPUTSTR" ]]; then
+        case_fail
+    else
+        case_pass
+    fi
+}
 
 echo "# Test File
 
@@ -12,29 +46,51 @@ Hello world! This ia a test file, created at $(date -Is)." > file.txt
 
 
 
-### Encryption and Decryption
-echo "### Encryption and Decryption"
-if [[ ! -z "$(cat file.txt | tcrypt encrypt 0A980CF5253C7EFEE51271989BF19C88 | tcrypt decrypt | diff file.txt /dev/stdin)" ]]; then
-    echo "[ERROR] Encryption or decryption filed."
-    ALLGOOD=n
-fi
-
-
-### Signature and Verification
-echo "### Signature and Verification"
-if [[ ! -z "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep '[INFO] OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519 key SHA256:gUmF1EPA2Q3Pb02VNgW7YwFXDeUaJYoZbeP9DZPaySM')" ]]; then
-    echo "[ERROR] Signature or verification failed."
-    ALLGOOD=n
-fi
+# GOOD_SIG_LINE='says: Good "MsgSigV1" signature for Neruthes'
+GOOD_SIG_LINE='OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519 key SHA256:gUmF1EPA2Q3Pb02VNgW7YwFXDeUaJYoZbeP9DZPaySM'
 
 
 
+# Signature
+assert_nonempty        "cs + vcs"              "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep "$GOOD_SIG_LINE")"
+
+tcrypt csf file.txt  # filename: file.txt.signed.txt
+assert_nonempty     "csf + vcsf"            "$(tcrypt vcsf file.txt.signed.txt | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "csf + if"              "$(tcrypt 'if' file.txt.signed.txt | grep "$GOOD_SIG_LINE")"
 
 
-echo -e "\n\n\n\n"
+
+# Encryption
+assert_empty        "encrypt + decrypt"     "$(cat file.txt | tcrypt encrypt 'Neruthes,Example Test' | tcrypt decrypt | diff file.txt /dev/stdin)"
+
+tcrypt ef 'Neruthes,Example Test' file.txt  # filename: file.txt.enc
+assert_empty "ef + df" "$(tcrypt 'df' file.txt.enc | diff file.txt -)"
+assert_empty "ef + if" "$(tcrypt 'if' file.txt.enc | diff file.txt -)"
+
+
+
+# Combination
+assert_nonempty     "cs + e + i"            "$(cat file.txt | tcrypt cs | tcrypt encrypt 'Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "sigenc + i"            "$(cat file.txt | tcrypt sigenc 'Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "cs + e + d + vcs"      "$(cat file.txt | tcrypt cs | tcrypt encrypt 'Neruthes,Example Test' | tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "sigenc + d + vcs"      "$(cat file.txt | tcrypt sigenc 'Neruthes,Example Test' | tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE")"
+
+
+
 ### Final report
-if [[ $ALLGOOD == y ]]; then
-    echo "All tests passed."
-else
-    echo "Some tests failed."
-fi
+printf "\n"
+case $ALLGOOD in
+    y)
+        echo "All tests ($CASE_INDEX) passed."
+        if [[ $NODEL != y ]]; then
+            rm $PGDIR/*
+        else
+            echo "Preserving files due to NODEL=y"
+        fi
+        ;;
+    *)
+        echo "Some tests passed ($CASE_COUNT_GOOD) and others failed ($CASE_COUNT_BAD)."
+        ;;
+esac
+
+
