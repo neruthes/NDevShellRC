@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APPVER="v0.1.4"
+APPVER="v0.1.5-pre1"
 
 function debug() {
     if [[ "$TCRYPT_DEBUG" == n ]]; then

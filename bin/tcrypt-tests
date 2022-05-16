@@ -46,7 +46,6 @@ Hello world! This ia a test file, created at $(date -Is)." > file.txt
 
 
 
-# GOOD_SIG_LINE='says: Good "MsgSigV1" signature for Neruthes'
 GOOD_SIG_LINE='OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519 key SHA256:gUmF1EPA2Q3Pb02VNgW7YwFXDeUaJYoZbeP9DZPaySM'
 
 
