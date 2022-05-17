@@ -51,7 +51,7 @@ GOOD_SIG_LINE='OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519
 
 
 # Signature
-assert_nonempty        "cs + vcs"              "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "cs + vcs"              "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep "$GOOD_SIG_LINE")"
 
 tcrypt csf file.txt  # filename: file.txt.signed.txt
 assert_nonempty     "csf + vcsf"            "$(tcrypt vcsf file.txt.signed.txt | grep "$GOOD_SIG_LINE")"
