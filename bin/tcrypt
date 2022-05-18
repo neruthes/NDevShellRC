@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APPVER="v0.1.5-pre1"
+APPVER="v0.1.5-pre2"
 
 function debug() {
     if [[ "$TCRYPT_DEBUG" == n ]]; then
@@ -69,7 +69,8 @@ function u_calcSignerKeyFingerprint() {
 }
 function u_calcSignerKeyPawprint() {
     # $1: Ed25519 public key (key body only, single-line)
-    TMPSTR="$( printf "$1" | sha512sum | cut -d' ' -f1 | xxd -r -p | base64 | tr '\n' '|' | sed 's/[|=]//g' )"
+    # TMPSTR="$( printf "$1" | sha512sum | cut -d' ' -f1 | xxd -r -p | base64 | tr '\n' '|' | sed 's/|//g' )"
+    TMPSTR="$( printf "$1" | sha512sum | cut -d' ' -f1 | xxd -r -p | base64 -w0 )"
     printf -- "${TMPSTR}"
 }
 function u_verifyClearSign() {
@@ -78,8 +79,8 @@ function u_verifyClearSign() {
     vSIGKEY="$(grep '#sigkey=' $INPUTFN | cut -d= -f2-)"
     echo "$vSIGNER ssh-ed25519 $vSIGKEY" > $TCryptSession.fakeSignersList
     
-    cat $INPUTFN | $tcrypt u_extractMsgBody > $TCryptSession.msgBody
-    cat $INPUTFN | $tcrypt u_extractMsgSignature > $TCryptSession.msgSig
+    u_extractMsgBody "$INPUTFN" > $TCryptSession.msgBody
+    u_extractMsgSignature "$INPUTFN" > $TCryptSession.msgSig
 
     printf "\n===== INCOMING MESSAGE =====\n\n"
     cat $TCryptSession.msgBody
@@ -119,6 +120,43 @@ function u_verifyClearSign() {
     fi
     printf "\n\n"
     _clearSession
+}
+function u_makeMsgBodyForClearSig() {
+    INPUTFN="$1"
+    cat "$INPUTFN" >> $TCryptSession.u_makeMsgBodyForClearSig_request
+    MSGTS="$(TZ=UTC date +%Y%m%d.%H%M%S)"
+    SMALLHASH_1="$(sha256sum $TCryptSession.u_makeMsgBodyForClearSig_request | cut -c1-40)"
+    SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -c1-40)"
+    SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -c1-16)"
+    OUTFN="$TCryptSession.u_makeMsgBodyForClearSig_out"
+    echo "#>MsgClearSig>$MSGTS>$SMALLHASH
+#signer=$FULLNAME
+#fingerprint=$(u_calcSignerKeyFingerprint "$(cat "$PRIVKEYPATH.ed25519.pub")")
+#sigkey=$(cat "$PRIVKEYPATH.ed25519.pub")
+#enckey=$(cat "$PRIVKEYPATH.x25519.pub" | head -n2 | tail -n1)
+----------------------------------------------
+" > $OUTFN
+    cat "$INPUTFN" >> $OUTFN
+    #pawprint=$(u_calcSignerKeyPawprint "$(cat "$PRIVKEYPATH.ed25519.pub")")
+    cat $OUTFN
+}
+function u_finalSign() {
+    INPUTFN="$1"
+    cat "$INPUTFN" > $TCryptSession.u_finalSign_request
+    cat $TCryptSession.u_finalSign_request
+    cat $TCryptSession.u_finalSign_request | ssh-keygen -Y sign -f "$PRIVKEYPATH.ed25519" -n MsgSigV1 > $TCryptSession.u_finalSign_out 2>/dev/null
+    cat $TCryptSession.u_finalSign_out
+    _clearSession
+}
+function u_extractMsgBody() {
+    cat "$1" > $TCryptSession.u_extractMsgBody_req
+    LINECOUNT="$(wc -l $TCryptSession.u_extractMsgBody_req | cut -d' ' -f1)"
+    LINECOUNT="$((LINECOUNT-6))"
+    head -n"$LINECOUNT" $TCryptSession.u_extractMsgBody_req
+}
+
+function u_extractMsgSignature() {
+    cat "$1" | tail -n6
 }
 function u_base64tohex() {
     INPUTFN="$1"
@@ -419,13 +457,16 @@ case "$1" in
     cs|clearsign)
         _panicIfNoKeypair
         cat /dev/stdin > $TCryptSession.stdin
-        cat $TCryptSession.stdin | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign
+        u_makeMsgBodyForClearSig $TCryptSession.stdin > $TCryptSession.presign
+        u_finalSign $TCryptSession.presign > /dev/stdout
         _clearSession
         ;;
 
     csf|clearsignfile)
         _panicIfNoKeypair
-        cat "$2" | $tcrypt u_makeMsgBodyForClearSig | $tcrypt u_finalSign > "$2.signed.txt"
+        cat "$2" > $TCryptSession.stdin
+        u_makeMsgBodyForClearSig $TCryptSession.stdin > $TCryptSession.presign
+        u_finalSign $TCryptSession.presign > "$2.signed.txt"
         debug "Signed file '$2' and written to '$2.signed.txt'."
         ;;
 
@@ -528,54 +569,11 @@ case "$1" in
             exit 0
         fi
         echo "[INFO] Inspecting contact by fingerprint '$2':" >&2
-        # cat $CONFDIR/contacts.csv | grep "@fp=$2"
-        # cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='   ' | sed 's/=/= /g'
         echo ""
         echo "Name:         $(_getContactField fp "$2" name)"
         echo "Fingerprint:  $(_getContactField fp "$2" fp)"
         echo "sigkey:       $(_getContactField fp "$2" sigkey)"
         echo "enckey:       $(_getContactField fp "$2" enckey)"
-        # CONTACTS_LIST="$( cat $CONFDIR/contacts.csv | cut -d'|' -f1-1,2-2 --output-delimiter='   ' | sed 's/=/= /g' )"
-        # echo "$CONTACTS_LIST"
-        ;;
-
-    ### Reserved for internal recursive calls
-    u_makeMsgBodyForClearSig)
-        cat /dev/stdin > $TCryptSession.u_makeMsgBodyForClearSig
-        MSGTS="$(TZ=UTC date +%Y%m%d.%H%M%S)"
-        SMALLHASH_1="$(sha256sum $TCryptSession.u_makeMsgBodyForClearSig | cut -c1-40)"
-        SMALLHASH_2="$(echo "$MSGTS" | sha256sum | cut -c1-40)"
-        SMALLHASH="$(echo "$SMALLHASH_1:$SMALLHASH_2" | sha256sum | cut -c1-16)"
-        echo "#>MsgClearSig>$MSGTS>$SMALLHASH"
-        echo "#signer=$FULLNAME"
-        echo "#fingerprint=$(u_calcSignerKeyFingerprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
-        echo "#pawprint=$(u_calcSignerKeyPawprint "$(cat "$PRIVKEYPATH.ed25519.pub")")"
-        echo "#sigkey=$(cat "$PRIVKEYPATH.ed25519.pub")"
-        echo "#enckey=$(cat "$PRIVKEYPATH.x25519.pub" | head -n2 | tail -n1)"
-        echo "----------------------------------------------"
-        echo ""
-        cat $TCryptSession.u_makeMsgBodyForClearSig
-        _clearSession
-        ;;
-
-    u_finalSign)
-        cat /dev/stdin > $TCryptSession.u_finalSign
-        cat $TCryptSession.u_finalSign
-        cat $TCryptSession.u_finalSign | ssh-keygen -Y sign -f "$PRIVKEYPATH.ed25519" -n MsgSigV1 > $TCryptSession.u_finalSign_out 2>/dev/null
-        cat $TCryptSession.u_finalSign_out
-        _clearSession
-        ;;
-
-    u_extractMsgBody)
-        cat /dev/stdin > $TCryptSession.stdin
-        LINECOUNT="$(wc -l $TCryptSession.stdin | cut -d' ' -f1)"
-        LINECOUNT="$((LINECOUNT-6))"
-        head -n"$LINECOUNT" $TCryptSession.stdin
-        _clearSession
-        ;;
-
-    u_extractMsgSignature)
-        cat /dev/stdin | tail -n6
         ;;
 
     *)
