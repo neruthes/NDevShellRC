@@ -6,8 +6,8 @@
 # fi
 if [[ -z "$OSS_SERVERS_LIST" ]]; then
     OSS_SERVERS_LIST='
-    {"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.udon.pw:2096"}
-    {"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.udon.pw:2087"}
+    {"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.neruthes.xyz:2096"}
+    {"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.neruthes.xyz:2087"}
     '
 fi
 

@@ -46,33 +46,42 @@ Hello world! This ia a test file, created at $(date -Is)." > file.txt
 
 
 
-GOOD_SIG_LINE='OpenSSH says: Good "MsgSigV1" signature for Neruthes with ED25519 key SHA256:gUmF1EPA2Q3Pb02VNgW7YwFXDeUaJYoZbeP9DZPaySM'
+export GOOD_SIG_LINE_msg='OpenSSH says: Good "MsgSigV1" signature for JohnAppleseed with ED25519 key SHA256:ypLyH45bQppPah6styxDD+3cYkL/1UqC4c5JYcLECiE'
+export GOOD_SIG_LINE_file='OpenSSH says: Good "FileSigV1" signature for JohnAppleseed with ED25519 key SHA256:ypLyH45bQppPah6styxDD+3cYkL/1UqC4c5JYcLECiE'
+export MYNAME='JohnAppleseed'
+
+# rm $HOME/.config/tcrypt/mykeys/$MYNAME.* 2>/dev/null
+# tcrypt keygen -f
+# echo "123456" | tcrypt cs | tcrypt addcontactfromclearsign
 
 
 
 # Signature
-assert_nonempty     "cs + vcs"              "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "cs + vcs"              "$(cat file.txt | tcrypt cs | tcrypt vcs | tail -n5 | head -n1 | grep "$GOOD_SIG_LINE_msg")"
 
 tcrypt csf file.txt  # filename: file.txt.signed.txt
-assert_nonempty     "csf + vcsf"            "$(tcrypt vcsf file.txt.signed.txt | grep "$GOOD_SIG_LINE")"
-assert_nonempty     "csf + if"              "$(tcrypt 'if' file.txt.signed.txt | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "csf + vcsf"            "$(tcrypt vcsf file.txt.signed.txt | grep "$GOOD_SIG_LINE_msg")"
+assert_nonempty     "csf + if"              "$(tcrypt 'if' file.txt.signed.txt | grep "$GOOD_SIG_LINE_msg")"
+
+tcrypt sf file.txt  # filename: file.txt.sig
+assert_nonempty     "sf + vsf"              "$(tcrypt vsf file.txt.sig | grep "$GOOD_SIG_LINE_file")"
 
 
 
 # Encryption
-assert_empty        "encrypt + decrypt"     "$(cat file.txt | tcrypt encrypt 'Neruthes,Example Test' | tcrypt decrypt | diff file.txt /dev/stdin)"
+assert_empty        "encrypt + decrypt"     "$(cat file.txt | tcrypt encrypt 'JohnAppleseed,Neruthes,Example Test' | MYNAME=Neruthes tcrypt decrypt | diff file.txt /dev/stdin)"
 
-tcrypt ef 'Neruthes,Example Test' file.txt  # filename: file.txt.enc
+tcrypt ef 'JohnAppleseed,Neruthes,Example Test' file.txt  # filename: file.txt.enc
 assert_empty "ef + df" "$(tcrypt 'df' file.txt.enc | diff file.txt -)"
 assert_empty "ef + if" "$(tcrypt 'if' file.txt.enc | diff file.txt -)"
 
 
 
 # Combination
-assert_nonempty     "cs + e + i"            "$(cat file.txt | tcrypt cs | tcrypt encrypt 'Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE")"
-assert_nonempty     "sigenc + i"            "$(cat file.txt | tcrypt sigenc 'Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE")"
-assert_nonempty     "cs + e + d + vcs"      "$(cat file.txt | tcrypt cs | tcrypt encrypt 'Neruthes,Example Test' | tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE")"
-assert_nonempty     "sigenc + d + vcs"      "$(cat file.txt | tcrypt sigenc 'Neruthes,Example Test' | tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE")"
+assert_nonempty     "cs + e + i"            "$(cat file.txt | tcrypt cs | tcrypt encrypt 'JohnAppleseed,Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE_msg")"
+assert_nonempty     "sigenc + i"            "$(cat file.txt | tcrypt sigenc 'JohnAppleseed,Neruthes,Example Test' | tcrypt i | grep "$GOOD_SIG_LINE_msg")"
+assert_nonempty     "cs + e + d + vcs"      "$(cat file.txt | tcrypt cs | tcrypt encrypt 'JohnAppleseed,Neruthes,Example Test' | MYNAME=Neruthes tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE_msg")"
+assert_nonempty     "sigenc + d + vcs"      "$(cat file.txt | tcrypt sigenc 'JohnAppleseed,Neruthes,Example Test' | MYNAME=Neruthes tcrypt d | tcrypt vcs | grep "$GOOD_SIG_LINE_msg")"
 
 
 
