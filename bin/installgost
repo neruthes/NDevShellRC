@@ -1,0 +1,36 @@
+#!/bin/bash
+
+echo "info: This script is a helper for installing gost, the golang-based proxy software."
+
+TMP="/tmp/.installgost.$USER"
+
+ARCH="amd64"
+case $(uname -m) in
+    armv7)
+        ARCH="armv7"
+        ;;
+    x86_64 | *)
+        ARCH="amd64"
+        ;;
+esac
+
+GOSTVER="2.11.2"
+BINFN="gost-linux-${ARCH}-${GOSTVER}"
+GZFN="${BINFN}.gz"
+GZURL="https://github.com/ginuerzh/gost/releases/download/v${GOSTVER}/$GZFN"
+
+### Set up workspace
+mkdir -p $TMP
+cd $TMP
+rm gost-linux* *.gz 2>/dev/null
+
+echo "info: Downloading '$GZURL'"
+if [[ -z $(which proxychains 2>/dev/null) ]]; then      # Cannot find proxychains
+    wget "$GZURL"
+else
+    proxychains wget "$GZURL"
+fi
+
+gunzip "$GZFN"
+ls -lah "$BINFN"
+sudo install $BINFN /usr/local/bin/gost
