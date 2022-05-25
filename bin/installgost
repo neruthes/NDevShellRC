@@ -20,8 +20,8 @@ GZFN="${BINFN}.gz"
 GZURL="https://github.com/ginuerzh/gost/releases/download/v${GOSTVER}/$GZFN"
 
 ### Set up workspace
-mkdir -p $TMP
-cd $TMP
+mkdir -p "$TMP"
+cd "$TMP"
 rm gost-linux* *.gz 2>/dev/null
 
 echo "info: Downloading '$GZURL'"
@@ -33,4 +33,5 @@ fi
 
 gunzip "$GZFN"
 ls -lah "$BINFN"
-sudo install $BINFN /usr/local/bin/gost
+sudo install "$BINFN" /usr/local/bin/gost
+rm -rf "$TMP"
