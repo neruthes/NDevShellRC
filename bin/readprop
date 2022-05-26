@@ -1,0 +1,13 @@
+#!/bin/bash
+
+propname="$1"
+filepath="$2"
+if [[ -z "$propname" ]]; then
+    echo "Usgae: readprop PROPNAME FILEPATH"
+    exit 1
+fi
+if [[ -z "$filepath" ]]; then
+    filepath="/dev/stdin"
+fi
+
+grep -v '^#' "$filepath" | grep -E "^${propname}=" | head -n1 | cut -d'=' -f2-
