@@ -1,3 +1,7 @@
-rsync -av $PWD/ NDLT6G:$PWD/
-rsync -av $PWD/ Z420:$PWD/
-rsync -av $PWD/ NanoPi-M1:$PWD/
+#!/bin/bash
+
+REMOTE_HOSTS="NDLT6G supermicro"
+
+for host in $REMOTE_HOSTS; do
+    rsync -av $PWD/ $host:$PWD/
+done
