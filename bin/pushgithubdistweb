@@ -47,11 +47,13 @@ function _pushnow() {
     git add .
     git commit -m 'autobuild'
     # exit 0      # Uncomment for debugging
+    bash push.sh index
     proxychains git push
     ALREADY_PUSHED=y
 }
 function _attemptPush() {
     cd $GDIR
+    bash push.sh index
     OLDDATE="$(git log -1 --format=%at)"
     NOWDATE="$(date +%s)"
     DELTASECS="$((NOWDATE-OLDDATE))"

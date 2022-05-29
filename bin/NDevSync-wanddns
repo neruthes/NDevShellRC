@@ -5,15 +5,21 @@ echo "Publishing WAN DDNS..."
 
 CURL_LOG="$HOME/.tmp/NDevSync-wanddns--43a78eb1af006c5afae3b4181c2b9550.txt"
 
+IPCACHEFILE="/tmp/getwanip.$USER"
+if [[ ! -e $IPCACHEFILE ]]; then
+    ecjp "Retrieving IP address..."
+    getwanip
+fi
+
 
 ### Fetch IP address
-DATEOLD="$(date -r /tmp/cached_wanip +%s 2>/dev/null)"
+DATEOLD="$(date -r $IPCACHEFILE +%s 2>/dev/null)"
 DATENOW="$(date +%s)"
-if [[ ! -e "/tmp/cached_wanip" ]] || [[ $((DATENOW-DATEOLD)) -gt $((60*8)) ]]; then
+if [[ ! -e "$IPCACHEFILE" ]] || [[ $((DATENOW-DATEOLD)) -gt $((60*8)) ]]; then
     echo "delta: $((DATENOW-DATEOLD))"
-    curl -4 http://ifconfig.co/ > /tmp/cached_wanip
+    curl -4 http://ifconfig.co/ > $IPCACHEFILE
 else
-    MY_WAN_IP_ADDR="$(cat /tmp/cached_wanip)"
+    MY_WAN_IP_ADDR="$(cat $IPCACHEFILE)"
     echo "Preserving existing cache: $MY_WAN_IP_ADDR"
 fi
 
@@ -21,7 +27,7 @@ fi
 ### Abort if executed too frequently
 DATEOLD="$(date -r "$CURL_LOG" +%s 2>/dev/null)"
 DATENOW="$(date +%s)"
-if [[ $((DATENOW-DATEOLD)) -lt $((60*8)) ]]; then
+if [[ $((DATENOW-DATEOLD)) -lt $((60*8)) ]] && [[ -z "$FORCE" ]]; then
     echo "No need to update. $((DATENOW-DATEOLD)) seconds since last push."
     exit 0
 fi

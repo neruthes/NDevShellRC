@@ -3,39 +3,8 @@
 # Version 1.0.0
 # Env vars: SHOWLIM=ALL|1
 
-UUID=1c3cfea5fcbc4e51bb5957a9ee94b42a
-PREFIX=/tmp/getwanip.$USER.$UUID
+TMP="/tmp/getwanip.$USER"
 
-curl -s https://1.1.1.1/cdn-cgi/trace | grep ip= | cut -d "=" -f 2 > $PREFIX.ip1
-curl -s ifconfig.io > $PREFIX.ip2
-curl -s http://pv.sohu.com/cityjson | grep -Po '\d+\.\d+\.\d+\.\d+' > $PREFIX.ip3
+curl -4 -s https://ifconfig.io > $TMP.ip1
 
-IPADDR_1="$(cat $PREFIX.ip1)"
-IPADDR_2="$(cat $PREFIX.ip2)"
-IPADDR_3="$(cat $PREFIX.ip3)"
-
-ALL_EQUAL=false
-if [[ "$IPADDR_1" == "$IPADDR_2" ]]; then
-    if [[ "$IPADDR_2" == "$IPADDR_3" ]]; then
-        if [[ "$IPADDR_3" == "$IPADDR_1" ]]; then
-            ALL_EQUAL="true"
-        fi
-    fi
-fi
-
-
-echo "Address=$IPADDR_1"
-echo "AllSame=$ALL_EQUAL"
-
-### Changed?
-touch $PREFIX.old
-if [[ "$(cat $PREFIX.ip1)" == "$(cat $PREFIX.old)" ]]; then
-    echo "Changed=N"
-else
-    echo "Changed=Y"
-fi
-
-echo "$IPADDR_1" > $PREFIX.old
-
-### Update cache
-cat $PREFIX.ip1 > $PREFIX.old
+cat $TMP.ip1
