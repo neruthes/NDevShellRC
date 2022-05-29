@@ -1,6 +1,8 @@
 #!/bin/bash
 
 XELATEXARGS=""
+
+SYNC_HTTPTMP=y
 #####################################################################
 ### Parse arguments. Magic; do not touch.
 POSITIONAL_ARGS=()
@@ -32,6 +34,10 @@ while [[ $# -gt 0 ]]; do
         ;;
     --sync)
         SYNC_HTTPTMP=y
+        shift # past argument
+        ;;
+    --nosync)
+        SYNC_HTTPTMP=n
         shift # past argument
         ;;
     -*|--*)
@@ -124,7 +130,7 @@ fi
 
 
 
-### --sync
+### --sync | --nosync
 if [[ "$SYNC_HTTPTMP" == y ]]; then
     echo "Generating ranged subset."
     synctmphttptonas
