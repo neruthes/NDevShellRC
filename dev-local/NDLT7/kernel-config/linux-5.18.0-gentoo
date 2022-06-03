@@ -2,7 +2,7 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux/x86 5.18.0-gentoo Kernel Configuration
 #
-CONFIG_CC_VERSION_TEXT="gcc (Gentoo 11.3.0 p4) 11.3.0"
+CONFIG_CC_VERSION_TEXT="distcc 3.4 x86_64-pc-linux-gnu"
 CONFIG_CC_IS_GCC=y
 CONFIG_GCC_VERSION=110300
 CONFIG_CLANG_VERSION=0

@@ -1,28 +1,28 @@
 #!/bin/bash
 
 IFNAME="$1"
-OFNAME="$2"
+OUTPUT_FORMAT="$2"
 
 if [[ -z "$2" ]]; then
-    echo "Usage:        $(basename $0)   input.pdf   output.jpg"
+    echo "Usage:        $(basename $0)   input.pdf   jpg"
     exit 0
 fi
 
-FORMAT="jpeg"
-case "$OFNAME" in
-    *.png | *.PNG )
-        FORMAT="png16m"
+GSDEV="jpeg"
+case "${OUTPUT_FORMAT,,}" in
+    png)
+        GSDEV="png16m"
         ;;
 esac
-echo "FORMAT = $FORMAT"
+echo "GSDEV = $GSDEV"
 
 
 gs \
     -dNOPAUSE \
     -dBATCH \
-    -sDEVICE="$FORMAT" \
+    -sDEVICE="$GSDEV" \
     -r600 \
     -dGraphicsAlphaBits=4 \
     -dTextAlphaBits=4 \
-    -sOutputFile="$OFNAME" \
+    -sOutputFile="$IFNAME.%d.$OUTPUT_FORMAT" \
     "$IFNAME"

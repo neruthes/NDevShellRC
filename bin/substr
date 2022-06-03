@@ -3,6 +3,9 @@
 START_POINT="$1"
 END_POINT="$2"
 
-STREAM_CONTENT="$(cat /dev/stdin)"
+TMP="/tmp/.$(uuidgen v4).bin"
+cat /dev/stdin > $TMP
+STREAM_CONTENT="$(cat $TMP)"
+rm $TMP
 
 printf "${STREAM_CONTENT:$START_POINT:$END_POINT}"
