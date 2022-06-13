@@ -10,6 +10,11 @@ PAGES_RANGE="$2"
 PDFFN="$(basename "$REALPATH")"
 
 
+if [[ -z "$1" ]]; then
+    echo "Usage: pdfrange  {PDF_PATH}  {START}-{END}"
+    exit 0
+fi
+
 if [[ -z "$RANGED_NAME" ]]; then
     RANGED_PDF_PATH="/tmp/http/pdfrange/${PDFFN/.pdf/}_page$PAGES_RANGE.pdf"
 else

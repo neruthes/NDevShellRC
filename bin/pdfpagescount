@@ -1,0 +1,8 @@
+#!/bin/bash
+
+function how_many_pages_pdf() { pdfinfo -- "$1" 2> /dev/null | awk '$1 == "Pages:" {print $2}' ; }
+
+PDF_FILE_PATH="$1"
+PAGES_COUNT="$( how_many_pages_pdf "$PDF_FILE_PATH" )"
+
+echo $PAGES_COUNT
