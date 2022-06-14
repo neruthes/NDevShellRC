@@ -101,13 +101,13 @@ case "$TOIMG" in
         # mkdir -p /tmp/http/nteximg
         # chmod 777 /tmp/http/nteximg
         FHASH1="$(echo "$REALPATH" | sha256sum)"
-        IMGPATH="/tmp/$(basename "$REALPATH")-${FHASH1:0:12}.$TOIMG"
+        IMGPATH="$(basename "$REALPATH")-${FHASH1:0:12}.%d.$TOIMG"
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
-        pdftoimg "$REALPATH" "$IMGPATH" >/dev/null 2>&1
+        OUTPUT_PREFIX=/tmp/http/nteximg/ pdftoimg "$REALPATH" "$TOIMG"
+        #  >/dev/null 2>&1
         # echo "Made image:" "$IMGPATH"
-        CLASSNAME=nteximg cptmphttp $IMGPATH
         if [[ $TONASOOS == y ]]; then
             echo -e "\nImage URLs:"
             OSS_SUBDIR="$REPOID-img/" saveFileToNasOSS "$IMGPATH"

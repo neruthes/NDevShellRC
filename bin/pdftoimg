@@ -1,10 +1,11 @@
 #!/bin/bash
 
-IFNAME="$1"
+IFFULLPATH="$1"
+IFNAME="$(basename "$IFFULLPATH")"
 OUTPUT_FORMAT="$2"
 
 if [[ -z "$2" ]]; then
-    echo "Usage:        $(basename $0)   input.pdf   jpg"
+    echo "Usage:        pdftoimg   input.pdf   jpg"
     exit 0
 fi
 
@@ -24,5 +25,5 @@ gs \
     -r600 \
     -dGraphicsAlphaBits=4 \
     -dTextAlphaBits=4 \
-    -sOutputFile="$IFNAME.%d.$OUTPUT_FORMAT" \
-    "$IFNAME"
+    -sOutputFile="$OUTPUT_PREFIX$IFNAME.%d.$OUTPUT_FORMAT" \
+    "$IFFULLPATH"

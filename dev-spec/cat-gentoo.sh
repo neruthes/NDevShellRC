@@ -6,8 +6,8 @@ function fullupdate() {
     sudo proxychains emerge --sync
     sudo eix-update
     sudo proxychains emerge --ask=n --autounmask-write --autounmask-backtrack=y --newuse --update --verbose --tree --complete-graph --keep-going @world
-    sudo emerge --update --newuse --deep --with-bdeps=y --keep-going @world
-    sudo emerge @preserved-rebuild
+    sudo emerge --ask=n --update --newuse --deep --with-bdeps=y --keep-going @world
+    sudo emerge --ask=n @preserved-rebuild
     sudo eclean-dist
     sudo eclean-pkg
 }

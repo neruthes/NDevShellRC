@@ -7,7 +7,7 @@ CURL_LOG="$HOME/.tmp/NDevSync-wanddns--43a78eb1af006c5afae3b4181c2b9550.txt"
 
 IPCACHEFILE="/tmp/getwanip.$USER"
 if [[ ! -e $IPCACHEFILE ]]; then
-    ecjp "Retrieving IP address..."
+    echo "Retrieving IP address..."
     getwanip
 fi
 
