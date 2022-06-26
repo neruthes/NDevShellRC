@@ -1,0 +1,112 @@
+#!/bin/bash
+
+UUID="64f8ad752bb945c99d58d712d776ebf6.$(date +%s)"
+TMP=/tmp/$UUID
+rm -rf /tmp/64f8ad752bb945c99d58d712d776ebf6.* 2>/dev/null
+mkdir -p "$TMP"
+
+#
+# For every file, a few phases are used: try, convert, replace.
+# In the 'try' phase, we check whether a desired target exists.
+# In the 'convert' phase, we create a file.
+# In the 'replace' phase, we write the file to the target place.
+#
+
+function _help() {
+    echo "Usage:  $0  src_dir  dest_dir
+
+    This script will recursively convert all files to the desired format.
+
+    Default environment variables:
+        FROM_FORMATS='flac wav aiff'
+        TO_FORMAT='m4a'
+        TO_ENCODER='aac'
+"
+}
+
+if [[ -z "$2" ]]; then
+    _help
+    exit 1
+fi
+
+if [[ ! -d "$1" ]] || [[ ! -d "$2" ]]; then
+    echo "[ERROR] Some directory does not exist."
+    exit 1
+fi
+src_dir="$(realpath "$1")"
+dest_dir="$(realpath "$2")"
+
+echo "debug: src_dir=$src_dir"
+echo "debug: dest_dir=$dest_dir"
+
+if [[ -z "$FROM_FORMATS" ]]; then
+    FROM_FORMATS="flac wav aiff"
+fi
+if [[ -z "$TO_FORMAT" ]]; then
+    TO_FORMAT="m4a"
+fi
+if [[ -z "$TO_ENCODER" ]]; then
+    TO_ENCODER="aac"
+fi
+
+function _getExtName() {
+    echo "$1" | grep -oE '[0-9A-Za-z]+$'
+}
+
+
+function file_try() {
+    src_filepath="$1"
+    if [[ -d "$src_filepath" ]]; then
+        ### We do not want directories
+        return 0
+    fi
+    src_fileExtName="$(_getExtName "$src_filepath")"
+    if [[ -z "$(grep "$src_fileExtName" <<< " $FROM_FORMATS ")" ]]; then
+        ### File format not expected
+        return 0
+    fi
+    file_convert "$src_filepath" "$src_fileExtName"
+}
+function file_convert() {
+    src_filepath="$1"
+    src_fileExtName="$2"
+    dest_filepath="$(sed "s|$src_fileExtName\$|$TO_FORMAT|" <<< "$src_filepath" | sed "s|$src_dir|$dest_dir|")"
+    tmp_filepath="${dest_filepath}.tmp.$TO_FORMAT"
+    if [[ -e "$dest_filepath" ]]; then
+        # echo "[INFO] Target file already exists. ($dest_filepath)"
+        return 0
+    fi
+    echo "[INFO] Converting '$src_filepath'..."
+    mkdir -p "$(dirname "$tmp_filepath")"
+    ffmpeg -i "$src_filepath" -c:a $TO_ENCODER -c:v copy "$tmp_filepath" >/dev/null
+    ### Finally move the tmp to dest
+    if [[ $? == 0 ]]; then
+        mv "$tmp_filepath" "$dest_filepath"
+    else
+        echo "[ERROR] Conversion task failed for '$tmp_filepath'."
+        rm "$tmp_filepath"
+    fi
+}
+
+function job_thread() {
+    IFS=$'\n'
+    for src_filepath in $(find "$src_dir" | sort); do
+        file_try "$src_filepath"
+    done
+}
+
+
+### Can we write multi-threading in the future?
+job_thread
+
+
+
+rm -rf "$TMP"
+
+RAWPWD="$PWD"
+cd $dest_dir
+DIRTY_FILES_LIST="$(find -name "*.$TO_FORMAT.tmp.$TO_FORMAT")"
+if [[ ! -z "$DIRTY_FILES_LIST" ]]; then
+    echo "[WARNING] You might want to delete these files:"
+    echo "$DIRTY_FILES_LIST"
+fi

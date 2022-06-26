@@ -6,6 +6,7 @@ if [[ ! -r $WORKDIR/dirs/$HOSTNAME ]]; then
     echo "This deivce $HOSTNAME does not have a backup list."
     exit 0
 fi
+
 DIRS=$(cat $WORKDIR/dirs/$HOSTNAME)
 echo "DIRS: [ $DIRS ]"
 

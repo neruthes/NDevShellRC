@@ -115,7 +115,9 @@ function ndrsyncpull() {
 # NAS on NDLT6G
 function NAS_push-music() {
     rsync -av --delete --progress $HOME/AUD/music/ $USER@NDLT6G:/home/neruthes/AUD/music/
+    rsync -av --delete --progress $HOME/AUD/music.alt/ $USER@NDLT6G:/home/neruthes/AUD/music.alt/
     ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music/ /mnt/NEPd3_Caster/LS/NAS/Music/Base/'
+    ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music.alt/ /mnt/NEPd3_Caster/LS/NAS/Music/Alt/'
 }
 function NAS_push-local() {
     rsync -av --delete $HOME/DLD/.nas/ $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_local/NDLT7/

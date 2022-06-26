@@ -15,3 +15,37 @@ fi
 export BROWSER="firefox-bin"
 
 alias ttermusic="termusic ~/AUD/music"
+
+
+####################################################
+# NAS Management
+####################################################
+function NAS_sharedirpub() {
+    srcdir="$(realpath "$1")"
+    memorable_name="$2"
+    if [[ -z $2 ]]; then
+        memorable_name="$(basename "$srcdir")"
+    fi
+    destdir_name="$memorable_name-$(uuidgen v4 | sed 's/-//g')"
+    destdir="/mnt/NEPd3_Caster/LS/NAS_public/$destdir_name"
+    echo "Symlink directory is at: $destdir"
+    echo "https://nas-public.neruthes.xyz:2096/$destdir_name/"
+    echo "rsync://$(getlanip):2096/nas-public--$destdir_name/"
+    ln -svf "$srcdir" "$destdir"
+    regenrsyncdconf > /dev/null
+}
+function regenrsyncdconf_nas-public() {
+    CONFFILE=/etc/rsyncd.conf.d/50-nas-public
+    sudo mkdir -p /etc/rsyncd.conf.d
+    sudo rm $CONFFILE
+    for idir in /mnt/NEPd3_Caster/LS/NAS_public/*; do
+        sudo bash -c "echo -e '[nas-public--$(basename $idir)]' >> $CONFFILE"
+        sudo bash -c "echo -e 'path = $idir\n\n' >> $CONFFILE"
+    done
+}
+function regenrsyncdconf() {
+    regenrsyncdconf_nas-public
+    sudo bash -c 'cat /etc/rsyncd.conf.d/* > /etc/rsyncd.conf'
+    cat /etc/rsyncd.conf
+}
+
