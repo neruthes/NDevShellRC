@@ -1,8 +1,10 @@
 #!/bin/bash
 
-if [[ `uname` == Linux ]]; then
-    ir firefox-bin
-    ir telegram-desktop
-    vscodium
-    # daemonize $(which discord) '--proxy-server=socks5://10.0.233.3:7891'
-fi
+case $HOSTNAME in
+    NDLT7)
+        ir firefox-bin
+        ir telegram-desktop
+        ir uxplay
+        vscodium
+        ;;
+esac
