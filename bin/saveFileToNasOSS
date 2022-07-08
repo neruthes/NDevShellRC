@@ -5,10 +5,7 @@
 #     exit 0
 # fi
 if [[ -z "$OSS_SERVERS_LIST" ]]; then
-    OSS_SERVERS_LIST='
-    {"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.neruthes.xyz:2096"}
-    '
-    # {"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.neruthes.xyz:2087"}
+    OSS_SERVERS_LIST='NDLT6G|/mnt/NEPd3_Caster/LS/OSS|https://oss.neruthes.xyz:2096'
 fi
 
 if [[ -z "$OSS_SUBDIR" ]]; then
@@ -20,12 +17,12 @@ function _save() {
     SUBDIR="$2"
     NEWFN="$3"
     RELPATH="${SUBDIR}${NEWFN}"
+    IFS=$'\n'
     for SERVER in $OSS_SERVERS_LIST; do
-        REMOTE_HOST="$(jq -r .host <<< "$SERVER")"
-        REMOTE_PATH="$(jq -r .path <<< "$SERVER")"
+        REMOTE_HOST="$(cut -d'|' -f1 <<< "$SERVER")"
+        REMOTE_PATH="$(cut -d'|' -f2 <<< "$SERVER")"
+        REMOTE_WEB="$(cut -d'|' -f3 <<< "$SERVER")"
         REMOTE_SSH="$REMOTE_HOST:$REMOTE_PATH"
-        REMOTE_WEB="$(jq -r .web <<< "$SERVER")"
-        # echo "[INFO] Pushing to service '$REMOTE_WEB'"
         if [[ ! -z "$OSS_SUBDIR" ]]; then
             ssh oss@"$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
         fi
