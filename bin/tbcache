@@ -1,0 +1,31 @@
+#!/bin/bash
+
+function _processfile() {
+    FN="$1"
+    FILEPATH="$(realpath "$FN")"
+    if [[ "$FILEPATH" == *"/.tbcache/"* ]]; then
+        return 0
+    fi
+    FILEDIR="$(dirname "$FILEPATH")"
+    FILEBASENAME="$(basename "$FILEPATH")"
+    TBCACHEPATH="$FILEDIR/.tbcache/$FILEBASENAME"
+    mkdir -p "$FILEDIR/.tbcache"
+    # echo " >  $FN  > TBCACHEPATH=$TBCACHEPATH"
+    if [[ ! -e "$TBCACHEPATH" ]]; then
+        # echo "     no thunbnail found"
+        echo "[INFO] Generating $TBCACHEPATH"
+        convert "$FILEPATH" -resize x400 -quality 70 "$TBCACHEPATH"
+        COUNT=$((COUNT+1))
+    fi
+}
+
+REPODIR="$1"
+cd "$REPODIR"
+
+IFS=$'\n'
+COUNT=0
+for FN in $(find -name '*.png'); do
+    _processfile "$FN"
+done
+
+echo "[INFO] Generated thumbnail cache for $COUNT images."

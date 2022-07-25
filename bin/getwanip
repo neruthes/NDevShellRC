@@ -3,8 +3,28 @@
 # Version 1.0.0
 # Env vars: SHOWLIM=ALL|1
 
-TMP="/tmp/getwanip.$USER"
+TMP="/tmp/getwanip.tmp.$USER"
 
-curl -4 -s https://ifconfig.io > $TMP.ip1
+function _showip() {
+    echo -n $(cat /tmp/getwanip.tmp.$USER)
+}
+function _getip() {
+    curl -4 -s https://ifconfig.io > $TMP
+    _showip
+}
 
-cat $TMP.ip1
+if [[ ! -e $TMP ]]; then
+    _getip
+    exit 0
+fi
+
+### Else, try using cached value
+
+DATE_OLD="$(date -r $TMP +%s)"
+DATE_NOW="$(date +%s)"
+SECS_DELTA="$((DATE_NOW-DATE_OLD))"
+if [[ $SECS_DELTA -lt 300 ]]; then
+    _showip
+else
+    _getip
+fi

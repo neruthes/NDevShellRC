@@ -17,11 +17,7 @@ if [[ ! -d "$PWD/_dist" ]]; then
 fi
 
 
-### Sync out files
-rsync -av --delete      _dist/      $WEBDIR/$REPONAME/      --exclude={'tex-tmp','.*','private','.git','*.tar'}
-rsync -av --delete      $WEBDIR/    NDLT6G:/mnt/NEPd3_Caster/LS/NAS/githubdistweb/
-date -Is > $GDIR/trigger
-pwd >> $GDIR/trigger
+
 
 
 ### Create tarball
@@ -48,7 +44,7 @@ function _pushnow() {
     git commit -m 'autobuild'
     # exit 0      # Uncomment for debugging
     bash push.sh index
-    proxychains git push
+    git push
     ALREADY_PUSHED=y
 }
 function _attemptPush() {
@@ -71,6 +67,12 @@ function _attemptPush() {
         fi
     fi
 }
+
+### Sync out files
+rsync -av --delete      _dist/      $WEBDIR/$REPONAME/      --exclude={'tex-tmp','.*','private','.git','*.tar'}
+rsync -av --delete      $WEBDIR/    NDLT6G:/mnt/NEPd3_Caster/LS/NAS/githubdistweb/
+date -Is > $GDIR/trigger
+pwd >> $GDIR/trigger
 
 
 if [[ "  $@  " == *" --wait "* ]]; then

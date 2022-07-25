@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# A small script for importing PS5 screenshots and video clips
+#
+
+USBDIR="$PWD"
+MEDIADIR="$USBDIR/PS5/CREATE"
+
+if [[ "$USER" == "neruthes" ]]; then
+    HOMEPICDIR="$HOME/PIC"
+else
+    HOMEPICDIR="$HOME/Pictures"
+fi
+DESTDIR="$HOMEPICDIR/PS5media"
+mkdir -p "$DESTDIR"
+
+if [[ ! -d "$MEDIADIR" ]]; then
+    echo "[ERROR] Cannot find the 'PS5' directory here. Is the PWD correct?"
+    exit 1
+fi
+
+rsync -av $MEDIADIR/ $DESTDIR/
+
+echo "[INFO] If you want to delete after importing..."
+echo '  $ rm -rf "./PS5/CREATE/Screenshots" "./PS5/CREATE/Video Clips"'

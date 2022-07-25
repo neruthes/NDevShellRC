@@ -13,21 +13,13 @@ fi
 
 
 ### Fetch IP address
-DATEOLD="$(date -r $IPCACHEFILE +%s 2>/dev/null)"
-DATENOW="$(date +%s)"
-if [[ ! -e "$IPCACHEFILE" ]] || [[ $((DATENOW-DATEOLD)) -gt $((60*8)) ]]; then
-    echo "delta: $((DATENOW-DATEOLD))"
-    curl -4 http://ifconfig.co/ > $IPCACHEFILE
-else
-    MY_WAN_IP_ADDR="$(cat $IPCACHEFILE)"
-    echo "Preserving existing cache: $MY_WAN_IP_ADDR"
-fi
+MY_WAN_IP_ADDR="$(getwanip)"
 
 
 ### Abort if executed too frequently
 DATEOLD="$(date -r "$CURL_LOG" +%s 2>/dev/null)"
 DATENOW="$(date +%s)"
-if [[ $((DATENOW-DATEOLD)) -lt $((60*8)) ]] && [[ -z "$FORCE" ]]; then
+if [[ $((DATENOW-DATEOLD)) -lt $((60)) ]] && [[ -z "$FORCE" ]]; then
     echo "No need to update. $((DATENOW-DATEOLD)) seconds since last push."
     exit 0
 fi
