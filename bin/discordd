@@ -3,7 +3,7 @@
 if [[ "$HTTP_PROXY" == "" ]]; then
     # MY_PROXY="socks5://10.104.22.1:8080"
     # MY_PROXY="socks5://10.0.233.3:7891"
-    MY_PROXY="socks5://10.0.233.20:1081"
+    MY_PROXY="socks5://10.0.233.26:1080"
 else
     MY_PROXY="$HTTP_PROXY"
 fi

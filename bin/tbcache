@@ -24,7 +24,7 @@ cd "$REPODIR"
 
 IFS=$'\n'
 COUNT=0
-for FN in $(find -name '*.png'); do
+for FN in $(find -name '*.png') $(find -name '*.jpg'); do
     _processfile "$FN"
 done
 
