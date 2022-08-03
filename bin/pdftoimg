@@ -1,5 +1,12 @@
 #!/bin/bash
 
+echo ""
+echo ""
+echo "[ERROR] This script 'pdftoimg' has been deprecated. Please migrate to 'pdftopng'."
+echo ""
+echo ""
+exit 1
+
 IFFULLPATH="$1"
 IFNAME="$(basename "$IFFULLPATH")"
 OUTPUT_FORMAT="$2"

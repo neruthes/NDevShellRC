@@ -1,0 +1,12 @@
+#!/bin/bash
+
+inFilePath="$1"
+outFileDir="$2"
+if [[ -z "$outFileDir" ]]; then
+    outFileDir="/tmp/pdftopng"
+fi
+mkdir -p "$outFileDir"
+
+outFileBasename="$(basename "$inFilePath").png"
+
+pdftoppm "$inFilePath" -png -aa yes -r 600 > "$outFileDir/$outFileBasename"

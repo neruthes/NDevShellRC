@@ -105,7 +105,7 @@ case "$TOIMG" in
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
-        OUTPUT_PREFIX=/tmp/http/nteximg/ pdftoimg "$REALPATH" "$TOIMG"
+        pdftopng "$REALPATH" /tmp/http/nteximg
         #  >/dev/null 2>&1
         # echo "Made image:" "$IMGPATH"
         if [[ $TONASOOS == y ]]; then
