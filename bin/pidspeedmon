@@ -1,0 +1,18 @@
+#!/bin/bash
+
+INTERVAL="$1"
+if [[ -z "$INTERVAL" ]]; then
+    INTERVAL=2
+fi
+
+echo "[INFO] Refreshing every $INTERVAL seconds."
+
+oldpid=$(bash -c 'printf $$' | head -n1)
+while true; do
+    newpid=$(bash -c 'printf $$')
+    # if [[ $oldpid != 1 ]]; then
+        echo "old=$oldpid new=$newpid delta=$((newpid-oldpid-2))"
+    # fi
+    oldpid="$newpid"
+    sleep $INTERVAL
+done
