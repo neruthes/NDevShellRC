@@ -1,0 +1,23 @@
+#!/bin/bash
+
+IFS=$'\n'
+
+
+### Upload files
+for PDFFN in $(find _dist -name '*.pdf'); do
+    echo "[INFO] Uploading '$PDFFN'" >&2
+    OSS_SUBDIR=stndist-$(basename "$PWD")/ saveFileToNasOSS $PDFFN -P >> .stnosslist
+done
+sort -u .stnosslist > .stnosslist2
+mv .stnosslist2 .stnosslist
+
+
+### Regenerate ARTIFACTS.md
+echo "[INFO] Regenrating 'ARTIFACTS.md' file"
+echo -e "# Artifacts\n" > ARTIFACTS.md
+for PDFFN in $(find _dist -name '*.pdf' | sort -u); do
+    REALFN="$(basename $PDFFN)"
+    PDFURL="$(grep "/$REALFN-" .stnosslist)"
+    echo "- [${PDFFN:6}]($PDFURL)" >> ARTIFACTS.md
+done
+cat ARTIFACTS.md

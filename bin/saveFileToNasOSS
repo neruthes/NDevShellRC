@@ -41,17 +41,21 @@ if [[ "$FNMAIN" != *"."* ]]; then
 fi
 
 
-## Volatile version
 DATEMARK="$(date +%Y-%m-%d)"
 REALSALT="$RandomSalt001:$DATEMARK"     # A new salt every day; files need GC!
-PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
-PATHHASH="${PATHHASH:0:32}"
 EXTNAME="${FNMAIN/*./}"
-NEWFN="$FNMAIN--$DATEMARK-$PATHHASH.$EXTNAME"
-_save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
+
+
+## Volatile version
+if [[ " $@ " != *" -P "* ]]; then
+    PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
+    PATHHASH="${PATHHASH:0:32}"
+    NEWFN="$FNMAIN--$DATEMARK-$PATHHASH.$EXTNAME"
+    _save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
+fi
 
 ## Persistent version
-if [[ " $@ " == *" -p "* ]]; then
+if [[ " $@ " == *" -p "* ]] || [[ " $@ " == *" -P "* ]]; then
     PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
     PATHHASH="${PATHHASH:0:32}"
     NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"

@@ -9,4 +9,5 @@ mkdir -p "$outFileDir"
 
 outFileBasename="$(basename "$inFilePath").png"
 
-pdftoppm "$inFilePath" -png -aa yes -r 600 > "$outFileDir/$outFileBasename"
+#pdftoppm "$inFilePath" -png -aa yes -r 600 > "$outFileDir/$outFileBasename"
+convert -units PixelsPerInch -density $DPI -quality 91 $inFilePath "$outFileDir/$outFileBasename"
