@@ -1,0 +1,17 @@
+#!/bin/bash
+
+INDIRPATH="$(realpath "$1")"
+
+# FINAL_HASH="$(uuidgen v4 | sed s/-//g)"
+FINAL_HASH="$(echo "$USER:$HOSTNAME:$(date +%Y.%m.%d):$INDIRPATH" | sha256sum | cut -c1-24)"
+
+RDIRNAME="TMP-$(basename "$INDIRPATH")-$FINAL_HASH"
+
+RSYNC_DEST="NDLT6G:/mnt/NEPd3_Caster/LS/NAS_public/$RDIRNAME/"
+# echo "RSYNC_DEST=$RSYNC_DEST"
+
+rsync -avx --delete "$INDIRPATH/" "$RSYNC_DEST"
+
+
+
+echo "https://nas-public.neruthes.xyz:2096/$RDIRNAME/"

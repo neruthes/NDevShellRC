@@ -8,6 +8,10 @@ SYNC_HTTPTMP=y
 POSITIONAL_ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --2)
+        BUILD_TWICE="y"
+        shift # past argument
+        ;;
     --png)
         TOIMG="png"
         shift # past argument
@@ -66,10 +70,16 @@ TYPE_SLASH="${FilePath/$BaseName/}"
 
 mkdir -p "_dist/tex-tmp" "_dist/$TYPE_SLASH"
 
-xelatex $XELATEXARGS \
-    -output-directory=_dist/tex-tmp \
-    -shell-escape \
-    "$FilePath"
+function _realBuild() {
+    xelatex $XELATEXARGS \
+        -output-directory=_dist/tex-tmp \
+        -shell-escape \
+        "$FilePath"
+}
+_realBuild
+if [[ $BUILD_TWICE == y ]]; then ### Build twice
+    _realBuild
+fi
 
 mv _dist/tex-tmp/*.pdf "_dist/$TYPE_SLASH"
 
