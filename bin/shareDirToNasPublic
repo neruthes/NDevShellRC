@@ -3,7 +3,7 @@
 INDIRPATH="$(realpath "$1")"
 
 # FINAL_HASH="$(uuidgen v4 | sed s/-//g)"
-FINAL_HASH="$(echo "$USER:$HOSTNAME:$(date +%Y.%m.%d):$INDIRPATH" | sha256sum | cut -c1-24)"
+FINAL_HASH="$(echo "$USER:$HOSTNAME:$(date +%Y.%m):$INDIRPATH" | sha256sum | cut -c1-24)"
 
 RDIRNAME="TMP-$(basename "$INDIRPATH")-$FINAL_HASH"
 
