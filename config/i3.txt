@@ -66,6 +66,10 @@ assign [class="krita"] 5
 ### WS7: Player & Reader
 assign [class="mupdf"] 7
 assign [class="vlc"] 7
+assign [class="GStreamer"] 7
+assign [class="UxPlay@NDLT7"] 7
+### WS8: TV
+assign [class="Kodi"] 8
 ### WS9: VM
 assign [class="Virt-manager"] 9
 
@@ -216,7 +220,8 @@ bar {
 
 
 # Startup programs
-exec --no-startup-id pulseaudio -D
+#exec --no-startup-id pulseaudio -D
+exec --no-startup-id gentoo-pipewire-launcher
 exec --no-startup-id dunst
 exec --no-startup-id fcitx
 exec --no-startup-id cabledropd

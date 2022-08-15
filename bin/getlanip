@@ -1,3 +1,16 @@
 #!/bin/bash
 
-ip route get 1.1.1.1 | grep -oE 'src [.0-9]+' | cut -d' ' -f2
+FAMILY=4
+if [[ $1 == 6 ]]; then
+    FAMILY=6
+fi
+case $FAMILY in
+    4)
+        DEST=1.1.1.1
+        ;;
+    6)
+        DEST=240e:1:1:1:1:1:1:1
+        ;;
+esac
+
+ip route get $DEST | grep -oE 'src [.:0-9a-f]+' | cut -d' ' -f2

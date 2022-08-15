@@ -5,6 +5,9 @@ outFileDir="$2"
 if [[ -z "$outFileDir" ]]; then
     outFileDir="/tmp/pdftopng"
 fi
+if [[ -z $DPI ]]; then
+    DPI=300
+fi
 mkdir -p "$outFileDir"
 
 outFileBasename="$(basename "$inFilePath").png"
