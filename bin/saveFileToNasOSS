@@ -4,8 +4,17 @@
 #     echo "ERROR: This script may only be used on 'NDLT7'. Current device is '$HOSTNAME'."
 #     exit 0
 # fi
+CONF=$HOME/.config/saveFileToNasOSS.conf
+if [[ -e $CONF ]]; then
+    source $HOME/.config/saveFileToNasOSS.conf
+fi
 if [[ -z "$OSS_SERVERS_LIST" ]]; then
-    OSS_SERVERS_LIST='NDLT6G|/mnt/NEPd3_Caster/LS/OSS|https://oss.neruthes.xyz:2096'
+    # Example: OSS_SERVERS_LIST='osshost.example.com|/home/oss/ossdir|https://oss.example.com'
+    echo "[ERROR] You should set OSS_SERVERS_LIST variable in $CONF"
+    echo "The value should look like:"
+    echo "    osshost.example.com|/home/oss/ossdir|https://oss.example.com"
+    echo "    [ssh hostname]|[base directory path]|[http/https access prefix]"
+    exit 0
 fi
 
 if [[ -z "$OSS_SUBDIR" ]]; then

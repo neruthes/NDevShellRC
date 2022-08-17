@@ -4,6 +4,7 @@ FAMILY=4
 if [[ $1 == 6 ]]; then
     FAMILY=6
 fi
+
 case $FAMILY in
     4)
         DEST=1.1.1.1

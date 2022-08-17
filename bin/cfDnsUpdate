@@ -3,9 +3,9 @@
 
 # Expected environment variables:
 #       [Name]          [Example]
-#       CF_ZONE         cef23400ccfef7aa9511988f2e27b181
-#       CF_EID          43a78eb1af006c5afae3b4181c2b9550
-#       CF_TOKEN        7a76d46dbb7c45a4bb7d00b4e66e44d2
+#       CF_ZONE         aef23400ccfef7aa9511988f2e27b181
+#       CF_EID          43a78eb27e364853afae3b41b15838a8
+#       CF_TOKEN        76542d46dbb7c51d124d00b4e1273c94
 #       DNS_TYPE        A
 #       DNS_KEY         nas
 #       DNS_VALUE       127.0.0.1
