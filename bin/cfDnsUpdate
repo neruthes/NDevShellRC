@@ -11,19 +11,29 @@
 #       DNS_VALUE       127.0.0.1
 
 mkdir ~/.tmp > /dev/null 2>&1
-echo "Publishing WAN DDNS..."
+echo "Updating Cloudflare DNS..."
 
 TASK_HASH="$(sha256sum <<< "$CF_ZONE:$CF_EID" | cut -c1-22)"
 CURL_LOG="/tmp/.cfDnsUpdate.$USER.$TASK_HASH.log"
+VALUE_CACHE="/tmp/.cfDnsUpdate.$USER.$TASK_HASH.last_val_cache"
 
 
 ### Abort if executed too frequently
 DATEOLD="$(date -r "$CURL_LOG" +%s 2>/dev/null)"
 DATENOW="$(date +%s)"
-if [[ $((DATENOW-DATEOLD)) -lt $((60)) ]] && [[ -z "$FORCE" ]]; then
-    echo "No need to update. $((DATENOW-DATEOLD)) seconds since last push."
-    exit 0
+if [[ $((DATENOW-DATEOLD)) -lt $((60*1)) ]] && [[ -z "$FORCE" ]]; then
+    ### Frequency too high...
+    if [[ "$(cat $VALUE_CACHE)" == "$DNS_VALUE" ]]; then
+        ### Same with cache
+        echo "No need to update. $((DATENOW-DATEOLD)) seconds since last push."
+        exit 0
+    else
+        ### But the IP changed!
+        printf ''
+    fi
 fi
+
+printf "$DNS_VALUE" > $VALUE_CACHE
 
 
 JsonReqBody="$(sed "s/'/\"/g" <<< "

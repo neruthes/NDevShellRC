@@ -1,9 +1,4 @@
-PIDFILE=/tmp/cfddnsd-$USER.pid
-LOGDIR=/tmp/.psman-log-$USER
-LOGFILE=$LOGDIR/cfddnsd
-
 function start() {
-    mkdir -p $LOGDIR
     daemonize -p "$PIDFILE" -o $LOGFILE -- $HOME/.local/bin/cfddnsd
 }
 function stop() {
@@ -12,7 +7,4 @@ function stop() {
 function restart() {
     stop
     start
-}
-function getpid() {
-    cat "$PIDFILE" 2>/dev/null
 }

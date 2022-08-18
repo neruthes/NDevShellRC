@@ -46,8 +46,8 @@ function _findservicerunlevel() {
 }
 function _checkServiceStatus() {
     SVCNAME="$1"
-    source "$svcdir/$SVCNAME"
-    SVCPID="$(getpid 2>/dev/null)"
+    # export SVCPID="$(cat /tmp/$SVCNAME-$USER.pid 2>/dev/null)"
+    export SVCPID="$(cat $PIDFILE 2>/dev/null)"
     if [[ "$SVCPID" == "" ]]; then
         # Process is known to be dead if the getpid function returns an empty string
         echo "stopped"
@@ -87,10 +87,12 @@ SVCACTION="$2"
 
 function _printServiceStatusLine() {
     SVCNAME="$1"
+    export SVCNAME=$SVCNAME
+    export PIDFILE=/tmp/$SVCNAME-$USER.pid
+    export LOGDIR=/tmp/.psman-log-$USER
+    export LOGFILE=$LOGDIR/$SVCNAME
     SVCSTATUS="$(_checkServiceStatus "$SVCNAME")"
-    source "$svcdir/$SVCNAME"
-    SVCPID="$(getpid 2>/dev/null)"
-    # _findservicerunlevel $SVCNAME
+    export SVCPID="$(cat $PIDFILE 2>/dev/null)"
     if [[ "$SVCSTATUS" == "stopped" ]]; then
         if [[ "$HIDE_STOPPED" == "true" ]]; then
             return 0
@@ -104,7 +106,6 @@ function _printServiceStatusLine() {
 function _svcaction() {
     SVCNAME="$1"
     SVCACTION="$2"
-    source "$svcdir/$SVCNAME"
     
     if [[ "$SVCACTION" == "start" ]]; then
         _requireStateNot "$SVCNAME" started
@@ -113,7 +114,8 @@ function _svcaction() {
         _requireStateNot "$SVCNAME" stopped
     fi
 
-    $SVCACTION
+    # $SVCACTION
+    bash -c "source '$svcdir/$SVCNAME' && $SVCACTION"
 }
 
 
@@ -142,6 +144,12 @@ fi
 # Operation
 
 if [[ -e "$svcdir/$SVCNAME" ]]; then
+    export SVCNAME=$SVCNAME
+    export PIDFILE=/tmp/$SVCNAME-$USER.pid
+    export LOGDIR=/tmp/.psman-log-$USER
+    export LOGFILE=$LOGDIR/$SVCNAME
+    mkdir -p $LOGDIR
+
     case "$SVCACTION" in
         start|stop|restart)
             _svcaction $SVCNAME $SVCACTION

@@ -8,10 +8,12 @@ fi
 case $FAMILY in
     4)
         DEST=1.1.1.1
+        ip route get $DEST | grep -oE 'src [.:0-9a-f]+' | cut -d' ' -f2
         ;;
     6)
-        DEST=240e:1:1:1:1:1:1:1
+        DEST=240e::1
+        ip route get $DEST | grep -oE 'src [.:0-9a-f]+' | cut -d' ' -f2
+        # ip a | grep 'inet6 240e' | grep 'scope global dynamic' | grep -v 'deprecated' | grep 'noprefixroute' | tail -n1 | cut -d' ' -f6 | cut -d'/' -f1
         ;;
 esac
 
-ip route get $DEST | grep -oE 'src [.:0-9a-f]+' | cut -d' ' -f2
