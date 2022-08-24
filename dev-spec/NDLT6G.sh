@@ -38,8 +38,8 @@ function regenrsyncdconf_nas-public() {
     CONFFILE=/etc/rsyncd.conf.d/50-nas-public
     sudo mkdir -p /etc/rsyncd.conf.d
     sudo rm $CONFFILE
-    for idir in /mnt/NEPd3_Caster/LS/NAS_public/*; do
-        sudo bash -c "echo -e '[nas-public--$(basename $idir)]' >> $CONFFILE"
+    for idir in $(ls /mnt/NEPd3_Caster/LS/NAS_public | grep -v '^TMP-'); do
+        sudo bash -c "echo -e '[nas-public--$(basename "$idir")]' >> $CONFFILE"
         sudo bash -c "echo -e 'path = $idir\n\n' >> $CONFFILE"
     done
 }

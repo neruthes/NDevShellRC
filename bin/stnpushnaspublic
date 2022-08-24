@@ -1,0 +1,38 @@
+#!/bin/bash
+
+shareDirToNasPublic_ARGV=""
+
+export RSYNC_INCLUDE_LIST="+ /_dist
+- /_dist/tex-tmp
+- /*"
+
+if [[ " $@ " == *" -a "* ]]; then # all
+    shareDirToNasPublic_ARGV="$shareDirToNasPublic_ARGV -a"
+fi
+if [[ " $@ " == *" -e "* ]]; then # empty
+    shareDirToNasPublic_ARGV="$shareDirToNasPublic_ARGV -e"
+fi
+
+### Run rsync
+if [[ " $@ " == *" -d "* ]]; then # dry
+    echo "[INFO] This is only a dry run..."
+else
+    shareDirToNasPublic $shareDirToNasPublic_ARGV
+fi
+
+
+PREFIX="$(shareDirToNasPublic -d | tail -n1)"
+
+
+
+if [[ " $@ " == *" -l "* ]]; then # list
+    function buildListMd() {
+        for i in $(find _dist -name '*.pdf' | sort); do
+            echo "- [${i:6}](${PREFIX}${i})"
+        done
+    }
+    printf "# Artifacts\n\n" > ARTIFACTS.md
+    buildListMd >> ARTIFACTS.md
+fi
+
+echo "URL = ${PREFIX}_dist/"

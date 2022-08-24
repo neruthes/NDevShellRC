@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# =============================================================
+echo "Debugging only. Do not use in production."; exit 0
+# =============================================================
+
+LIST_URL="$1"
+if [[ -z $1 ]]; then
+    echo "Usage:  masswget  LIST_URL  HREF_BASE
+    
+Example:
+        masswget  http://example.com/files.txt  http://example.com/
+"
+    exit 0
+fi
+
+HREF_BASE="$2"
+if [[ -z "$HREF_BASE" ]]; then
+    HREF_BASE="$(dirname "$LIST_URL")"
+fi
+
+echo "debug: HREF_BASE=$HREF_BASE"
+
+
+LIST_CONTNET="$(curl "$LIST_URL")"
+IFS=$'\n'
+for FN in $LIST_CONTNET; do
+    mkdir -p "$FN"
+    rm -r "$FN"
+done
+if [[ ! -z $(command -v tree) ]]; then
+    tree
+else
+    find
+fi
+
+printf "[INFO] Will download $(wc -l <<< "$LIST_CONTNET") files. Proceed? \n(y/n) > "
+read PROCEED_OR_NOT
+if [[ $PROCEED_OR_NOT != y* ]]; then
+    exit 0
+fi
+
+for FN in $LIST_CONTNET; do
+    curl "$HREF_BASE/$FN" > "$FN"
+    # echo curl "$HREF_BASE/$FN" 
+done
+if [[ ! -z $(command -v tree) ]]; then
+    tree
+else
+    find
+fi

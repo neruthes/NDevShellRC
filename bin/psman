@@ -37,7 +37,7 @@ function _findservicerunlevel() {
     # echo "[DEBUG] RUNLEVELS=$RUNLEVELS">&2
     for RL in $RUNLEVELS; do
         # echo "?????"
-        if [[ "$(grep "^$SVCNAME" "$RUNLEVELDIR/$RL")" != "" ]]; then
+        if [[ "$(grep "^$SVCNAME\$" "$RUNLEVELDIR/$RL")" != "" ]]; then
             echo "$RL"
             return 0
         fi
@@ -124,7 +124,7 @@ if [[ -z $1 ]]; then
     for RUNLEVEL in $RUNLEVELS; do
         echo "Runlevel: $(_color_cyan $RUNLEVEL)"
         for SVCNAME in $(ls $svcdir); do
-            if [[ "$(_findservicerunlevel $SVCNAME)" == "$RUNLEVEL" ]]; then
+            if [[ "$(_findservicerunlevel "$SVCNAME")" == "$RUNLEVEL" ]]; then
                 _printServiceStatusLine "$SVCNAME"
             fi
         done
@@ -133,7 +133,7 @@ if [[ -z $1 ]]; then
 
     echo "Runlevel: $(_color_cyan manual)"
     for SVCNAME in $(ls $svcdir); do
-        if [[ "$(_findservicerunlevel $SVCNAME)" == "manual" ]]; then
+        if [[ "$(_findservicerunlevel "$SVCNAME")" == "manual" ]]; then
             HIDE_STOPPED=true _printServiceStatusLine "$SVCNAME"
         fi
     done
@@ -156,8 +156,8 @@ if [[ -e "$svcdir/$SVCNAME" ]]; then
             sleep 0.6
             _printServiceStatusLine "$SVCNAME"
             ;;
-        getpid)
-            _svcaction $SVCNAME $SVCACTION
+        tail)
+            tail -f "$LOGFILE"
             ;;
         *)
             _svcaction $SVCNAME S_$SVCACTION

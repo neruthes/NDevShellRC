@@ -21,27 +21,52 @@ if [[ -z "$OSS_SUBDIR" ]]; then
     OSS_SUBDIR=misc/
 fi
 
+function _save_commit() {
+    REMOTE_HOST="$(cut -d'|' -f1 <<< "$SERVER")"
+    REMOTE_PATH="$(cut -d'|' -f2 <<< "$SERVER")"
+    REMOTE_WEB="$(cut -d'|' -f3 <<< "$SERVER")"
+    REMOTE_SSH="$REMOTE_HOST:$REMOTE_PATH"
+    if [[ ! -z "$OSS_SUBDIR" ]]; then
+        ssh oss@"$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
+    fi
+    scp "$FILEFULLPATH" oss@"${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
+    echo "${REMOTE_WEB}/${RELPATH}"
+}
 function _save() {
     FILEFULLPATH="$1"
     SUBDIR="$2"
     NEWFN="$3"
     RELPATH="${SUBDIR}${NEWFN}"
     IFS=$'\n'
-    for SERVER in $OSS_SERVERS_LIST; do
-        REMOTE_HOST="$(cut -d'|' -f1 <<< "$SERVER")"
-        REMOTE_PATH="$(cut -d'|' -f2 <<< "$SERVER")"
-        REMOTE_WEB="$(cut -d'|' -f3 <<< "$SERVER")"
-        REMOTE_SSH="$REMOTE_HOST:$REMOTE_PATH"
-        if [[ ! -z "$OSS_SUBDIR" ]]; then
-            ssh oss@"$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
-        fi
-        scp "$FILEFULLPATH" oss@"${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
-        echo "${REMOTE_WEB}/${RELPATH}"
-    done
+    if [[ -z "$R" ]]; then
+        for SERVER in $OSS_SERVERS_LIST; do
+            ### Not trying match a specific remote
+            _save_commit
+        done
+    else
+        printf ''
+        SERVER="$(grep "$R" <<< "$OSS_SERVERS_LIST" | head -n1)"
+        # echo "debug: SERVER=$SERVER" >&2
+        _save_commit
+    fi
 }
 
+
+if [[ -z "$1" ]]; then
+    echo "Usage:
+
+    saveFileToNasOSS File.txt                       Volatile link only
+    saveFileToNasOSS File.txt -p                    Volatile & Persistent links
+    saveFileToNasOSS File.txt -P                    Persistent link only
+    OSS_SUBDIR=doc/ saveFileToNasOSS File.txt       Save to a specific subdir
+    R=exm.io saveFileToNasOSS File.txt              Save to the first remote which contains the substring
+"
+    exit 0
+fi
+
+
 ## Common
-FILEFULLPATH="$(realpath $1)"
+FILEFULLPATH="$(realpath "$1")"
 FNMAIN="$(basename -- "$FILEFULLPATH")"
 
 if [[ "$FNMAIN" != *"."* ]]; then

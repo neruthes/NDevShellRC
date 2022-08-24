@@ -68,8 +68,8 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 
 FilePath="$1"
-BaseName="$(basename $FilePath)"
-REPOID="$(basename $PWD)"
+BaseName="$(basename "$FilePath")"
+REPOID="$(basename "$PWD")"
 TYPE_SLASH="${FilePath/$BaseName/}"
 
 # echo "FilePath=$FilePath"
@@ -89,7 +89,8 @@ if [[ $BUILD_TWICE == y ]]; then ### Build twice
     _realBuild
 fi
 
-mv _dist/tex-tmp/*.pdf "_dist/$TYPE_SLASH"
+ls "_dist/tex-tmp/${BaseName/.tex/.pdf}"
+mv "_dist/tex-tmp/${BaseName/.tex/.pdf}" "_dist/$TYPE_SLASH"
 
 REALPATH=$(realpath "_dist/${FilePath/.tex/.pdf}")
 PDFFN="$(basename "$REALPATH")"
@@ -108,7 +109,7 @@ if [[ $TONASOOS == y ]]; then
     OSS_SUBDIR="$REPOID/" saveFileToNasOSS "$REALPATH" -p > $TMPFILE
     cat $TMPFILE
     cat $TMPFILE | pushclip push neruthes
-    echo "$TYPE_SLASH$PDFFN $(grep "oss.neruthes.xyz:2096/p/" $TMPFILE)" >> .osslist
+    echo "$TYPE_SLASH$PDFFN $(head -n1 $TMPFILE)" >> .osslist
     sort -u .osslist -o .osslist
     rm $TMPFILE
 fi
