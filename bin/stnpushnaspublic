@@ -1,5 +1,25 @@
 #!/bin/bash
 
+
+
+
+if [[ $1 == -h ]]; then
+    echo "Usage:
+
+    stnpushnaspublic  [-h|-a|-e|-d]
+
+Options:
+
+    -h          Show this help message.
+    -a          Send all files, otherwise send '/_dist' only.
+    -e          Empty DEST first, before sending files.
+    -d          Dry run, do not actually send.
+"
+    exit 0
+fi
+
+
+
 shareDirToNasPublic_ARGV=""
 
 export RSYNC_INCLUDE_LIST="+ /_dist

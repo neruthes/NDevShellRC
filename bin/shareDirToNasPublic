@@ -2,6 +2,23 @@
 
 
 
+if [[ $1 == -h ]]; then
+    echo "Usage:
+
+    shareDirToNasPublic  [-h|-e|-d|-t|-a]
+
+Options:
+
+    -h                      Show this help message.
+    -e | --empty            Empty DEST first, before sending files.
+    -t | --tmp              Append 'TMP-' prefix in directory name.
+    -a | --all              Send all files, otherwise send '/_dist' only.
+"
+    exit 0
+fi
+
+
+
 ### Parse argv
 if [[ " $@ " == *' -e '* ]] || [[ " $@ " == *' --empty '* ]]; then
     f_EMPTY=y
@@ -34,10 +51,12 @@ RDIRNAME="$DIRNAME_PREFIX$(basename "$INDIRPATH")-$FINAL_HASH"
 
 RSYNC_ARGS="-avxW --delete --mkpath --safe-links"
 if [[ -z "$RSYNC_INCLUDE_LIST" ]]; then
-    RSYNC_INCLUDE_LIST="+ /*
+    RSYNC_INCLUDE_LIST="+ /_dist
+- /_dist/tex-tmp
+- /*
 - /.git"
 fi
-if [[ -e ".rsync_include.list" ]]; then
+if [[ -e ".rsync_include_list" ]]; then
     RSYNC_INCLUDE_LIST="$(cat .rsync_include_list)"
 fi
 if [[ $f_SENDALL == y ]]; then

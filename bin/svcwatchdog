@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Run this daemon with OpenRC, instead of psman
+
+UPTIME_SEC="$(cat /proc/uptime | cut -d. -f1)"
+if [[ $UPTIME_SEC -lt 120 ]]; then
+    sleep 240
+fi
+
+while true; do
+    LIST="$(rc-status default | grep -E '\[  (crashed|stopped)  \]' | cut -d' ' -f2)"
+    for i in $LIST; do
+        /sbin/rc-service $i restart &
+    done
+    sleep 20
+done
+
+
+
+########################################
+# Below is the service script
+########################################
+
+
+# PIDFILE=/run/svcwatchdog.pid
+
+# depend() {
+# 	after dns
+# }
+
+# start() {
+#     ebegin "Starting svcwatchdog"
+#     start-stop-daemon --start --exec /home/neruthes/DEV/NDevShellRC/bin/svcwatchdog --pidfile $PIDFILE -m --background --user root
+#     eend $?
+# }
+
+# stop() {
+#     ebegin "Stopping svcwatchdog"
+#     start-stop-daemon --stop --pidfile $PIDFILE --user root
+#     eend $?
+# }

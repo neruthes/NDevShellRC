@@ -27,7 +27,7 @@ function _uploadTarball() {
     cd $WEBDIR
     cd ..
     tar cvf /tmp/githubdist.tar --exclude 'dist.tar' githubdist
-    saveFileToNasOSS /tmp/githubdist.tar -p
+    R=neruthes saveFileToNasOSS /tmp/githubdist.tar -P
     rm /tmp/githubdist.tar
     cd "$MAINPWD"
 }

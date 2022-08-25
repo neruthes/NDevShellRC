@@ -1,0 +1,15 @@
+#!/bin/bash
+
+while true; do
+    if [[ -z "$(ip -6 route get 240e::1)" ]]; then
+        echo "Cannot find valid global IPv6 address. Restarting dhcpcd."
+        sudo rc-service dhcpcd restart
+        cfddnsd-commit
+        sleep 10
+    else
+        sleep 5
+    fi
+done
+
+
+
