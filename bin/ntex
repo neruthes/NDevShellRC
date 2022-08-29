@@ -124,9 +124,8 @@ case "$TOIMG" in
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
-        pdftopng "$REALPATH" /tmp/http/nteximg
-        #  >/dev/null 2>&1
-        # echo "Made image:" "$IMGPATH"
+        # pdftoimg "$REALPATH" /tmp/http/nteximg $TOIMG
+        pdftoimg "$REALPATH" '' $TOIMG
         if [[ $TONASOOS == y ]]; then
             echo -e "\nImage URLs:"
             OSS_SUBDIR="$REPOID-img/" saveFileToNasOSS "$IMGPATH"

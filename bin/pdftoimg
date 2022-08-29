@@ -1,36 +1,21 @@
 #!/bin/bash
 
-echo ""
-echo ""
-echo "[ERROR] This script 'pdftoimg' has been deprecated. Please migrate to 'pdftopng'."
-echo ""
-echo ""
-exit 1
-
-IFFULLPATH="$1"
-IFNAME="$(basename "$IFFULLPATH")"
-OUTPUT_FORMAT="$2"
-
-if [[ -z "$2" ]]; then
-    echo "Usage:        pdftoimg   input.pdf   jpg"
-    exit 0
+inFilePath="$1"
+outFileDir="$2"
+TYPE="$3"
+if [[ -z "$outFileDir" ]]; then
+    # outFileDir="/tmp/pdftoimg"
+    outFileDir="$(dirname "$inFilePath")"
 fi
+if [[ -z "$TYPE" ]]; then
+    TYPE=jpg
+fi
+if [[ -z $DPI ]]; then
+    DPI=300
+fi
+mkdir -p "$outFileDir"
 
-GSDEV="jpeg"
-case "${OUTPUT_FORMAT,,}" in
-    png)
-        GSDEV="png16m"
-        ;;
-esac
-echo "GSDEV = $GSDEV"
+outFileBasename="$(basename "$inFilePath").$TYPE"
 
-
-gs \
-    -dNOPAUSE \
-    -dBATCH \
-    -sDEVICE="$GSDEV" \
-    -r600 \
-    -dGraphicsAlphaBits=4 \
-    -dTextAlphaBits=4 \
-    -sOutputFile="$OUTPUT_PREFIX$IFNAME.%d.$OUTPUT_FORMAT" \
-    "$IFFULLPATH"
+#pdftoppm "$inFilePath" -png -aa yes -r 600 > "$outFileDir/$outFileBasename"
+convert -units PixelsPerInch -density $DPI -quality 91 $inFilePath "$outFileDir/$outFileBasename"

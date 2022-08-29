@@ -1,5 +1,5 @@
 function start() {
-    daemonize -p "$PIDFILE" -o $LOGFILE -- bash $HOME/.local/bin/cfddnsd
+    daemonize -p "$PIDFILE" -o $LOGFILE -- /bin/bash $HOME/.local/bin/cfddnsd
 }
 function stop() {
     start-stop-daemon --stop --pidfile "$PIDFILE" --user "$USER" --verbose
