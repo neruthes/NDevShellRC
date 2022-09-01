@@ -19,6 +19,9 @@ fi
 
 
 
+RSYNC_ARGS="-axW --delete --mkpath --safe-links"
+
+
 ### Parse argv
 if [[ " $@ " == *' -e '* ]] || [[ " $@ " == *' --empty '* ]]; then
     f_EMPTY=y
@@ -32,6 +35,9 @@ fi
 if [[ " $@ " == *' -a '* ]] || [[ " $@ " == *' --all '* ]]; then
     f_SENDALL=y
 fi
+if [[ " $@ " == *' -v '* ]] || [[ " $@ " == *' --verbose '* ]]; then
+    RSYNC_ARGS="$RSYNC_ARGS -v"
+fi
 
 
 
@@ -44,12 +50,11 @@ fi
 FINAL_HASH="$(echo "$USER:$HOSTNAME:$INDIRPATH" | sha256sum | cut -c1-24)"
 
 if [[ $f_TMP == y ]]; then
-    DIRNAME_PREFIX="TMP-$(date +%Y.%m.%d)--"
+    DIRNAME_PREFIX="TMP-$(date +%Y.%m.%d)--$DIRNAME_PREFIX"
 fi
 RDIRNAME="$DIRNAME_PREFIX$(basename "$INDIRPATH")-$FINAL_HASH"
 
 
-RSYNC_ARGS="-avxW --delete --mkpath --safe-links"
 if [[ -z "$RSYNC_INCLUDE_LIST" ]]; then
     RSYNC_INCLUDE_LIST="+ /_dist
 - /_dist/tex-tmp

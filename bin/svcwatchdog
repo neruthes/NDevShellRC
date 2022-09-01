@@ -10,9 +10,11 @@ fi
 while true; do
     LIST="$(rc-status default | grep -E '\[  (crashed|stopped)  \]' | cut -d' ' -f2)"
     for i in $LIST; do
-        /sbin/rc-service $i restart &
+        logger "svcwatchdog: Restarting $i"
+        /sbin/rc-service $i restart
+        sleep 4
     done
-    sleep 20
+    sleep 30
 done
 
 

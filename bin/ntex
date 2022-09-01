@@ -89,8 +89,13 @@ if [[ $BUILD_TWICE == y ]]; then ### Build twice
     _realBuild
 fi
 
-ls "_dist/tex-tmp/${BaseName/.tex/.pdf}"
-mv "_dist/tex-tmp/${BaseName/.tex/.pdf}" "_dist/$TYPE_SLASH"
+PDF_TMP_PATH="_dist/tex-tmp/${BaseName/.tex/.pdf}"
+ls "$PDF_TMP_PATH"
+if [[ ! -e "$PDF_TMP_PATH" ]]; then
+    echo "[ERROR] XeLaTeX build failed. Aborting."
+    exit 1
+fi
+mv "$PDF_TMP_PATH" "_dist/$TYPE_SLASH"
 
 REALPATH=$(realpath "_dist/${FilePath/.tex/.pdf}")
 PDFFN="$(basename "$REALPATH")"

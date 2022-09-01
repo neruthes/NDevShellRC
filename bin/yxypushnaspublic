@@ -6,7 +6,7 @@
 if [[ $1 == -h ]]; then
     echo "Usage:
 
-    stnpushnaspublic  [-h|-a|-e|-d]
+    yxypushnaspublic  [-h|-a|-e|-d|-t]
 
 Options:
 
@@ -14,6 +14,8 @@ Options:
     -a          Send all files, otherwise send '/_dist' only.
     -e          Empty DEST first, before sending files.
     -d          Dry run, do not actually send.
+    -t          Append TMP-{YYYY}.{MM}.{DD} prefix.
+    -l          Make ARTIFACTS.md for list of files.
 "
     exit 0
 fi
@@ -32,16 +34,25 @@ fi
 if [[ " $@ " == *" -e "* ]]; then # empty
     shareDirToNasPublic_ARGV="$shareDirToNasPublic_ARGV -e"
 fi
+if [[ " $@ " == *" -t "* ]]; then # empty
+    shareDirToNasPublic_ARGV="$shareDirToNasPublic_ARGV -t"
+fi
+
+
+export DIRNAME_PREFIX="yxydist-"
+
+
 
 ### Run rsync
 if [[ " $@ " == *" -d "* ]]; then # dry
     echo "[INFO] This is only a dry run..."
+    shareDirToNasPublic -d $shareDirToNasPublic_ARGV
 else
     shareDirToNasPublic $shareDirToNasPublic_ARGV
 fi
 
 
-PREFIX="$(shareDirToNasPublic -d | tail -n1)"
+PREFIX="$(shareDirToNasPublic -d $shareDirToNasPublic_ARGV | tail -n1)"
 
 
 
