@@ -1,6 +1,5 @@
 if [[ "$(uname)" != "Linux" ]]; then
-    echo "This script can only work on Linux!"
-    exit 1
+    echo "This component can only work on Linux!"
 fi
 
 function borgBackup() {
@@ -23,7 +22,7 @@ function borgBackup() {
         }
 
         # export REPO_PREFIX="/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"                  ### For NDLT7 local backup
-        export REPO_PREFIX="ssh://neruthes@10.0.233.10:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"    ### When NEPd3 is connected at NDLT6G
+        export REPO_PREFIX="ssh://neruthes@NDLT6G:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"    ### When NEPd3 is connected at NDLT6G
 
         if [[ "$(NDevVar get syslock-borgBackup 2>/dev/null)" == "LOCKED" ]]; then
             echo "ERROR: An existing backup session is active"
@@ -34,7 +33,7 @@ function borgBackup() {
         echo "Starting backup job..."
         case "$1" in
             system )
-                export REPO_PREFIX="ssh://root@10.0.233.10:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"
+                export REPO_PREFIX="ssh://root@NDLT6G:22/mnt/NEPd3_Caster/LS/BorgHome/NDLT7"
                 sudo borg create --stats \
                     --list \
                     --exclude '/etc/mtab' \

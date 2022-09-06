@@ -9,7 +9,6 @@ source $DEV_HOME_DIR/NDevShellRC/components/NEPd2-Archer.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NEPd3-Caster.sh
 source $DEV_HOME_DIR/NDevShellRC/components/NEPd4-Intel660p.sh
 source $DEV_HOME_DIR/NDevShellRC/components/borgBackup.sh
-source $DEV_HOME_DIR/NDevShellRC/components/rsyncBackup.sh
 
 # Network
 source $DEV_HOME_DIR/NDevShellRC/components/proxy.sh

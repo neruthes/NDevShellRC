@@ -1,6 +1,5 @@
 if [[ "$(uname)" != "Linux" ]]; then
-    echo "This script can only work on Linux!"
-    exit 1
+    echo "This component can only work on Linux!"
 fi
 
 ## Basics

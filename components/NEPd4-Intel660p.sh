@@ -1,5 +1,5 @@
 if [[ "$(uname)" != "Linux" ]]; then
-    echo "This script can only work on Linux!"
+    echo "This component can only work on Linux!"
 fi
 
 function NEPd4-mount() {

@@ -111,7 +111,7 @@ CLASSNAME="$(basename "$PWD")" ALTFN="$INPUT_ALTFN" cptmphttp "$REALPATH"
 if [[ $TONASOOS == y ]]; then
     TMPFILE=/tmp/9915e62e-3d15-41cd-9d67-008487ec22ee
     echo -e "\nDocument URLs:"
-    OSS_SUBDIR="$REPOID/" saveFileToNasOSS "$REALPATH" -p > $TMPFILE
+    LIMIT=1 OSS_SUBDIR="$REPOID/" saveFileToNasOSS "$REALPATH" -p > $TMPFILE
     cat $TMPFILE
     cat $TMPFILE | pushclip push neruthes
     echo "$TYPE_SLASH$PDFFN $(head -n1 $TMPFILE)" >> .osslist

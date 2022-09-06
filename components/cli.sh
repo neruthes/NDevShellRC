@@ -1,4 +1,4 @@
-# export EDITOR="$(which nano)"
+export EDITOR="$(which nano)"
 
 function ps1gitbr() {
     if [[ -z "$(which git 2>/dev/null)" ]]; then

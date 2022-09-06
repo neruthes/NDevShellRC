@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# if [[ "$HOSTNAME" != "NDLT7" ]]; then
-#     echo "ERROR: This script may only be used on 'NDLT7'. Current device is '$HOSTNAME'."
-#     exit 0
-# fi
+
 CONF=$HOME/.config/saveFileToNasOSS.conf
 if [[ -e $CONF ]]; then
     source $HOME/.config/saveFileToNasOSS.conf
@@ -19,6 +16,9 @@ fi
 
 if [[ -z "$OSS_SUBDIR" ]]; then
     OSS_SUBDIR=misc/
+fi
+if [[ -z "$LIMIT" ]]; then
+    LIMIT=999
 fi
 
 function _save_commit() {
@@ -39,8 +39,9 @@ function _save() {
     RELPATH="${SUBDIR}${NEWFN}"
     IFS=$'\n'
     if [[ -z "$R" ]]; then
-        for SERVER in $OSS_SERVERS_LIST; do
+        for SERVER in $(echo $OSS_SERVERS_LIST | cut -d' ' -f1-$LIMIT); do
             ### Not trying match a specific remote
+            # echo "debug: SERVER=$SERVER" >&2
             _save_commit
         done
     else
@@ -80,6 +81,15 @@ REALSALT="$RandomSalt001:$DATEMARK"     # A new salt every day; files need GC!
 EXTNAME="${FNMAIN/*./}"
 
 
+
+## Persistent version (preferred)
+if [[ " $@ " == *" -p "* ]] || [[ " $@ " == *" -P "* ]]; then
+    PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
+    PATHHASH="${PATHHASH:0:32}"
+    NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"
+    _save "$FILEFULLPATH" "p/${OSS_SUBDIR}" "${NEWFN}"
+fi
+
 ## Volatile version
 if [[ " $@ " != *" -P "* ]]; then
     PATHHASH="$(echo "$REALSALT:$FILEFULLPATH" | sha256sum)"
@@ -88,10 +98,3 @@ if [[ " $@ " != *" -P "* ]]; then
     _save "$FILEFULLPATH" "e/${OSS_SUBDIR}" "${NEWFN}"
 fi
 
-## Persistent version
-if [[ " $@ " == *" -p "* ]] || [[ " $@ " == *" -P "* ]]; then
-    PATHHASH="$(echo "9187a2d6fb134aa5ab0b:$FILEFULLPATH" | sha256sum)"
-    PATHHASH="${PATHHASH:0:32}"
-    NEWFN="$FNMAIN-$PATHHASH.$EXTNAME"
-    _save "$FILEFULLPATH" "p/${OSS_SUBDIR}" "${NEWFN}"
-fi
