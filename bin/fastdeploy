@@ -10,10 +10,12 @@ source $HOME/.config/repo-fastdeploy.conf
 
 REMOTE_HOSTS="$DEFAULT_REMOTE_HOSTS"
 
-if [[ ! -z $1 ]]; then ### Specify remotes in argv
+### Specify remotes in argv
+if [[ ! -z $1 ]]; then
     REMOTE_HOSTS="$@"
 fi
 
+### Send files
 for host in $REMOTE_HOSTS; do
     if [[ ${host:0:1} != '#' ]]; then
         echo "[INFO] Deploying to '$host' ..."

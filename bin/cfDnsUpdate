@@ -3,9 +3,9 @@
 
 # Expected environment variables:
 #       [Name]          [Example]
-#       CF_ZONE         aef23400ccfef7aa9511988f2e27b181
-#       CF_EID          43a78eb27e364853afae3b41b15838a8
-#       CF_TOKEN        76542d46dbb7c51d124d00b4e1273c94
+#       CF_ZONE         9fb92eab42c54713a3740ff58799777a
+#       CF_EID          46853afae3b41b5838a86d2e27198fef
+#       CF_TOKEN        030731057009414dac4860bec4f2ae89
 #       DNS_TYPE        A
 #       DNS_KEY         nas
 #       DNS_VALUE       127.0.0.1
@@ -21,8 +21,7 @@ VALUE_CACHE="/tmp/.cfDnsUpdate.$USER.$TASK_HASH.last_val_cache"
 ### Abort if executed too frequently
 DATEOLD="$(date -r "$CURL_LOG" +%s 2>/dev/null)"
 DATENOW="$(date +%s)"
-if [[ $((DATENOW-DATEOLD)) -lt $((60*1)) ]] && [[ -z "$FORCE" ]]; then
-    ### Frequency too high...
+if [[ $((DATENOW-DATEOLD)) -lt 60 ]] && [[ -z "$FORCE" ]]; then  ### Frequency is too high
     if [[ "$(cat $VALUE_CACHE)" == "$DNS_VALUE" ]]; then
         ### Same with cache
         echo "No need to update. $((DATENOW-DATEOLD)) seconds since last push."
