@@ -26,13 +26,13 @@ function NAS_sharedirpub() {
     if [[ -z $2 ]]; then
         memorable_name="$(basename "$srcdir")"
     fi
-    destdir_name="$memorable_name-$(uuidgen v4 | sed 's/-//g')"
+    destdir_name="TmpShare_$(date +%Y%m%d)--$memorable_name---$(uuidgen v4 | sed 's/-//g')"
     destdir="/mnt/NEPd3_Caster/LS/NAS_public/$destdir_name"
     echo "Symlink directory is at: $destdir"
     echo "https://nas-public.neruthes.xyz:2096/$destdir_name/"
-    echo "rsync://$(getlanip):2096/nas-public--$destdir_name/"
+    # echo "rsync://$(getlanip)/nas-public--$destdir_name/"
     ln -svf "$srcdir" "$destdir"
-    regenrsyncdconf > /dev/null
+    # regenrsyncdconf > /dev/null
 }
 function regenrsyncdconf_nas-public() {
     CONFFILE=/etc/rsyncd.conf.d/50-nas-public

@@ -1,5 +1,24 @@
 #!/bin/bash
 
-WPPATH="$HOME/PIC/My_Wallpapers/$( select-random-file-in-dir $HOME/PIC/My_Wallpapers )"
-feh --bg-fill "$WPPATH"
-echo "$WPPATH" > $HOME/.config/wppath
+DIRS="
+$HOME/PIC/My_Wallpapers
+$HOME/PIC/Desktop_Pictures/Leopard_Tiger
+$HOME/PIC/Desktop_Pictures/Lion
+$HOME/PIC/Desktop_Pictures/Mountain_Lion
+$HOME/PIC/Desktop_Pictures/Snow_Leopard
+"
+
+function _select() {
+    LIST="$(find $DIRS -maxdepth 1 -type f | grep -v '/\.')"
+    COUNT="$(wc -l <<< "$LIST")"
+    SEED="$RANDOM$RANDOM"
+    INDEX="$((SEED%COUNT))"
+    echo "$(head -n$INDEX <<< "$LIST" | tail -n1)"
+}
+
+
+WPPATH="$(_select)"
+wpset "$WPPATH"
+
+
+echo "$WPPATH"

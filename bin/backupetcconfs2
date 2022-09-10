@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [[ $HOSTNAME != NDLT7 ]]; then
+    echo "ERROR: This script must be run on NDLT7."
+    exit 0
+fi
+
+HOSTS_LIST="NDLT6G"
+WORKDIR=/var/neruthesbackupcenter/machines-etc-backup
+
+for host in $HOSTS_LIST; do
+    sudo rsync -avpx --delete --mkpath          \
+        $host:/etc/                             \
+        $WORKDIR/$host/
+done
+
+sudo du -xhd1 $WORKDIR
