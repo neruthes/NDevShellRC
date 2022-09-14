@@ -9,6 +9,11 @@ if [[ -z $SHOW_TYPE ]]; then
     SHOW_TYPE=4
 fi
 
+function debug() {
+    return 0
+    echo "debug:  $1" >&2
+}
+
 function _showip() {
     echo -n $(cat $TMP.$SHOW_TYPE)
 }
@@ -21,6 +26,7 @@ function _getip() {
 ### Refresh if no cache at all
 
 if [[ ! -e $TMP.4 ]] || [[ ! -e $TMP.6 ]]; then
+    debug 'No cache at all!'
     _getip
     exit 0
 fi
@@ -31,7 +37,9 @@ DATE_OLD="$(date -r $TMP.4 +%s)"
 DATE_NOW="$(date +%s)"
 SECS_DELTA="$((DATE_NOW-DATE_OLD))"
 if [[ $SECS_DELTA -lt 300 ]]; then
+    debug 'Using cache'
     _showip
 else
+    debug 'Cache has expired'
     _getip
 fi
