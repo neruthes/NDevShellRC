@@ -30,6 +30,9 @@ function _save_commit() {
         ssh oss@"$REMOTE_HOST" "mkdir -p '${REMOTE_PATH}/${SUBDIR}'"
     fi
     scp "$FILEFULLPATH" oss@"${REMOTE_SSH}/${RELPATH}" >/dev/null 2>&1
+    # echo "debug: SERVER=$SERVER"
+    # echo "debug: REMOTE_WEB=$REMOTE_WEB"
+    # echo "debug: RELPATH=$RELPATH"
     echo "${REMOTE_WEB}/${RELPATH}"
 }
 function _save() {
@@ -37,7 +40,7 @@ function _save() {
     SUBDIR="$2"
     NEWFN="$3"
     RELPATH="${SUBDIR}${NEWFN}"
-    IFS=$'\n'
+    # IFS=$'\n'
     if [[ -z "$R" ]]; then
         for SERVER in $(echo $OSS_SERVERS_LIST | cut -d' ' -f1-$LIMIT); do
             ### Not trying match a specific remote
@@ -61,6 +64,7 @@ if [[ -z "$1" ]]; then
     saveFileToNasOSS File.txt -P                    Persistent link only
     OSS_SUBDIR=doc/ saveFileToNasOSS File.txt       Save to a specific subdir
     R=exm.io saveFileToNasOSS File.txt              Save to the first remote which contains the substring
+    LIMIT=1 saveFileToNasOSS File.txt               Save to certain quantity of remotes
 "
     exit 0
 fi
