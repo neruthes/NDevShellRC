@@ -1,0 +1,22 @@
+#!/bin/bash
+
+echo "This program is only EXPERIMENTAL!"
+
+PID="$1"
+CMDLINE="$2"
+
+echo $CMDLINE
+
+function run_callback() {
+    exec bash -c "$CMDLINE"
+}
+
+while true; do
+    if [[ -e /proc/$PID ]]; then
+        echo "Waiting PID ${PID}..."
+    else
+        echo "The waiting is over."
+        run_callback
+    fi
+    sleep 3
+done
