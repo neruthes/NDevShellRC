@@ -6,12 +6,14 @@ function s5pon() {
     for i in ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
         export $i=$PROXY_LAN
     done
+    env | grep socks5
 }
 
 function s5poff() {
     for i in ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
         unset $i
     done
+    echo "Cleared environment variables: ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy"
 }
 
 function s5pserver() {

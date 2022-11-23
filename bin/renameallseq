@@ -39,9 +39,9 @@ if [[ -z $3 ]]; then
 fi
 
 COUNTER=1
-for FN in $(ls *.$FILEEXT); do
+for FN in $(ls $RAWPREFIX*.$FILEEXT); do
     NEWFN=$FNPREFIX-$(perl -e '$str="'$COUNTER'";$pad="0";$len='$COUNTERLENGTH';print (($pad x ($len - length($str))) . $str)').$FILEEXT
-    echo "$FN  ->  $NEWFN"
+    echo "$FN  ->  $NEWFN" >&2
     mv "$FN" "$NEWFN"
     COUNTER=$(($COUNTER+1))
 done
