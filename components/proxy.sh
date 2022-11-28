@@ -2,11 +2,17 @@
 #alias s5poff="unset ALL_PROXY; unset HTTP_PROXY"
 
 function s5pon() {
-    PROXY_LAN=socks5h://10.0.233.3:7891
+    PROXY_LAN_s=socks5h://10.0.233.3:7891
+    PROXY_LAN_h=http://10.0.233.3:7890
+    PROXY_LAN=$PROXY_LAN_s
+    echo debug: $1
+    if [[ $1 == h ]]; then
+        PROXY_LAN=$PROXY_LAN_h
+    fi
     for i in ALL_PROXY HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
         export $i=$PROXY_LAN
     done
-    env | grep socks5
+    env | grep "$PROXY_LAN"
 }
 
 function s5poff() {

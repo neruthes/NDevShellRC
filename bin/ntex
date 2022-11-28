@@ -3,8 +3,9 @@
 ### If multiple input files are given, build each
 if [[ -e $2 ]]; then
     for i in $@; do
-        ntex $i
+        ntex $i --nosync
     done
+    synctmphttptonas
     exit 0
 fi
 
