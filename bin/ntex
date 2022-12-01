@@ -1,11 +1,20 @@
 #!/bin/bash
 
 ### If multiple input files are given, build each
-if [[ -e $2 ]]; then
+if [[ -e "$2" ]]; then
+    ITEMS_LIST=()
+    PARAMS_LIST=()
     for i in $@; do
-        ntex $i --nosync
+        if [[ -e "$1" ]]; then
+            ITEMS_LIST+=("$1")
+        else
+            PARAMS_LIST+=("$1")
+        fi
+        shift
     done
-    synctmphttptonas
+    for i in ${ITEMS_LIST[@]}; do
+        ntex $i ${PARAMS_LIST[@]}
+    done
     exit 0
 fi
 
@@ -43,6 +52,10 @@ while [[ $# -gt 0 ]]; do
         ;;
     --altfn=*)
         INPUT_ALTFN="${1/--altfn=/}.pdf"
+        shift # past argument
+        ;;
+    --http)
+        PUT_TO_HTTPTMP=y
         shift # past argument
         ;;
     --sync)
@@ -104,9 +117,10 @@ PDFFN="$(basename "$REALPATH")"
 echo -e "\nDocument Size:"
 du -h "$REALPATH"
 
-### Send to /tmp/http
-CLASSNAME="$(basename "$PWD")" ALTFN="$INPUT_ALTFN" cptmphttp "$REALPATH"
-
+### --http
+if [[ $PUT_TO_HTTPTMP == y ]]; then
+    CLASSNAME="$(basename "$PWD")" ALTFN="$INPUT_ALTFN" cptmphttp "$REALPATH"
+fi
 
 ### --oss
 if [[ $TONASOOS == y ]]; then
