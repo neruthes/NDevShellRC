@@ -168,10 +168,3 @@ if [[ ! -z "$PAGES_RANGE" ]]; then
 fi
 
 
-
-
-### --sync | --nosync
-if [[ "$SYNC_HTTPTMP" == y ]]; then
-    echo "Generating ranged subset."
-    synctmphttptonas
-fi

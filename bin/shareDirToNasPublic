@@ -84,4 +84,4 @@ if [[ $f_NOSYNC != y ]]; then # Should run rsync
 fi
 
 
-echo "https://nas-public.neruthes.xyz:2096/$RDIRNAME/"
+echo "https://nas-public-zt.neruthes.xyz/$RDIRNAME/"

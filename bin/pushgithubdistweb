@@ -23,12 +23,13 @@ fi
 ### Create tarball
 function _uploadTarball() {
     echo "[INFO] Creating tarball..."
-    rm /tmp/githubdist.tar 2>/dev/null
+    TARBALL_PATH="$GDIR/_dist/githubdist.tar"
+    rm $TARBALL_PATH 2>/dev/null
     cd $WEBDIR
     cd ..
-    tar cvf /tmp/githubdist.tar --exclude 'dist.tar' githubdist
-    R=neruthes saveFileToNasOSS /tmp/githubdist.tar -P
-    rm /tmp/githubdist.tar
+    tar -cvf $TARBALL_PATH --exclude 'dist.tar' githubdist
+    cd $GDIR
+    shareDirToNasPublic
     cd "$MAINPWD"
 }
 
@@ -42,8 +43,8 @@ function _pushnow() {
     cd $GDIR
     git add .
     git commit -m 'autobuild'
-    # exit 0      # Uncomment for debugging
     bash push.sh index
+    # exit 0      # Exit here for debugging
     git push
     ALREADY_PUSHED=y
 }

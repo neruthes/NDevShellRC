@@ -1,15 +1,27 @@
 #!/bin/bash
 
 OSS_DIRPATH="/mnt/cf-r2/oss"
+OSS_DOMAIN="oss-r2.neruthes.xyz"
+
+
 if [[ ! -e $OSS_DIRPATH/ismounted ]]; then
     echo "[ERROR] OSS directory is not mounted."
     exit 1
 fi
 
+if [[ -e "$2" ]]; then
+    for i in $@; do
+        cfoss $i
+    done
+    exit 0
+fi
+
 if [[ " $2 " == *"t"* ]]; then
     isTMP=y
 fi
-OSS_DOMAIN="oss-r2.neruthes.xyz"
+
+
+
 
 
 
@@ -24,6 +36,7 @@ EXTNAME="${INPUT_FN/*./}"
 
 if [[ -z "$OSS_SUBDIR" ]]; then
     OUTPUT_SUBDIR="keep/$INPUT_DIRNAME/"
+    OUTPUT_SUBDIR="o/"
 else
     OUTPUT_SUBDIR="keep/$OSS_SUBDIR/"
 fi
@@ -35,7 +48,7 @@ if [[ $isTMP == y ]]; then
     OUTPUT_FN_PREFIX="$DATEMARK--"
     OUTPUT_SUBDIR=tmp/
 fi
-PREHASH="$SEED_1:$SEED_2:$HOSTNAME:$USER:$INPUT_FULL_PATH"
+PREHASH="$SEED_1:$SEED_2:$USER:$INPUT_FULL_PATH"
 REALHASH="$(sha256sum <<< "$PREHASH" | cut -c1-32)"
 
 OUTPUT_FN="${OUTPUT_FN_PREFIX}${INPUT_FN}--${REALHASH}.${EXTNAME}"

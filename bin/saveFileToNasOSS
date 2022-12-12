@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "[ERROR] Script saveFileToNasOSS is deprecated!"
+exit 1
+
 
 CONF=$HOME/.config/saveFileToNasOSS.conf
 if [[ -e $CONF ]]; then

@@ -25,5 +25,5 @@ pdftk "$REALPATH" cat $PAGES_RANGE output "$RANGED_PDF_PATH"
 du -h "$RANGED_PDF_PATH"
 
 if [[ $OSS == y ]]; then
-    OSS_SUBDIR=pdfrange/ saveFileToNasOSS "$RANGED_PDF_PATH"
+    OSS_SUBDIR=pdfrange cfoss "$RANGED_PDF_PATH"
 fi
