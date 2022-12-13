@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ `uname` == Darwin ]]; then
+    exit 1
+fi
+
+i3 exec QT_DEVICE_PIXEL_RATIO=2 QT_AUTO_SCREEN_SCALE_FACTOR=true /opt/resolve/bin/resolve

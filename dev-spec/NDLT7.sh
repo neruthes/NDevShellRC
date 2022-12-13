@@ -161,6 +161,9 @@ fi
 ### ----------------------------------------------------------------------------
 ### Miscellaneous
 function _checkMortalityAlert() {
+    if [[ -e /.isChroot ]]; then
+        return 0
+    fi
     if [[ "$USER" != "neruthes" ]]; then
         ### Not for any other user
         return 0
@@ -215,3 +218,16 @@ OSS_SERVERS_LIST='
 
 ### Homoweb Components Tree
 export HOMOWEBREPO="/home/neruthes/EWS/stn/homoweb/homoweb-tree/TREE"
+
+
+### Chrootjail
+alias enterchrootjail="sudo chroot /chroot/self sudo -u $USER bash -i"
+function sync-chroot-jail-data() {
+    dirs="DEV/NDevShellRC  .ssh  .config"
+    prefix_src="$HOME"
+    prefix_dest="/chroot/self/home/$USER"
+    for d in $dirs; do
+        echo "[INFO] Synchronizing '$d'"
+        rsync -avpx $prefix_src/$d/ $prefix_dest/$d/
+    done
+}
