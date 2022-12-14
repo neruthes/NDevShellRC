@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [[ -d "$1" ]]; then
+    IFS=$'\n'
+    for fn in $(ls "$1"); do
+        $0 "$1/$fn"
+    done
+    exit 0
+fi
+
+LISTFILE="$HOME/.local/duckupload-list.txt"
+
+RAW_FILE_PATH="$(realpath "$1")"
+FN="$RAW_FILE_PATH"
+srv="https://chevqsecii.duckdns.org"
+
+
+### Bad exname handling
+if [[ "$FN" != *.jpg ]] && [[ "$FN" != *.png ]]; then
+    FN="/tmp/duckdns.$RANDOM$RANDOM$RANDOM.jpg"
+    ln -svf "$RAW_FILE_PATH" "$FN"
+    flag_ShallDeleteFN=y
+fi
+
+
+CURLOUT="$(curl -X POST \
+-H "User-Agent: iPhone" -H "Content-Type: multipart/form-data" \
+-F "file=@$FN" -i $srv/upload)"
+
+if [[ -z "$(grep static <<< "$CURLOUT")" ]]; then
+    echo "[WARNING] Something happened. Curl log:"
+    echo "$CURLOUT"
+else
+    DUCKURL="$srv/$(grep static <<< "$CURLOUT" | cut -d'"' -f4)"
+    echo "$DUCKURL"
+    echo "$RAW_FILE_PATH|$DUCKURL" >> "$LISTFILE"
+    sort -u $LISTFILE -o $LISTFILE
+fi
+
+if [[ $flag_ShallDeleteFN == y ]]; then
+    echo rm "$FN"
+fi
