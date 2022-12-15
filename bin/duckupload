@@ -3,7 +3,7 @@
 if [[ -d "$1" ]]; then
     IFS=$'\n'
     for fn in $(ls "$1"); do
-        $0 "$1/$fn"
+        FINALSLEEP=5 $0 "$1/$fn"
     done
     exit 0
 fi
@@ -55,4 +55,8 @@ fi
 
 if [[ $flag_ShallDeleteTMPFN == y ]]; then
     rm "$TMPFN"
+fi
+
+if [[ ! -z $FINALSLEEP ]]; then
+    sleep $FINALSLEEP
 fi
