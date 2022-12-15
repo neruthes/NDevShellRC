@@ -1,5 +1,27 @@
 #!/bin/bash
 
+if [[ -z "$1" ]]; then
+echo "duckupload
+    A small shell script.
+    Copyright (c) 2022 Neruthes. Published under GNU GPLv2.
+
+Usage:
+
+    $ duckupload  /path/to/file.txt
+                Upload a file.
+    $ duckupload  /path/to/dir/
+                Upload a directory.
+    $ EXT=m4a CAT=music  duckupload  /path/to/dir/
+                Upload files recursively in dir, restricting to the certain extension.
+
+Notes:
+
+    - The mapping between FS paths and HTTP URLs are stored at '~/.local/duckupload-list--CAT.txt'.
+    - If no CAT set, CAT defaults to 'std'. This helps distinguishing different lists.
+"
+exit 0
+fi
+
 if [[ -d "$1" ]]; then
     IFS=$'\n'
     for fn in $(ls "$1"); do
