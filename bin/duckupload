@@ -21,8 +21,9 @@ srv="https://chevqsecii.duckdns.org"
 ### Bad exname handling
 if [[ "$FN" != *.jpg ]] && [[ "$FN" != *.png ]]; then
     FN="/tmp/duckdns.$RANDOM$RANDOM$RANDOM.jpg"
+    TMPFN="$FN"
     ln -svf "$RAW_FILE_PATH" "$FN"
-    flag_ShallDeleteFN=y
+    flag_ShallDeleteTMPFN=y
 fi
 
 
@@ -36,10 +37,10 @@ if [[ -z "$(grep static <<< "$CURLOUT")" ]]; then
 else
     DUCKURL="$srv/$(grep static <<< "$CURLOUT" | cut -d'"' -f4)"
     echo "$DUCKURL"
-    echo "$RAW_FILE_PATH|$DUCKURL" >> "$LISTFILE"
+    echo "$RAW_FILE_PATH"$'\t'"$DUCKURL" >> "$LISTFILE"
     sort -u $LISTFILE -o $LISTFILE
 fi
 
-if [[ $flag_ShallDeleteFN == y ]]; then
-    echo rm "$FN"
+if [[ $flag_ShallDeleteTMPFN == y ]]; then
+    rm "$TMPFN"
 fi

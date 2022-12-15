@@ -3,5 +3,6 @@ if [[ "$(uname)" != "Linux" ]]; then
 fi
 
 ## Basics
-alias pbcopy='tr -d "\n" | xclip -selection clipboard'
+alias pbcopy='xclip -selection clipboard'
+alias pbcopy_tr='tr -d "\n" | xclip -selection clipboard'
 alias pbpaste='xclip -selection clipboard -o'
