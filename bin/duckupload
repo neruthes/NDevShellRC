@@ -18,6 +18,18 @@ FN="$RAW_FILE_PATH"
 srv="https://chevqsecii.duckdns.org"
 
 
+### Is it already uploaded?
+# echo grep "$RAW_FILE_PATH" $LISTFILE
+GREP_OUTPUT="$(grep -s "$RAW_FILE_PATH"$'\t' $LISTFILE)"
+if [[ -z "$GREP_OUTPUT" ]]; then
+    echo "[INFO] Starting to upload..."
+else
+    echo "[INFO] This is already uploaded."
+    echo "$GREP_OUTPUT"
+    exit 0
+fi
+
+
 ### Bad exname handling
 if [[ "$FN" != *.jpg ]] && [[ "$FN" != *.png ]]; then
     FN="/tmp/duckdns.$RANDOM$RANDOM$RANDOM.jpg"
