@@ -8,6 +8,7 @@ if [[ -d "$1" ]]; then
     exit 0
 fi
 
+
 if [[ -z "$CAT" ]]; then
     export CAT="std"
 fi
@@ -16,6 +17,19 @@ LISTFILE="$HOME/.local/duckupload-list--$CAT.txt"
 RAW_FILE_PATH="$(realpath "$1")"
 FN="$RAW_FILE_PATH"
 srv="https://chevqsecii.duckdns.org"
+
+
+
+### Specified EXT env var, allowing only certain ending
+if [[ ! -z "$EXT" ]]; then
+    if [[ -z "$(basename "$FN,," | grep -o ."$EXT,,"'$')" ]]; then
+        # echo "FN=$FN"
+        # echo "EXT=$EXT"
+        # echo "matched extname is $(basename "$FN" | grep -o ."$EXT"'$')"
+        echo "[INFO] Skipping '$FN' due to extname mismatch"
+        exit 0
+    fi
+fi
 
 
 ### Is it already uploaded?
