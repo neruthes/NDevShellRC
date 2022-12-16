@@ -1,13 +1,17 @@
 #!/bin/bash
 
-OSS_DIRPATH="/mnt/cf-r2/oss"
 OSS_DOMAIN="oss-r2.neruthes.xyz"
 
+touch $HOME/.config/cfoss.conf
+source $HOME/.config/cfoss.conf
 
-if [[ ! -e $OSS_DIRPATH/ismounted ]]; then
-    echo "[ERROR] OSS directory is not mounted."
-    exit 1
-fi
+#######################################################################################
+### What to expect from config:
+# S3_ENDPOINT=https://xxxxxxxxxxxxxxxx.r2.cloudflarestorage.com
+#######################################################################################
+
+
+OSS_DOMAIN="oss-r2.neruthes.xyz"
 
 if [[ -e "$2" ]]; then
     for i in $@; do
@@ -15,11 +19,6 @@ if [[ -e "$2" ]]; then
     done
     exit 0
 fi
-
-if [[ " $2 " == *"t"* ]]; then
-    isTMP=y
-fi
-
 
 
 
@@ -42,7 +41,7 @@ else
 fi
 
 SEED_1="1d69b27764ff473f8c9221a3d32bda66"
-if [[ $isTMP == y ]]; then
+if [[ $TMP == y ]]; then
     DATEMARK="$(date -r "$INPUT_FULL_PATH" +%Y-%m-%d)"
     SEED_2="$DATEMARK"
     OUTPUT_FN_PREFIX="$DATEMARK--"
@@ -54,11 +53,15 @@ REALHASH="$(sha256sum <<< "$PREHASH" | cut -c1-32)"
 OUTPUT_FN="${OUTPUT_FN_PREFIX}${INPUT_FN}--${REALHASH}.${EXTNAME}"
 
 
-FIANL_FS_PATH="${OSS_DIRPATH}/${OUTPUT_SUBDIR}${OUTPUT_FN}"
-FINAL_HTTP_PATH="https://${OSS_DOMAIN}/${OUTPUT_SUBDIR}${OUTPUT_FN}"
+FIANL_OBJ_KEY="${OUTPUT_SUBDIR}${OUTPUT_FN}"
+FINAL_HTTP_URL="https://${OSS_DOMAIN}/${OUTPUT_SUBDIR}${OUTPUT_FN}"
 
-echo "FIANL_FS_PATH=$FIANL_FS_PATH"
-echo "FINAL_HTTP_PATH=$FINAL_HTTP_PATH"
+echo "FIANL_OBJ_KEY=$FIANL_OBJ_KEY"
+echo "FINAL_HTTP_URL=$FINAL_HTTP_URL"
 
-mkdir -p "$(dirname "$FIANL_FS_PATH")"
-cp "$INPUT_FULL_PATH" "$FIANL_FS_PATH" &
+
+
+
+S3_ARGS="--endpoint-url $S3_ENDPOINT --bucket oss"
+aws s3api put-object  --body "$INPUT_FULL_PATH"  --key "$FIANL_OBJ_KEY"  $S3_ARGS  >/dev/null
+

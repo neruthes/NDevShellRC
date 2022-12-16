@@ -94,6 +94,7 @@ mkdir -p "_dist/tex-tmp" "_dist/$TYPE_SLASH"
 
 function _realBuild() {
     xelatex $XELATEXARGS \
+        -interaction=nonstopmode \
         -output-directory=_dist/tex-tmp \
         -shell-escape \
         "$FilePath"
@@ -129,7 +130,7 @@ if [[ $TOCFOSS == y ]]; then
     echo -e "\nOSS Document URLs:"
     OSS_SUBDIR="$(basename $PWD)" cfoss "$REALPATH" > $TMPFILE
     cat $TMPFILE
-    OSSURL="$(grep FINAL_HTTP_PATH $TMPFILE | cut -d= -f2-)"
+    OSSURL="$(grep FINAL_HTTP_URL $TMPFILE | cut -d= -f2-)"
     pushclip push neruthes <<< "$OSSURL"
     echo "$TYPE_SLASH$PDFFN $OSSURL" >> .osslist
     sort -u .osslist -o .osslist

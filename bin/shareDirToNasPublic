@@ -47,7 +47,7 @@ if [[ -e "$1" ]]; then
     INDIRPATH="$(realpath "$1")"
 fi
 
-FINAL_HASH="$(echo "$USER:$HOSTNAME:$INDIRPATH" | sha256sum | cut -c1-24)"
+FINAL_HASH="$(echo "$USER:NDLT7:$INDIRPATH" | sha256sum | cut -c1-24)"
 
 if [[ $f_TMP == y ]]; then
     DIRNAME_PREFIX="TMP-$(date +%Y.%m.%d)--$DIRNAME_PREFIX"
