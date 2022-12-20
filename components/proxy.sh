@@ -2,8 +2,8 @@
 #alias s5poff="unset ALL_PROXY; unset HTTP_PROXY"
 
 function s5pon() {
-    PROXY_LAN_s=socks5h://10.0.233.3:7891
-    PROXY_LAN_h=http://10.0.233.3:7890
+    PROXY_LAN_s=socks5h://10.0.233.20:7891
+    PROXY_LAN_h=http://10.0.233.20:7890
     PROXY_LAN=$PROXY_LAN_s
     echo debug: $1
     if [[ $1 == h ]]; then

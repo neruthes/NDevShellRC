@@ -7,7 +7,12 @@ chmod 777 /tmp/http/pdfrange
 
 REALPATH="$1"
 PAGES_RANGE="$2"
+OUTDIR="$3"
 PDFFN="$(basename "$REALPATH")"
+
+if [[ -z "$OUTDIR" ]]; then
+    OUTDIR="/tmp/http/pdfrange"
+fi
 
 
 if [[ -z "$1" ]]; then
@@ -16,9 +21,9 @@ if [[ -z "$1" ]]; then
 fi
 
 if [[ -z "$RANGED_NAME" ]]; then
-    RANGED_PDF_PATH="/tmp/http/pdfrange/${PDFFN/.pdf/}_page$PAGES_RANGE.pdf"
+    RANGED_PDF_PATH="$OUTDIR/${PDFFN/.pdf/}_page$PAGES_RANGE.pdf"
 else
-    RANGED_PDF_PATH="/tmp/http/pdfrange/$RANGED_NAME.pdf"
+    RANGED_PDF_PATH="$OUTDIR/$RANGED_NAME.pdf"
 fi
 
 pdftk "$REALPATH" cat $PAGES_RANGE output "$RANGED_PDF_PATH"

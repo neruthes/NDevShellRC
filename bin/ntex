@@ -94,7 +94,7 @@ mkdir -p "_dist/tex-tmp" "_dist/$TYPE_SLASH"
 
 function _realBuild() {
     xelatex $XELATEXARGS \
-        -interaction=nonstopmode \
+        -interaction=scrollmode \
         -output-directory=_dist/tex-tmp \
         -shell-escape \
         "$FilePath"

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+### cjrun
+### Run inside chroot jail
+
+xhost +
+
+export JAILROOT="/chroot/self"
+if [[ -d "/chroot/$1" ]]; then
+    export JAILROOT="/chroot/$1"
+fi
+
+if [[ ! -d "$JAILROOT" ]]; then
+    echo "[ERROR] There is no '$JAILROOT'."
+    exit 1
+fi
+
+sudo touch "$JAILROOT/.isChroot"
+
+
+### Automatic mount
+echo "[INFO] Checking mount points..."
+MOUNT_POINTS="sys proc dev run run/udev"
+for mp in $MOUNT_POINTS; do
+    if grep -qs "$JAILROOT/$mp" /proc/mounts; then
+        ### Is already a mount point
+        echo "Already mounted '$JAILROOT/$mp'..."
+    else
+        echo "Mounting '$JAILROOT/$mp'..."
+        sudo mkdir -p "$JAILROOT/$mp"
+        sudo mount --rbind "/$mp" "$JAILROOT/$mp"
+    fi
+done
+
+if [[ -z "$2" ]]; then
+    ### Default shell
+    echo "[INFO] Getting a shell..."
+    exec sudo chroot "${JAILROOT}" /bin/sudo -u $USER $SHELL -i
+else
+    ### Specific program
+    shift
+    echo "[INFO] Running command inside chroot jail: $*"
+    exec sudo chroot "${JAILROOT}" $*
+fi
