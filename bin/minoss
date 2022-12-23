@@ -1,0 +1,8 @@
+#!/bin/bash
+
+OSS_DOMAIN="minio-zt.neruthes.xyz"
+
+source $(dirname $0)/libossupload-core.lib.sh
+
+mc cp "$1" "NDLT6G/oss/$FIANL_OBJ_KEY"
+

@@ -13,10 +13,16 @@ fi
 if [[ -z $DPI ]]; then
     DPI=300
 fi
+if [[ -z $QUALITY ]]; then
+    QUALITY=91
+fi
 mkdir -p "$outFileDir"
 
-outFileBasename="$(basename "$inFilePath").$TYPE"
 
-#pdftoppm "$inFilePath" -png -aa yes -r 600 > "$outFileDir/$outFileBasename"
-convert -units PixelsPerInch -density $DPI -quality 91 $inFilePath "$outFileDir/$outFileBasename"
-echo "$outFileDir/$outFileBasename"
+if [[ -z "$OUTFN" ]]; then
+    OUTFN="$(basename "$inFilePath")"
+fi
+outputPath="$outFileDir/$OUTFN.$TYPE"
+
+convert -units PixelsPerInch -density $DPI -quality $QUALITY $inFilePath  $CONVERT_ARGS  "$outputPath"
+echo "$(realpath "$outputPath")"

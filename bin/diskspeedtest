@@ -1,0 +1,142 @@
+#!/bin/bash
+
+APPVER=0.1.0
+UUID=fb79048851134138af2af2a1c5b40e8c
+TESTDIR="$PWD/diskspeedtest-$UUID"
+
+function showhelp() {
+    echo "diskspeedtest (version $APPVER)
+    Copyright (c) 2022 Neruthes. Licensed with GNU GPLv2.
+
+USAGE:
+
+    $ diskspeedtest help                Show this help message
+    $ diskspeedtest start               Start a test
+    $ diskspeedtest write               Start a test and write a log file
+"
+}
+
+function timer_start() {
+    TIMER_START="$(date +%s)"
+}
+function timer_end() {
+    TIMER_END="$(date +%s)"
+    TIMER_TOTAL=$((TIMER_END-TIMER_START))
+    # EXTRA_NOTE
+    if [[ $TIMER_TOTAL -gt 180 ]]; then
+        EXTRA_NOTE=" ($((TIMER_TOTAL/60))min $((TIMER_TOTAL%60)sec))"
+    fi
+    INFO "Timer ended: $TIMER_TOTAL seconds $EXTRA_NOTE"
+}
+
+function loud() {
+    echo $*
+    $*
+}
+function INFO() {
+    echo "[INFO] $*"
+}
+function WARN() {
+    echo "[WARNING] $*"
+}
+function die() {
+    echo "[FATAL] $*"
+}
+
+function prerun_alert() {
+    INFO "Notice: Running this script may require sudo. Let's do this now to save time for tests."
+    sudo echo ''
+    mkdir -p "$TESTDIR" || die "Cannot create test directory. Got sudo?"
+}
+function runtests() {
+    INFO "PWD: $PWD"
+    INFO "TESTDIR: $TESTDIR"
+    BDINFO="$(df -B1 -P "$TESTDIR" | sed 's|  *| |g' | tail -n1)"
+    INFO "BDINFO: $BDINFO"
+    INFO "Device: $(cut -d' ' -f1 <<< "$BDINFO")"
+    free_space_byte="$(cut -d' ' -f4 <<< "$BDINFO")"
+    free_space_GB="$((free_space_byte/1024/1024/1024))"
+    INFO "Free space: $free_space_GB GB"
+    if [[ -z $plan_usage_GB ]]; then
+        plan_usage_GB=$((free_space_GB/10))
+    fi
+    if [[ $plan_usage_GB -lt 6 ]]; then
+        if [[ $plan_usage_GB -lt 2 ]]; then
+            die "The tests require at least 2 GB to be meaningful."
+        fi
+        WARN "The free space is too small. Try getting at least 6 GB."
+    fi
+    if [[ $plan_usage_GB -gt 12 ]] && [[ -z $NOLIMIT ]]; then
+        INFO "Free space is very large. Will not consume all $plan_usage_GB GB. Set env NOLIMIT=y to bypass this limit."
+        plan_usage_GB=12
+    fi
+    INFO "Planning to use up to $plan_usage_GB GB"
+
+    echo "============================================================"
+    INFO "Running Test 01: Stream Write"
+    test_01_stream_write
+
+    echo "============================================================"
+    INFO "Running Test 02: Stream Read"
+    test_02_stream_read
+
+    echo "============================================================"
+    INFO "Running Test 03: Random Write"
+    test_03_random_write
+}
+
+
+
+function test_01_stream_write() {
+    timer_start
+    blob_size_GB=$plan_usage_GB
+    INFO "Creating binary blob of $plan_usage_GB GB"
+    loud dd if=/dev/urandom of="$TESTDIR/blob.bin" bs=64M count=$((blob_size_GB*16)) status=progress
+    sudo sync
+    timer_end
+    write_speed_MB="$((blob_size_GB*1024/TIMER_TOTAL))"
+    INFO "Write speed is $write_speed_MB MB/s"
+}
+function test_02_stream_read() {
+    timer_start
+    blob_size_GB=$plan_usage_GB
+    INFO "Reading file from disk"
+    du -h "$TESTDIR/blob.bin"
+    loud dd if="$TESTDIR/blob.bin" of=/dev/null status=progress
+    timer_end
+    read_speed_MB="$((blob_size_GB*1024/TIMER_TOTAL))"
+    INFO "Read speed is $read_speed_MB MB/s"
+}
+function test_03_random_write() {
+    INFO "This test may not be very accurate since it depends on the reading speed of another disk."
+    if [[ ! -e "/var/db/repos/gentoo" ]]; then
+        WARN "Cannot find '/var/db/repos/gentoo'. Skipping this test."
+        return 0
+    fi
+    repo_size_KB="$(du -xd0 "/var/db/repos/gentoo" | cut -d$'\t' -f1)"
+    rm -rf "$TESTDIR/gentoo/"
+    timer_start
+    rsync -a --delete "/var/db/repos/gentoo/" "$TESTDIR/gentoo/"
+    timer_end
+    write_speed_MB="$((repo_size_KB/1024/TIMER_TOTAL))"
+    INFO "Write speed is $write_speed_MB MB/s"
+}
+
+
+
+
+
+case "$1" in
+    ''|h|help)
+        showhelp
+        ;;
+    s|start)
+        prerun_alert
+        runtests
+        ;;
+    w|write)
+        INFO "Will also be writing logs to 'diskspeedtest-log.txt'..."
+        prerun_alert
+        runtests | tee diskspeedtest-log.txt
+        ;;
+esac

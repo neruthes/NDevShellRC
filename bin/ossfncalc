@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# This is the shared library for calculating filename hash for OSS uploading
+# Arguments: $1=INPUT_PATH
+# Output: OUTPUT_FN
+
+
+INPUT_PATH="$1"
+INPUT_FULL_PATH="$(realpath "$INPUT_PATH")"
+INPUT_FN="$(basename "$INPUT_FULL_PATH")"
+INPUT_DIRNAME="$(basename $(dirname "$INPUT_FULL_PATH"))"
+
+
+if [[ -z "$CAT" ]]; then
+    OUTPUT_SUBDIR="keep/$(basename "$PWD")"
+else
+    OUTPUT_SUBDIR="keep/$CAT"
+fi
+
+if [[ $TMP == y ]]; then
+    OUTPUT_SUBDIR=tmp
+fi
+
+
+EXTNAME="${INPUT_FN/*./}"
+
+SEED_1="1d69b27764ff473f8c9221a3d32bda66"
+if [[ $TMP == y ]]; then
+    file_mod_ts="$(date -r $"$INPUT_FULL_PATH" +%s)"
+    now_ts="$(date +%s)"
+    DATEMARK="$(date -r "$INPUT_FULL_PATH" +%Y-%m-%d)"
+    if [[ $((now_ts-file_mod_ts)) -gt $((3600*24)) ]]; then
+        ### Mod time is long ago. Use now timestamp instead.
+        # touch "$INPUT_FULL_PATH"
+        DATEMARK="$(date +%Y-%m-%d)"
+    fi
+    SEED_2="$DATEMARK"
+    OUTPUT_FN_PREFIX="$DATEMARK--"
+fi
+PREHASH="$SEED_1:$SEED_2:$USER:$INPUT_FULL_PATH"
+REALHASH="$(sha256sum <<< "$PREHASH" | cut -c1-32)"
+
+OUTPUT_FN="${OUTPUT_SUBDIR}/${OUTPUT_FN_PREFIX}${INPUT_FN}--${REALHASH}.${EXTNAME}"
+echo "$OUTPUT_FN"
+
