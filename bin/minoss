@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OSS_DOMAIN="minio-zt.neruthes.xyz"
+OSS_URL_PREFIX="https://minio-zt.neruthes.xyz/oss"
 
 source $(dirname $0)/libossupload-core.lib.sh
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OSS_DOMAIN="oss-r2.neruthes.xyz"
+OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
 touch $HOME/.config/cfoss.conf
 source $HOME/.config/cfoss.conf
@@ -15,5 +15,5 @@ source $(dirname $0)/libossupload-core.lib.sh
 
 
 S3_ARGS="--endpoint-url $S3_ENDPOINT --bucket oss"
-aws s3api put-object  --body "$1"  --key "$FIANL_OBJ_KEY"  $S3_ARGS  >/dev/null
+aws s3api put-object  --body "$1"  --key "$FIANL_OBJ_KEY"  $S3_ARGS
 

@@ -3,6 +3,12 @@
 ### cjrun
 ### Run inside chroot jail
 
+if [[ -z "$1" ]]; then
+    echo "Usage:    cjrun  {jail_name}  {program}  --arg1  --arg2"
+    echo "Possible jail_name values include:  $(ls /chroot | tr '\n' ' ')"
+    exit 0
+fi
+
 xhost +
 
 export JAILROOT="/chroot/self"
@@ -32,6 +38,12 @@ for mp in $MOUNT_POINTS; do
     fi
 done
 
+### Other stuff before chroot
+sudo cp "/etc/resolv.conf" "$JAILROOT/etc/resolv.conf"
+
+
+
+### Do the chroot
 if [[ -z "$2" ]]; then
     ### Default shell
     echo "[INFO] Getting a shell..."

@@ -1,0 +1,178 @@
+#!/bin/bash
+
+echo "[INFO] Hello, this is the 'cibot-task-dispatch' script."
+echo "[INFO] I am an experimental tool. Expect explosions."
+
+
+### Initialization
+### ===================================================
+echo "===== Initialization ====="
+[[ -z $CHROOT_PREFIX ]]         && export CHROOT_PREFIX="/chroot"
+[[ -z $CHROOT_RUNNERNAME ]]     && export CHROOT_RUNNERNAME="aosc"
+[[ -z $CHROOT_ROOTDIR ]]        && export CHROOT_ROOTDIR="${CHROOT_PREFIX}/${CHROOT_RUNNERNAME}"
+[[ -z $MINIO_HOST_UPLOAD ]]     && export MINIO_HOST_UPLOAD="NDLT6G/oss"
+[[ -z $MINIO_HOST_DOWNLOAD ]]   && export MINIO_HOST_DOWNLOAD="https://minio.neruthes.xyz:2096/oss"
+if [[ -e "$HOME/.config/cibot-task-dispatch" ]]; then
+    source "$HOME/.config/cibot-task-dispatch"
+fi
+env | grep CHROOT
+
+
+
+
+### Precaution checks
+### ===================================================
+echo "===== Precaution checks ====="
+outer_cibot_uid="$(grep '^cibot:x:' "/etc/passwd" | cut -d: -f3)"
+inner_cibot_uid="$(grep '^cibot:x:' "$CHROOT_ROOTDIR/etc/passwd" | cut -d: -f3)"
+if [[ $outer_cibot_uid == $inner_cibot_uid ]]; then
+    echo "[INFO] Check passed: Outer and inner UID of user cibot are identical."
+else
+    echo "[FATAL] Check failed: Outer and inner UID of user cibot are not identical!"
+    exit 1
+fi
+
+
+
+
+### Update chroot environment
+### ===================================================
+echo "===== Update chroot environment ====="
+echo "[INFO] Updating the runner environment in $CHROOT_ROOTDIR"
+sudo cp /dev/stdin "$CHROOT_ROOTDIR/usr/local/bin/cibot-internal-runner" <<< 'cd /.cibotruntimedir/repo;
+bash /.cibotruntimedir/repo/.cibot/build.sh;
+bash /.cibotruntimedir/repo/.cibot/output.sh > /.cibotruntimedir/artifacts_list.txt'
+
+
+
+
+
+### Register task
+### ===================================================
+### Notes:
+###     - Also use upstream env var REQID.
+### ===================================================
+echo "===== Register task ====="
+CIBOT_TASKID="$(date -Is | cut -c1-19 | tr -d :- | tr T -)--$(uuidgen v4)"
+[[ -z "$REQID" ]] &&        export REQID="$CIBOT_TASKID"
+echo "CIBOT_TASKID=$CIBOT_TASKID"
+
+
+
+
+
+
+### Allocate task directory
+### ===================================================
+### Notes:
+###     - Allocate a task runtime directory in '/home/cibot/ci_runtime/$CIBOT_TASKID'.
+###     - Mount (bind) rootfs readonly there.
+###     - The 'cibot-internal-runner' script will be invoked by chroot, which then does the building.
+### ===================================================
+echo "===== Allocate task directory ====="
+TASK_RUNTIME_ROOT="$CHROOT_ROOTDIR/home/cibot/ci_runtime/$CIBOT_TASKID"
+sudo mkdir -m755 -p "$TASK_RUNTIME_ROOT"
+sudo chown cibot:cibot "$TASK_RUNTIME_ROOT"
+
+runtime_bind_dirs_list='bin etc home lib lib64 opt root sbin usr var'
+for binddir in $runtime_bind_dirs_list; do
+    sudo mkdir -m755 -p "$TASK_RUNTIME_ROOT/$binddir"
+    sudo mount --bind -o ro "$CHROOT_ROOTDIR/$binddir" "$TASK_RUNTIME_ROOT/$binddir"
+done
+
+
+
+
+### Setup working environment
+### ===================================================
+echo "===== Setup working environment ====="
+TASK_RUNTIME_WORKDIR="$TASK_RUNTIME_ROOT/.cibotruntimedir"
+sudo mkdir -m755 -p "$TASK_RUNTIME_WORKDIR"
+sudo chown cibot:cibot "$TASK_RUNTIME_WORKDIR"
+
+### Debug log
+echo "[INFO] TASK_RUNTIME_ROOT ($TASK_RUNTIME_ROOT):"
+ls "$TASK_RUNTIME_ROOT"
+
+
+
+
+### Generate files
+### ===================================================
+echo "===== Generate files ====="
+REPO_DIR="$TASK_RUNTIME_WORKDIR/repo"
+OUTPUT_DIR="$TASK_RUNTIME_WORKDIR/output"
+
+sudo mkdir -m755 -p "$REPO_DIR"
+
+
+
+
+### Load upstream files
+### ===================================================
+echo "===== Load upstream files ====="
+ARGV_GIT_URI="$1"
+case "$ARGV_GIT_URI" in
+    "https://"* | "http://"* | "git@"*)
+        echo sudo git clone "$1" "$REPO_DIR"
+        sudo git clone "$1" "$REPO_DIR"
+        ;;
+    *)
+        sudo rsync -a "$(realpath "$ARGV_GIT_URI")/" "$REPO_DIR/"
+        ;;
+esac
+
+sudo chmod -R 777 "$REPO_DIR"
+sudo chmod -R cibot:cibot "$REPO_DIR"
+
+
+### The real building procedure
+### ===================================================
+echo "===== The real building procedure ====="
+echo "[INFO] Starting build script..."
+timer_start="$(date +%s)"
+sudo chroot "$TASK_RUNTIME_ROOT" /bin/sudo -u cibot bash /usr/local/bin/cibot-internal-runner
+timer_end="$(date +%s)"
+timer_length="$((timer_end-timer_start))"
+echo "[INFO] Build script finished running..."
+echo "[INFO] Time consumption: $timer_length seconds ($((timer_length/60)) min $((timer_length%60)) sec)"
+
+
+
+
+### Collect artifacts
+### ===================================================
+
+artifacts_list_tmpdir="/tmp/.cibot-artifacts-list--$CIBOT_TASKID.txt"
+echo "[INFO] List of artifacts:"
+IFS=$'\n'
+cd "$TASK_RUNTIME_ROOT/.cibotruntimedir/repo"
+for artifact_path in $(cat "$TASK_RUNTIME_ROOT/.cibotruntimedir/artifacts_list.txt"); do
+    echo "    *   $artifact_path"
+    artifact_relative_path="$(sed "s|$TASK_RUNTIME_ROOT/.cibotruntimedir/repo||" <<< "$artifact_path")"
+    oss_filepath="cibot-artifacts/$(date +%Y-%m-%d)/task--$CIBOT_TASKID/$artifact_relative_path"
+    mc cp "$artifact_path" "$MINIO_HOST_UPLOAD/$oss_filepath"
+    echo "$MINIO_HOST_DOWNLOAD/$oss_filepath" >> $artifacts_list_tmpdir
+done
+
+echo "==============================================="
+echo "[INFO] List of artifacts are located at:"
+cat "$artifacts_list_tmpdir"
+echo "==============================================="
+
+echo "artifacts_list_tmpdir=$artifacts_list_tmpdir"
+chmod 777 "$artifacts_list_tmpdir"
+
+
+
+
+### Destroy workspace
+### ===================================================
+echo "[INFO] Task is over. Destroying workspace."
+sudo rm -rf "$TASK_RUNTIME_WORKDIR"
+sudo umount -l "$TASK_RUNTIME_ROOT/"* 2>/dev/null
+if [[ -z "$(find "$TASK_RUNTIME_ROOT" -type f)" ]]; then
+    sudo rm -r "$TASK_RUNTIME_ROOT"
+else
+    echo "[ERROR] Failed to cycle $TASK_RUNTIME_ROOT in a clean way. You may want to check and clean manually."
+fi
