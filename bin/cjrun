@@ -47,7 +47,7 @@ sudo cp "/etc/resolv.conf" "$JAILROOT/etc/resolv.conf"
 if [[ -z "$2" ]]; then
     ### Default shell
     echo "[INFO] Getting a shell..."
-    exec sudo chroot "${JAILROOT}" /bin/sudo -u $USER $SHELL -i
+    exec sudo chroot "${JAILROOT}" /usr/bin/sudo -u $USER $SHELL -i
 else
     ### Specific program
     shift

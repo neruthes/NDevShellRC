@@ -42,7 +42,7 @@ echo "[INFO] Updating the runner environment in $CHROOT_ROOTDIR"
 sudo cp /dev/stdin "$CHROOT_ROOTDIR/usr/local/bin/cibot-internal-runner" <<< 'cd /.cibotruntimedir/repo;
 bash /.cibotruntimedir/repo/.cibot/build.sh;
 bash /.cibotruntimedir/repo/.cibot/output.sh > /.cibotruntimedir/artifacts_list.txt'
-
+sudo chmod 755 "$CHROOT_ROOTDIR/usr/local/bin/cibot-internal-runner"
 
 
 
@@ -123,7 +123,7 @@ case "$ARGV_GIT_URI" in
 esac
 
 sudo chmod -R 777 "$REPO_DIR"
-sudo chmod -R cibot:cibot "$REPO_DIR"
+sudo chown -R cibot:cibot "$REPO_DIR"
 
 
 ### The real building procedure
@@ -131,7 +131,7 @@ sudo chmod -R cibot:cibot "$REPO_DIR"
 echo "===== The real building procedure ====="
 echo "[INFO] Starting build script..."
 timer_start="$(date +%s)"
-sudo chroot "$TASK_RUNTIME_ROOT" /bin/sudo -u cibot bash /usr/local/bin/cibot-internal-runner
+sudo chroot "$TASK_RUNTIME_ROOT" /usr/bin/sudo -u cibot bash /usr/local/bin/cibot-internal-runner
 timer_end="$(date +%s)"
 timer_length="$((timer_end-timer_start))"
 echo "[INFO] Build script finished running..."
