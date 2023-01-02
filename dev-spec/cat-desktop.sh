@@ -1,5 +1,7 @@
 #!/bin/bash
 
+alias pc='proxychains -q'
+
 ### ----------------------------------------------------------------------------
 ### Environment Variables
 
