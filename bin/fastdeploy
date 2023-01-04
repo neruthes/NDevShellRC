@@ -6,7 +6,7 @@ if [[ "$HOSTNAME" != NDLT7 ]] && [[ "$FORCE" != y ]]; then
 fi
 
 DEFAULT_REMOTE_HOSTS=""
-source $HOME/.config/repo-fastdeploy.conf
+source $HOME/.config/fastdeploy.conf
 
 REMOTE_HOSTS="$DEFAULT_REMOTE_HOSTS"
 
