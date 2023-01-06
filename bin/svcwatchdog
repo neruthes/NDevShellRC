@@ -12,9 +12,9 @@ while true; do
     for i in $LIST; do
         logger "svcwatchdog: Restarting $i"
         /sbin/rc-service $i restart
-        sleep 4
+        sleep 1
     done
-    sleep 30
+    sleep 15
 done
 
 
