@@ -26,7 +26,7 @@ sudo touch "$JAILROOT/.isChroot"
 
 ### Automatic mount
 echo "[INFO] Checking mount points..."
-MOUNT_POINTS="sys proc dev run run/udev"
+MOUNT_POINTS="sys proc dev run run/udev tmp ${XDG_RUNTIME_DIR:1}"
 for mp in $MOUNT_POINTS; do
     if grep -qs "$JAILROOT/$mp" /proc/mounts; then
         ### Is already a mount point
@@ -39,6 +39,7 @@ for mp in $MOUNT_POINTS; do
 done
 
 ### Other stuff before chroot
+sudo rm "$JAILROOT/etc/resolv.conf"
 sudo cp "/etc/resolv.conf" "$JAILROOT/etc/resolv.conf"
 
 

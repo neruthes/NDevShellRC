@@ -28,6 +28,7 @@ function _uploadTarball() {
     cd $WEBDIR
     cd ..
     tar -cvf $TARBALL_PATH --exclude 'dist.tar' githubdist
+    cfoss $TARBALL_PATH
     cd $GDIR
     shareDirToNasPublic
     cd "$MAINPWD"
