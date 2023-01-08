@@ -4,7 +4,7 @@
 #
 
 USBDIR="$PWD"
-MEDIADIR="$USBDIR/PS5/CREATE"
+MEDIADIR="/mnt/PS5/PS5/CREATE"
 
 if [[ "$USER" == "neruthes" ]]; then
     HOMEPICDIR="$HOME/PIC"

@@ -38,7 +38,7 @@ else
     PS1PREFIX_CHROOT=""
 fi
 
-export PS1="\n${PS1PREFIX_CHROOT}\e[38;5;118m\u\e[0m \h`ps1devnickname` \`date +%T\` \e[38;5;81m\W\e[0m\`ps1gitbr\`\n\`ps1getsymbol\` "'$(termtitle "$HOSTNAME $PWD")'
+export PS1='$(termtitle "$HOSTNAME $PWD")'"\n${PS1PREFIX_CHROOT}\e[38;5;118m\u\e[0m \h`ps1devnickname` \`date +%T\` \e[38;5;81m\W\e[0m\`ps1gitbr\`\n\`ps1getsymbol\` "
 
 
 function termtitle() {
