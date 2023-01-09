@@ -1,5 +1,7 @@
 #!/bin/bash
 
+WRITE_OSSLIST=y
+
 OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
 touch $HOME/.config/cfoss.conf
