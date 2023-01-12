@@ -12,7 +12,7 @@ FINAL_HTTP_URL="${OSS_URL_PREFIX}/${OUTPUT_FN}"
 
 echo "FIANL_OBJ_KEY=$FIANL_OBJ_KEY"
 echo "FINAL_HTTP_URL=$FINAL_HTTP_URL"
-if [[ -e $PWD/.osslist ]] && [[ $TMP != y ]] && [[ $WRITE_OSSLIST == y ]]; then
+if [[ -e $PWD/.osslist ]] && [[ $TMP != y ]] && [[ $WRITE_OSSLIST == y ]] && [[ -e "$1" ]]; then
     relative_path="$(sed "s|$PWD/||" <<< "$(realpath "$1")" )"
     echo "$relative_path $FINAL_HTTP_URL" >> $PWD/.osslist
     sort -u .osslist -o .osslist
