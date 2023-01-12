@@ -14,7 +14,7 @@ case $(uname -m) in
         ;;
 esac
 
-GOSTVER="2.11.2"
+GOSTVER="2.11.4"
 BINFN="gost-linux-${ARCH}-${GOSTVER}"
 GZFN="${BINFN}.gz"
 GZURL="https://github.com/ginuerzh/gost/releases/download/v${GOSTVER}/$GZFN"
