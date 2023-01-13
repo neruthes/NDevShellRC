@@ -29,3 +29,16 @@ for FN in $(find -name '*.png') $(find -name '*.jpg'); do
 done
 
 echo "[INFO] Generated thumbnail cache for $COUNT images."
+
+for tbdir in $(find $PWD -type d -name '.tbcache'); do
+    # echo "  tbdir = $tbdir"
+    cd "$tbdir"
+    for tbpath in $(ls); do
+        rawimgpath="../$tbpath"
+        if [[ ! -e $rawimgpath ]]; then
+            echo "[WARNING] Raw file '$rawimgpath' no longer exists. Deleting thumbnail '$tbpath'."
+            rm -v "$tbpath"
+        fi
+    done
+done
+
