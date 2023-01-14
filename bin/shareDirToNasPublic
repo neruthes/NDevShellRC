@@ -35,6 +35,9 @@ fi
 if [[ " $@ " == *' -a '* ]] || [[ " $@ " == *' --all '* ]]; then
     f_SENDALL=y
 fi
+if [[ " $@ " == *' -A '* ]] || [[ " $@ " == *' --ALL '* ]]; then
+    f_SENDALL_with_hidden=y
+fi
 if [[ " $@ " == *' -v '* ]] || [[ " $@ " == *' --verbose '* ]]; then
     RSYNC_ARGS="$RSYNC_ARGS -v"
 fi
@@ -67,6 +70,13 @@ fi
 if [[ $f_SENDALL == y ]]; then
     RSYNC_INCLUDE_LIST=""
 fi
+if [[ $f_SENDALL_with_hidden == y ]]; then
+    RSYNC_INCLUDE_LIST="+ /*
++ /.*"
+fi
+if [[ $f_SENDALL_with_hidden != y ]]; then
+    RSYNC_ARGS="$RSYNC_ARGS --exclude '.*'"
+fi
 
 RSYNC_DEST="NDLT6G:/mnt/NEPd3_Caster/LS/NAS_public/$RDIRNAME/"
 
@@ -79,8 +89,9 @@ if [[ $f_NOSYNC != y ]]; then # Should run rsync
             "$RSYNC_DEST"
         rm -rf "$EMPTYDIR"
     fi
-    rsync $RSYNC_ARGS "$INDIRPATH/" "$RSYNC_DEST" --exclude '.*' \
+    rsync $RSYNC_ARGS "$INDIRPATH/" "$RSYNC_DEST" \
         --include-from=- <<< "$RSYNC_INCLUDE_LIST"
+    # echo "$RSYNC_INCLUDE_LIST"
 fi
 
 

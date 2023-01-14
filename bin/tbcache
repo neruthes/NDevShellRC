@@ -14,7 +14,7 @@ function _processfile() {
     if [[ ! -e "$TBCACHEPATH" ]]; then
         # echo "     no thunbnail found"
         echo "[INFO] Generating $TBCACHEPATH"
-        convert "$FILEPATH" -resize x400 -quality 70 "$TBCACHEPATH"
+        convert "$FILEPATH" -resize x700 -quality 70 "$TBCACHEPATH"
         COUNT=$((COUNT+1))
     fi
 }

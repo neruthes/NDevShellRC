@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WRITE_OSSLIST=n
+# WRITE_OSSLIST=n
 
 OSS_URL_PREFIX="https://minio-zt.neruthes.xyz/oss"
 
