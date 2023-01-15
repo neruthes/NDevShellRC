@@ -1,0 +1,148 @@
+#!/bin/bash
+
+APPVER="v0.1.0"
+DOH_SERVERS="1dot1dot1dot1.cloudflare-dns.com dns.nextdns.io 1.1.1.1"
+
+#
+# dnhhp
+#
+# Copyright (c) 2023 Neruthes.
+# This program is a free software, published with GNU GPL 2.0.
+#
+
+VERB="$1"
+
+
+function get_raw_all_line_v1() {
+    dig_domain="$1"
+    dig "$dig_domain" txt | grep -v '^;' | cut -d'"' -f2 | grep "^dnhhp "
+}
+function get_raw_line_v1() {
+    dig_domain="$1"
+    header_key="$2"
+    raw_all_qualified_lines="$(get_raw_all_line_v1 "$dig_domain")"
+    grep "^dnhhp $header_key " <<< "$raw_all_qualified_lines"
+    grep "^dnhhp dnhhp-urlencoded-$header_key " <<< "$raw_all_qualified_lines"
+    # echo "======================="
+    # echo "$raw_all_qualified_lines"
+    # echo "======================="
+}
+function lookup_domain_with_key_doh_v1() {
+    dig_domain="$1"
+    header_key="$2"
+    for server in $DOH_SERVERS; do
+        json_response="$(curl -H 'accept: application/dns-json' "https://$server/dns-query?name=$dig_domain&type=txt" 2>/dev/null || break)"
+        CACHED_RAW_LINES="$(jq -r '.Answer[].data' <<< "$json_response" | sed 's|^"||' | sed 's|"$||' | grep '^dnhhp ')"
+        PARSED_LINES="$(parse_cached_lines_for_results "$CACHED_RAW_LINES")"
+        if [[ "$FIRST_ONLY" == y ]]; then
+            head -n1 <<< "$PARSED_LINES"
+        else
+            echo "$PARSED_LINES"
+        fi
+        exit 0
+    done
+}
+function lookup_domain_with_key_v1() {
+    dig_domain="$1"
+    header_key="$2"
+    CACHED_RAW_LINES="$(get_raw_line_v1 "$dig_domain" "$header_key")"
+    PARSED_LINES="$(parse_cached_lines_for_results "$CACHED_RAW_LINES")"
+    echo "  debug:  FIRST_ONLY = $FIRST_ONLY" >&2
+    if [[ "$FIRST_ONLY" == y ]]; then
+        head -n1 <<< "$PARSED_LINES"
+    else
+        echo "$PARSED_LINES"
+    fi
+    exit 0
+}
+function parse_cached_lines_for_results() {
+    CACHED_RAW_LINES="$1"
+    # echo "  debug:  CACHED_RAW_LINES = $CACHED_RAW_LINES" >&2
+    regular_results="$(grep "^dnhhp $header_key " <<< "$CACHED_RAW_LINES" | cut -d' ' -f3-)"
+    urlencoded_results="$(grep "^dnhhp dnhhp-urlencoded-$header_key " <<< "$CACHED_RAW_LINES" | cut -d' ' -f3-)"
+    # echo "  debug:  urlencoded_results = $urlencoded_results" >&2
+    if [[ ! -z "$(command -v node)" ]] && [[ ! -z "$urlencoded_results" ]]; then
+        ### Nodejs is available and detected appropriate records with prefix dnhhp-urlencoded
+        node -e "console.log(decodeURIComponent(process.argv[1]));"  "$urlencoded_results"
+        ### TODO: Test with multiple values under single key
+    else
+        echo "$regular_results"
+    fi
+}
+
+function query_uri_v1() {
+    input_uri="$1"
+    dig_domain="$(cut -d/ -f3 <<< "$input_uri")"
+    header_key="$(cut -d/ -f4 <<< "$input_uri")"
+
+    if [[ "$header_key" == *"?"* ]]; then
+        ### We have got some params
+        header_key="$(cut -d/ -f4 <<< "$input_uri" | cut -d'?' -f1)"
+        params_list="$(cut -d/ -f4 <<< "$input_uri" | cut -d'?' -f2)"
+    fi
+    echo "  debug:  params_list = $params_list" >&2
+
+    if grep -Eqs '&?first[^\w]?' <<< "$params_list"; then
+        export FIRST_ONLY=y
+    fi
+    echo "  debug:  FIRST_ONLY = $FIRST_ONLY" >&2
+
+    if [[ -z "$params_list" ]] || [[ ! -z "$(command -v jq)" ]]; then
+        ### Good old simple query
+        ### Fallback to this mode if jq is not installed
+        lookup_domain_with_key_v1 "$dig_domain" "$header_key"
+        exit 0
+    fi
+
+    if [[ "$params_list" == "doh" ]]; then
+        ### DNS over HTTPS
+        lookup_domain_with_key_doh_v1 "$dig_domain" "$header_key"
+        exit 0
+    fi
+
+    if grep -Eqs '&?doh=?' <<< "$params_list"; then
+        if grep -Eqs '&?doh=.+?' <<< "$params_list"; then
+            # echo "  debug:  DOH servers are given" >&2
+            export DOH_SERVERS="$(grep -oE '&?doh=[^&]+?' <<< "$params_list" | tr -d '&' | sed 's|doh=||' | sed 's|,| |g')"
+        fi
+        lookup_domain_with_key_doh_v1 "$dig_domain" "$header_key"
+    fi
+    
+}
+
+case ${VERB,,} in
+    all)
+        get_raw_all_line_v1 "$2"
+        ;;
+    raw)
+        get_raw_line_v1 "$2" "$3"
+        ;;
+    lookup)
+        lookup_domain_with_key_v1 "$2" "$3"
+        ;;
+    uri)
+        query_uri_v1 "$2"
+        ;;
+    -v | --version | v | version)
+        echo -e "dnhhp ($APPVER)"
+        echo -e "Copyright (c) 2023 Neruthes."
+        ;;
+    -h | --help | h | help | '' | *)
+        echo -e "dnhhp ($APPVER)"
+        echo -e "Copyright (c) 2023 Neruthes."
+        echo -e "This program is a free software, published with GNU GPL 2.0.\n\n"
+        echo -e "USAGE:\n"
+        echo -e "   $ dnhhp all example.com"
+        echo -e "       Get the raw record lines of domain name 'example.com'.\n"
+        echo -e "   $ dnhhp raw example.com https-ports"
+        echo -e "       Get the raw record lines of domain name 'example.com' with key 'https-ports'."
+        echo -e "       Can be multiple values, delimited by newline.\n"
+        echo -e "   $ dnhhp lookup example.com https-ports"
+        echo -e "       Get the values of domain name 'example.com' with key 'https-ports'."
+        echo -e "       Can be multiple values, delimited by newline.\n"
+        echo -e "   $ dnhhp uri dnhhp://example.com/https-ports"
+        echo -e "       Get the values of domain name 'example.com' with key 'https-ports'."
+        echo -e "       Can be multiple values, delimited by newline.\n"
+        ;;
+esac
+

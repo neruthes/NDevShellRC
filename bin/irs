@@ -1,4 +1,4 @@
 #!/bin/bash
 
-HTTP_PROXY=socks5h://10.0.233.3:7891
-ir $@
+HTTP_PROXY=socks5h://10.0.233.20:7891
+ir "$@"

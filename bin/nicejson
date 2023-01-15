@@ -1,0 +1,37 @@
+#!/usr/bin/node
+
+const fs = require('fs');
+
+
+const readFromStdin = function () {
+    let buffer = '';
+    process.stdin.resume();
+    process.stdin.on('data', (d) => buffer = buffer.concat(d.toString()));
+    process.stdin.on('end', function () {
+        const inputString = buffer.toString('utf8');
+        try {
+            console.log(JSON.stringify(JSON.parse(inputString), '\t', 4));
+        } catch (err) {
+            console.log(inputString);
+        };
+    });
+};
+
+const readFromFs = function () {
+    const filepath = process.argv[2];
+    const inputString = fs.readFileSync(filepath).toString();
+
+    setTimeout(function () {
+        try {
+            console.log(JSON.stringify(JSON.parse(inputString), '\t', 4));
+        } catch (err) {
+            console.log(inputString);
+        };
+    }, 10);
+};
+
+if (process.argv[2]) {
+    readFromFs();
+} else {
+    readFromStdin();
+};
