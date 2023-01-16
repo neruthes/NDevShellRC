@@ -16,8 +16,8 @@ Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.
 
 USAGE:
 
-    $ tgbot-msg  {confdir}  {chat_id}  <  path_to_msg.md
-    $ tgbot-msg  {confdir}  {chat_id}  <<<  'Hello world'
+    $ tgbot-msg  {confdir}  {chat_id}  /path/to/msg
+    $ tgbot-msg  {confdir}  {chat_id}  <(echo 'Hello world')
 
     {confdir}:  A directory which contains 'manifest.txt',
                 'secrets.txt', and 'secrets-local.txt'.
@@ -39,8 +39,8 @@ CONFIG FILES:
         token=114514:HelloWorld-1145141919810
 
     EXTRA NOTES
-        These key-value files are parsed as '{key}={value}' in each like,
-        so avoid whitespace and quotemark characters.
+        These key-value files are parsed as '{key}={value}' in each line,
+        so avoid whitespace and quotemark characters - they will be read literally.
 
 
 

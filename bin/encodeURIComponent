@@ -1,0 +1,14 @@
+#!/usr/bin/node
+
+if (process.argv[2]) {
+    // Encode the text from argument
+    console.log(encodeURIComponent(process.argv[2].trim()));
+} else {
+    // Encode the text from stdin
+    let buffer = '';
+    process.stdin.resume();
+    process.stdin.on('data', (d) => buffer = buffer.concat(d.toString()));
+    process.stdin.on('end', function () {
+        console.log(encodeURIComponent(buffer.trim()));
+    });
+}

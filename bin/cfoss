@@ -2,10 +2,13 @@
 
 [[ -z $WRITE_OSSLIST ]] && WRITE_OSSLIST=y
 
-OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
-touch $HOME/.config/cfoss.conf
-source $HOME/.config/cfoss.conf
+OSS_URL_PREFIX="https://pub-714f8d634e8f451d9f2fe91a4debfa23.r2.dev"
+
+touch "$HOME/.config/cfoss.conf"
+source "$HOME/.config/cfoss.conf"
+
+[[ "$AltDomain" == y ]] && OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
 #######################################################################################
 ### What to expect from config:
