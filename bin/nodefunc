@@ -1,0 +1,143 @@
+#!/usr/bin/node
+
+// Perform arbitrary functions in a chain onto the string fed from stdin
+
+// nodefunc  '.split(" / ")'  '.slice(2,3)'  '.index(0)'  'encodeURIComponent'   <<<  '0 / hello world / hallo welt / 333 / 4444'
+
+const functionsList = process.argv.slice(2);
+
+if (process.argv.length < 2) {
+    console.error('Not enough arguments');
+    process.exit(0)
+};
+
+// Add the index method to select element from array
+Array.prototype.index = function (index) {
+    return this[index];
+};
+
+
+const parseArgsString = function (argsStr) {
+    let tmpBufferStr = '';
+    const componentArr = [];
+    const state = {
+        bufferMode: 'std',
+        sectionStartingAt: 0,
+        objLevel: 0,
+        arrLevel: 0,
+        backslash: false,
+        strquoSingle: false,
+        strquoDouble: false
+    };
+    const parseTmpBufferStr = function (mode, tmpBufferStr) {
+        let result;
+        if (mode === 'std') { result = JSON.parse(tmpBufferStr); };
+        if (mode === 'obj') { result = eval(`(${tmpBufferStr})`); };
+        state.bufferMode = 'std';
+        return result;
+    };
+    argsStr.trim().split('').forEach(function (char, i, arr) {
+        // console.log(`**  state.bufferMode:  ${state.bufferMode}`);
+        // console.log(`**  Current buffer:  ${tmpBufferStr}`);
+        // console.log(`**  Read char:  ${char}`);
+        // Handle string
+        if (!state.backslash) {
+            if (char === '"' && !state.strquoSingle) {
+                if (state.strquoDouble) { state.strquoDouble = false; tmpBufferStr += char; return 0; } // Close a quote (")
+                if (!state.strquoDouble) { state.strquoDouble = true; tmpBufferStr += char; return 0; } // Start a quote (")
+            };
+            if (char === "'" && !state.strquoDouble) {
+                if (state.strquoSingle) { state.strquoSingle = false; tmpBufferStr += char; return 0; } // Close a quote (')
+                if (!state.strquoSingle) { state.strquoSingle = true; tmpBufferStr += char; return 0; } // Start a quote (')
+            };
+        };
+
+        // In a string!
+        if (state.strquoDouble || state.strquoSingle) {
+            // Handle backslash escaping
+            if (state.backslash) { state.backslash = false; tmpBufferStr += char; return 0; }; // Turn off backslash escaping mode
+            if (char === '\\') { state.backslash = true; tmpBufferStr += char; return 0; }; // Turn on backslash escaping mode
+            tmpBufferStr += char; return 0;
+        };
+
+        // Not in a string!
+        if (!state.strquoDouble && !state.strquoSingle) {
+            // Handle whitespace
+            if (char === ' ') {
+                return 0;
+            };
+            // Handle array
+            if (char === '[') {
+                state.arrLevel += 1;
+                tmpBufferStr += char; return 0;
+            };
+            if (char === ']') {
+                state.arrLevel += -1;
+                tmpBufferStr += char; return 0;
+            };
+            // Handle object literal
+            if (char === '{') {
+                state.objLevel += 1;
+                tmpBufferStr += char; return 0;
+            };
+            if (char === '}') {
+                state.objLevel += -1;
+                if (state.objLevel === 0) {
+                    state.bufferMode = 'obj';
+                };
+                tmpBufferStr += char; return 0;
+            };
+            // End of component
+            if (char === ',' && state.arrLevel === 0 && state.objLevel === 0) {
+                componentArr.push(parseTmpBufferStr(state.bufferMode, tmpBufferStr));
+                tmpBufferStr = '';
+                return 0;
+            };
+            // Handle number
+            if (char.match(/[\d\._]/)) {
+                tmpBufferStr += char; return 0;
+            };
+            // Other cases... like what?
+            tmpBufferStr += char; return 0;
+        };
+    });
+    if (tmpBufferStr.length > 0) {
+        componentArr.push(parseTmpBufferStr(state.bufferMode, tmpBufferStr));
+        tmpBufferStr = '';
+    };
+    return componentArr;
+};
+
+
+let buffer = '';
+process.stdin.resume();
+process.stdin.on('data', (d) => buffer = buffer.concat(d.toString()));
+process.stdin.on('end', function () {
+    buffer = buffer.trim();
+    functionsList.forEach(function (rawReq, i) {
+        // console.error(`Step ${i}:   { ${rawReq} }`);
+
+        if (rawReq[0] === '.') {
+            // Invoke a method or get a property...
+            const matchForMethodCall = rawReq.match(/^\.[\w_]+?\((.+)\)/);
+            if (matchForMethodCall) {
+                // Invoke a method
+                const methodName = rawReq.slice(1).split('(')[0];
+                const argsStr = matchForMethodCall[1];
+                const argsArr = parseArgsString(argsStr);
+                const prototype = buffer.constructor.prototype;
+                buffer = prototype[methodName].call(buffer, ...argsArr);
+            } else {
+                // Read a property
+                const propName = rawReq.slice(1);
+                buffer = buffer[propName];
+            };
+        } else {
+            // Pass into a function
+            buffer = global[rawReq](buffer);
+        };
+    });
+    console.log(buffer);
+});
+
+
