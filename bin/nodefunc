@@ -2,7 +2,9 @@
 
 // Perform arbitrary functions in a chain onto the string fed from stdin
 
-// nodefunc  '.split(" / ")'  '.slice(2,3)'  '.index(0)'  'encodeURIComponent'   <<<  '0 / hello world / hallo welt / 333 / 4444'
+// nodefunc  '.split(" / ")'  '.slice(2,3)'  '.index(0)'  'encodeURIComponent' <<< '0 / hello world / hallo welt / 333 / 4444'
+// nodefunc  'parseInt' 'Math.floor' <<< 114514.1919810
+
 
 const functionsList = process.argv.slice(2);
 
@@ -40,6 +42,7 @@ const parseArgsString = function (argsStr) {
         // console.log(`**  state.bufferMode:  ${state.bufferMode}`);
         // console.log(`**  Current buffer:  ${tmpBufferStr}`);
         // console.log(`**  Read char:  ${char}`);
+
         // Handle string
         if (!state.backslash) {
             if (char === '"' && !state.strquoSingle) {
@@ -115,7 +118,7 @@ process.stdin.on('data', (d) => buffer = buffer.concat(d.toString()));
 process.stdin.on('end', function () {
     buffer = buffer.trim();
     functionsList.forEach(function (rawReq, i) {
-        // console.error(`Step ${i}:   { ${rawReq} }`);
+        // console.error(`Step ${i}:   { ${rawReq} }`); // debug
 
         if (rawReq[0] === '.') {
             // Invoke a method or get a property...
@@ -134,7 +137,17 @@ process.stdin.on('end', function () {
             };
         } else {
             // Pass into a function
-            buffer = global[rawReq](buffer);
+            if (rawReq.indexOf('.') === -1) {
+                // Simple mode
+                buffer = global[rawReq](buffer);
+            } else {
+                // Do the nest magic
+                funcNestArr = rawReq.split('.');
+                let funcNestPtr = global[funcNestArr[0]];
+                for (let depth = 1; depth < funcNestArr.length; depth++) {
+                    funcNestPtr = funcNestPtr[funcNestArr[depth]];
+                };
+            };
         };
     });
     console.log(buffer);
