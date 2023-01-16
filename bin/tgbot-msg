@@ -1,0 +1,96 @@
+#!/bin/bash
+
+APPVER="v0.1.0"
+
+
+confdir="$1"
+sendToUser="$2"
+msgTextFn="$3"
+
+[[ -z "$MARKUP" ]] && MARKUP=Markdown
+
+
+function show_help() {
+echo "tgbot-msg ($APPVER)
+Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.
+
+USAGE:
+
+    $ tgbot-msg  {confdir}  {chat_id}  <  path_to_msg.md
+    $ tgbot-msg  {confdir}  {chat_id}  <<<  'Hello world'
+
+    {confdir}:  A directory which contains 'manifest.txt',
+                'secrets.txt', and 'secrets-local.txt'.
+    {chat_id}:  Find the value by talking to <https://t.me/RawDataBot>.
+
+
+
+
+CONFIG FILES:
+
+    manifest.txt
+        Create a bot with @BotFather and write info here just like:
+
+        username=clinotifbot
+
+    secrets.txt, secrets-local.txt
+        Put your token in either file like:
+
+        token=114514:HelloWorld-1145141919810
+
+    EXTRA NOTES
+        These key-value files are parsed as '{key}={value}' in each like,
+        so avoid whitespace and quotemark characters.
+
+
+
+ENVIRONMENT VARIABLES:
+
+    MARKUP      Markdown|HTML|MarkdownV2
+        Default: 'Markdown'
+        See the parse_mode parameter in API documentation.
+        
+"
+}
+
+if [[ -z "$1" ]]; then
+    show_help >&2
+fi
+
+
+
+function getVal() {
+    fn="$1"
+    key="$2"
+    if [[ $fn == . ]]; then
+        fn=/dev/stdin
+    fi
+    grep "$key" "$fn" | cut -d= -f2-
+}
+
+manifest="$confdir/manifest.txt"
+
+botName="$(getVal "$manifest" name)"
+botUsername="$(getVal "$manifest" username)"
+botToken="$(cat "$confdir/"secrets{,-local}.txt | getVal . token)"
+
+tg_apiurl_base="https://api.telegram.org/bot$botToken"
+
+
+upload_text="$(
+    node -e "console.log(encodeURIComponent(require('fs').readFileSync(process.argv[1]).toString()))" "$msgTextFn"
+)"
+
+### Debug here
+# echo "============================================"
+# echo "upload_text:"
+# echo "$upload_text"
+# echo "============================================"
+
+
+### Send message via HTTPS API
+curl \
+    -X POST \
+    -H "content-type: application/x-www-form-urlencoded" \
+    -d "text=$upload_text" \
+    "$tg_apiurl_base/sendMessage?chat_id=$2&parse_mode=$MARKUP"

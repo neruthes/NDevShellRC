@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WRITE_OSSLIST=y
+[[ -z $WRITE_OSSLIST ]] && WRITE_OSSLIST=y
 
 OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
