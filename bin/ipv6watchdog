@@ -1,13 +1,22 @@
 #!/bin/bash
 
+UPTIME="$(cut -d. -f1 /proc/uptime)"
+
+if [[ $UPTIME -lt 300 ]]; then
+    echo "ipv6watchdog: System uptime is only ${UPTIME}s. Sleeping for $((300-UPTIME))s."
+    sleep $((300-UPTIME))
+fi
+
 while true; do
     if [[ -z "$(ip -6 route get 240e::1)" ]]; then
-        echo "Cannot find valid global IPv6 address. Restarting dhcpcd."
+        echo "ipv6watchdog: Cannot find valid global IPv6 address. Restarting dhcpcd."
         sudo rc-service dhcpcd restart
         cfddnsd-commit
-        sleep 10
+        sleep 60
     else
-        sleep 5
+        echo "ipv6watchdog: IPv6 addresses are all right."
+        ip -6 route get 240e::1
+        sleep 60
     fi
 done
 

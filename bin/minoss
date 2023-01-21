@@ -2,7 +2,7 @@
 
 [[ -z $WRITE_OSSLIST ]] && WRITE_OSSLIST=n
 
-OSS_URL_PREFIX="https://minio-zt.neruthes.xyz/oss"
+OSS_URL_PREFIX="https://minio.neruthes.xyz/oss"
 
 source $(dirname $0)/libossupload-core.lib.sh
 
