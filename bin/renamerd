@@ -17,7 +17,7 @@ while true; do
         rn="$(realpath $fn)"
         rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
         dest_path="$destdir/$(date +%F | tr -d '-').$rn_hash.$(basename "$rn")"
-        mv -f "$rn" "$dest_path"
+        mv -vf "$rn" "$dest_path"
         chmod 664 "$dest_path"
     done
     sleep 5
