@@ -12,7 +12,8 @@ fi
 safe_seed="$(cat /dev/stdin /etc/fstab <<< "$USER:$HOSTNAME:$PATH:$MANPATH" | sha256sum | cut -c1-30)"
 
 while true; do
-    for fn in "$(find "$srcdir" -type f)"; do
+    IFS=$'\n'
+    for fn in $(find "$srcdir" -type f); do
         rn="$(realpath $fn)"
         rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
         dest_path="$destdir/$(date +%F | tr -d '-').$rn_hash.$(basename "$rn")"
