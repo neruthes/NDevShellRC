@@ -24,8 +24,8 @@ safe_seed="$(cat /dev/stdin /etc/fstab <<< "$USER:$HOSTNAME:$PATH:$MANPATH" | sh
 function default_namer() {
     rn="$1"
     rn_base="$(basename "$rn")"
-    rn_hash1="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48)"
-    rn_hash2="$(sha256sum "$rn" | cut -c1-48)"
+    rn_hash1="$(sha256sum <<< "$safe_seed:$rn" | cut -d' ' -f1)"
+    rn_hash2="$(sha256sum "$rn" | cut -d' ' -f1)"
     rn_hash="$(sha256sum <<< "$rn_hash1:$rn_hash2" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
     dest_fn="$(date +%F | tr -d '-').$rn_hash.$rn_base"
     echo "$dest_fn"
