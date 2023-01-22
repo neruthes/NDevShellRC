@@ -22,8 +22,11 @@ safe_seed="$(cat /dev/stdin /etc/fstab <<< "$USER:$HOSTNAME:$PATH:$MANPATH" | sh
 
 
 function default_namer() {
-    rn_base="$1"
-    rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
+    rn="$1"
+    rn_base="$(basename "$rn")"
+    rn_hash1="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48)"
+    rn_hash2="$(sha256sum "$rn" | cut -c1-48)"
+    rn_hash="$(sha256sum <<< "$rn_hash1:$rn_hash2" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
     dest_fn="$(date +%F | tr -d '-').$rn_hash.$rn_base"
     echo "$dest_fn"
 }
@@ -38,7 +41,7 @@ function process_file() {
         ### The file is still too new. Is the uploading really finished?
         return 0
     fi
-    dest_fn="$($NAMER_PROG "$rn_base")"
+    dest_fn="$($NAMER_PROG "$rn")"
     dest_path="$destdir/$dest_fn"
     mv -vf "$rn" "$dest_path"
     chmod 664 "$dest_path"
