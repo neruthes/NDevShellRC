@@ -1,11 +1,19 @@
 #!/bin/bash
 
+#
+# renamerd
+#
+# Copyright (c) 2023 Neruthes.
+# This program is a free software, published with GNU GPL 2.0.
+#
+
+
 srcdir="$1"
 destdir="$2"
 
 if [[ -z $2 ]]; then
-    echo "Usage:  $0  srcdir  destdir"
-    echo "  Move files from srcdir to destdir"
+    echo "Usage:  renamerd  srcdir  destdir"
+    echo "  A daemon who moves files from srcdir to destdir."
     exit 1
 fi
 
@@ -24,7 +32,8 @@ function process_file() {
         return 0
     fi
     rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
-    dest_path="$destdir/$(date +%F | tr -d '-').$rn_hash.$rn_base"
+    dest_fn="$(date +%F | tr -d '-').$rn_hash.$rn_base"
+    dest_path="$destdir/$dest_fn"
     mv -vf "$rn" "$dest_path"
     chmod 664 "$dest_path"
 }
