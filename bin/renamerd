@@ -10,6 +10,7 @@
 
 srcdir="$1"
 destdir="$2"
+[[ -z "$NAMER_PROG" ]] && export NAMER_PROG=default_namer
 
 if [[ -z $2 ]]; then
     echo "Usage:  renamerd  srcdir  destdir"
@@ -20,6 +21,12 @@ fi
 safe_seed="$(cat /dev/stdin /etc/fstab <<< "$USER:$HOSTNAME:$PATH:$MANPATH" | sha256sum | cut -c1-30)"
 
 
+function default_namer() {
+    rn_base="$1"
+    rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
+    dest_fn="$(date +%F | tr -d '-').$rn_hash.$rn_base"
+    echo "$dest_fn"
+}
 
 function process_file() {
     rn="$(realpath $fn)"
@@ -31,8 +38,7 @@ function process_file() {
         ### The file is still too new. Is the uploading really finished?
         return 0
     fi
-    rn_hash="$(sha256sum <<< "$safe_seed:$rn" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
-    dest_fn="$(date +%F | tr -d '-').$rn_hash.$rn_base"
+    dest_fn="$($NAMER_PROG "$rn_base")"
     dest_path="$destdir/$dest_fn"
     mv -vf "$rn" "$dest_path"
     chmod 664 "$dest_path"
