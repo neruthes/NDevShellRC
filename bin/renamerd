@@ -26,8 +26,7 @@ function default_namer() {
     rn_base="$(basename "$rn")"
     file_hash="$(sha256sum "$rn" | cut -d' ' -f1)"
     safe_hash="$(sha256sum <<< "$file_hash:$SAFE_SEED" | cut -c1-48 | xxd -r -p - | base64 | tr '+/=' '0')"
-    dest_fn="$(date +%F | tr -d '-').$safe_hash.$rn_base"
-    echo "$dest_fn"
+    echo "$(date +%F | tr -d '-').$safe_hash.$rn_base"
 }
 
 function process_file() {
