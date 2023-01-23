@@ -1,0 +1,34 @@
+#!/bin/bash
+
+[[ -z "$limit" ]] && export limit=8
+if [[ -z "$srcpid" ]]; then
+    export srcpid="$(ps -p $$ -o ppid=)"
+    export tcf="/tmp/.paral_tcf.$USER.$srcpid"
+fi
+
+[[ -z "$stdoutfdpath" ]] && export stdoutfdpath=/proc/$srcpid/fd/1
+[[ -z "$stderrfdpath" ]] && export stderrfdpath=/proc/$srcpid/fd/2
+
+if [[ ! -e "$tcf" ]] || [[ -z "$(cat "$tcf")" ]]; then
+    echo 0 > "$tcf"
+fi
+
+function dojob() {
+    "$@" >>$stdoutfdpath 2>>$stderrfdpath
+    heap="$(cat "$tcf")"
+    echo $((heap-1)) > "$tcf"
+    [[ ! -e "/proc/$srcpid" ]] && rm "$tcf"
+}
+
+heap="$(cat "$tcf")"
+if [[ $heap -lt $limit ]]; then
+    echo "**  ($heap/$limit) Starting job"
+    echo $((heap+1)) > "$tcf"
+    dojob "$@" &
+else
+    echo "**  ($heap/$limit) Waitting for another chance..."
+    sleep 1
+    exec bash "$0" "$@"
+fi
+ 
+
