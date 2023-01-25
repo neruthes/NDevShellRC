@@ -1,0 +1,72 @@
+#!/bin/bash
+
+APPVER=0.1.0
+
+# mdtoslides (version 0.1.0)
+# Copyright (c) 2023 Neruthes.
+#
+# Published under GNU GPLv2 license. The full text may be found at
+# <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
+#
+
+if [[ -z "$1" ]]; then
+    echo -e "mdtoslides (v$APPVER)\n"
+    echo -e "USAGE:\n"
+    echo -e "   $ mdtoslides /path/to/document.md"
+    echo -e "       Convert the Markdown document to PDF at /path/to/document.pdf"
+fi
+
+
+mdpath="$(realpath "$1")"
+
+function getCommonHeader() {
+    part=$1
+    cache_path="/tmp/.cached.${USER}~mdtoslides.$part.tex-4512b68f0a65"
+    case $part in
+        h)
+            src_url="https://pub-714f8d634e8f451d9f2fe91a4debfa23.r2.dev/keep/ntexlibs/mdtoslides.h.tex--1e0a1614dd9eacef3dfda531dd6cb8ca.tex"
+            ;;
+        b)
+            src_url="https://pub-714f8d634e8f451d9f2fe91a4debfa23.r2.dev/keep/ntexlibs/mdtoslides.b.tex--a5c5155e90267e670ac09991c63b3558.tex"
+            ;;
+    esac
+    if [[ -e "$HOME/DEV/ntexlibs/pub/mdtoslides.$part.tex" ]]; then
+        echo "(DEVELOPMENT MODE)">&2
+        echo "$HOME/DEV/ntexlibs/pub/mdtoslides.$part.tex"
+        return 0
+    fi
+    function downloadNewCache() {
+        echo "[INFO] Downloading new cache file from $src_url">&2
+        curl "$src_url" > "$cache_path"
+    }
+    if [[ ! -e "$cache_path" ]]; then
+        downloadNewCache
+    else
+        d_now="$(date +%s)"
+        d_cache="$(date -r "$cache_path" +%s)"
+        if [[ $((d_now-d_cache)) -gt $((3600*24)) ]]; then
+            downloadNewCache
+        fi
+    fi
+    echo "$cache_path"
+}
+
+function do_convert() {
+    fmt=$1
+    output_path="$(sed "s|md$|$fmt|" <<< "$mdpath")"
+    echo "Output: $output_path"
+    pandoc \
+        -i <(cat "$mdpath" | sed 's/^-----*$/\\clearpage/g') \
+        -f markdown \
+        -o "$output_path" \
+        --pdf-engine=xelatex \
+        --shift-heading-level-by=-1 \
+        -H "$(getCommonHeader h)" \
+        -B <(echo '\center\sffamily') \
+        -V 'geometry=papersize={160mm,90mm},margin=9mm' \
+        -V 'fontsize=12pt'
+}
+
+do_convert tex
+do_convert pdf
+
