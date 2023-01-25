@@ -10,19 +10,19 @@ function ps1gitbr() {
     fi
 }
 
-function ps1devnickname() {
-HOSTNAME_MAP="h=NDLT6|a=Betelgeuse
-h=NDLT6G|a=Betelgeuse-Gentoo
-h=NDLT7|a=Sirius
-h=NDLT7W|a=Sirius-WSL
-h=Z420|a=Catten"
-    MATCHED="$(echo "$HOSTNAME_MAP" | grep "h=$HOSTNAME" | head -n1)"
-    if [[ ! -z "$MATCHED" ]]; then
-        printf -- " ($(echo "$MATCHED" | cut -d'|' -f2 | cut -b3-))"
-    else
-        printf ""
-    fi
-}
+HOSTNAME_MAP="NDLT6|Betelgeuse
+NDLT6G|Betelgeuse-Gentoo
+NDLT7|Sirius
+NDLT7W|Sirius-WSL
+Z420|Catten"
+MATCHED="$(echo "$HOSTNAME_MAP" | grep "$HOSTNAME|" | head -n1)"
+if [[ ! -z "$MATCHED" ]]; then
+    ps1devnickname=" ($(echo "$MATCHED" | cut -d'|' -f2))"
+else
+    ps1devnickname=""
+fi
+unset HOSTNAME_MAP
+unset MATCHED
 
 function ps1getsymbol() {
     if [[ "$(whoami)" == "root" ]]; then
@@ -38,15 +38,10 @@ else
     PS1PREFIX_CHROOT=""
 fi
 
-export PS1='$(termtitle "$HOSTNAME $PWD")'"\n${PS1PREFIX_CHROOT}\e[38;5;118m\u\e[0m \h`ps1devnickname` \`date +%T\` \e[38;5;81m\W\e[0m\`ps1gitbr\`\n\`ps1getsymbol\` "
+export PS1='$(termtitle "$HOSTNAME $PWD")'"\n${PS1PREFIX_CHROOT}\e[38;5;118m\u\e[0m \h$ps1devnickname \`date +%T\` \e[38;5;81m\W\e[0m\`ps1gitbr\`\n\`ps1getsymbol\` "
 
 
 function termtitle() {
     printf "\033]0;$*\007"
 }
 
-
-### I no longer use Gentoo Prefix
-# function iamusinggentooprefix() {
-#     export PS1="(Gentoo Prefix) ${PS1:0}"
-# }

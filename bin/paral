@@ -1,32 +1,54 @@
 #!/bin/bash
 
-[[ -z "$limit" ]] && export limit=8
-if [[ -z "$srcpid" ]]; then
-    export srcpid="$(ps -p $$ -o ppid=)"
-    export tcf="/tmp/.paral_tcf.$USER.$srcpid"
+[[ -z "$PARAL_LIMIT" ]] && export PARAL_LIMIT=8
+if [[ -z "$PARAL_ORIGIN_PID" ]]; then
+    export PARAL_ORIGIN_PID="$(ps -p $$ -o ppid= | tr -d ' ')"
+    echo "$PARAL_ORIGIN_PID" >> "/tmp/.paral_tcflist.$USER"
+    export PARAL_TCF="/tmp/.paral_threads.$USER.$PARAL_ORIGIN_PID"        # TCF: Thread controlling file
 fi
 
-[[ -z "$stdoutfdpath" ]] && export stdoutfdpath=/proc/$srcpid/fd/1
-[[ -z "$stderrfdpath" ]] && export stderrfdpath=/proc/$srcpid/fd/2
+[[ -z "$STDOUT_FDPATH" ]] && export STDOUT_FDPATH="/proc/$PARAL_ORIGIN_PID/fd/1"
+[[ -z "$STDERR_FDPATH" ]] && export STDERR_FDPATH="/proc/$PARAL_ORIGIN_PID/fd/2"
 
-if [[ ! -e "$tcf" ]] || [[ -z "$(cat "$tcf")" ]]; then
-    echo 0 > "$tcf"
+if [[ ! -e "$PARAL_TCF" ]] || [[ -z "$(cat "$PARAL_TCF")" ]]; then
+    echo 0 > "$PARAL_TCF"
 fi
 
-function dojob() {
-    "$@" >>$stdoutfdpath 2>>$stderrfdpath
-    heap="$(cat "$tcf")"
-    echo $((heap-1)) > "$tcf"
-    [[ ! -e "/proc/$srcpid" ]] && rm "$tcf"
+function gc_stale_tcf() {
+    for p in $(cat "/tmp/.paral_tcflist.$USER"); do
+        if [[ ! -e "/proc/$p" ]] && [[ -e "$PARAL_TCF" ]]; then
+            rm "$PARAL_TCF"
+            sed -i "s|^$p$|_|" "/tmp/.paral_tcflist.$USER"
+        fi
+    done
 }
 
-heap="$(cat "$tcf")"
-if [[ $heap -lt $limit ]]; then
-    echo "**  ($heap/$limit) Starting job"
-    echo $((heap+1)) > "$tcf"
+function dojob() {
+    "$@" >>"$STDOUT_FDPATH" 2>>"$STDERR_FDPATH"
+    heap="$(cat "$PARAL_TCF")"
+    echo $((heap-1)) > "$PARAL_TCF"
+    #gc_stale_tcf
+}
+
+
+
+
+### GC?
+case $1 in
+    --gc)
+        gc_stale_tcf
+        exit 0
+        ;;
+esac
+
+### Main workflow
+heap="$(cat "$PARAL_TCF")"
+if [[ $heap -lt $PARAL_LIMIT ]]; then
+    echo "**  ($heap/$PARAL_LIMIT) Starting job"
+    echo $((heap+1)) > "$PARAL_TCF"
     dojob "$@" &
 else
-    echo "**  ($heap/$limit) Waitting for another chance..."
+    echo "**  ($heap/$PARAL_LIMIT) Waitting for another chance..."
     sleep 1
     exec bash "$0" "$@"
 fi
