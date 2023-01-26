@@ -3,8 +3,8 @@
 # Run this daemon with OpenRC, instead of psman
 
 UPTIME_SEC="$(cat /proc/uptime | cut -d. -f1)"
-if [[ $UPTIME_SEC -lt 120 ]]; then
-    sleep 240
+if [[ $UPTIME_SEC -lt 300 ]]; then
+    sleep $((300-UPTIME_SEC))
 fi
 
 while true; do
@@ -12,9 +12,9 @@ while true; do
     for i in $LIST; do
         logger "svcwatchdog: Restarting $i"
         /sbin/rc-service $i restart
-        sleep 1
+        sleep 20
     done
-    sleep 15
+    sleep 120
 done
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[[ -z "$PARAL_LIMIT" ]] && export PARAL_LIMIT=8
+[[ -z "$PARAL_LIMIT" ]] && export PARAL_LIMIT="$(cat /proc/cpuinfo | grep -E 'processor\s*:' | wc -l)"
 if [[ -z "$PARAL_ORIGIN_PID" ]]; then
     export PARAL_ORIGIN_PID="$(ps -p $$ -o ppid= | tr -d ' ')"
     echo "$PARAL_ORIGIN_PID" >> "/tmp/.paral_tcflist.$USER"
@@ -17,7 +17,7 @@ fi
 function gc_stale_tcf() {
     for p in $(cat "/tmp/.paral_tcflist.$USER"); do
         if [[ ! -e "/proc/$p" ]] && [[ -e "$PARAL_TCF" ]]; then
-            rm "$PARAL_TCF"
+            rm -v "$PARAL_TCF"
             sed -i "s|^$p$|_|" "/tmp/.paral_tcflist.$USER"
         fi
     done

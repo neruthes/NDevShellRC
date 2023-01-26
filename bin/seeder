@@ -1,0 +1,65 @@
+#!/bin/bash
+
+APPVER="0.1.0"
+
+#
+# seeder (version 0.1.0)
+#
+# Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.
+#
+
+
+GRAND_SALT="yKY++LvDgAe5m7i8K6CRORZ9mzETc7URglKHiBwIoDWwwtuGz1q5fabNeRfeg3L0Fo"
+LOCAL_SEED_FILE="$HOME/.config/seeder-local-seed"
+TERMS_DICT="$HOME/.config/seeder-terms.txt"
+
+function init_local_seed() {
+    if [[ -e "$LOCAL_SEED_FILE" ]]; then
+        count="$(ls $LOCAL_SEED_FILE.backup.* 2>/dev/null | wc -l)"
+        mv -v "$LOCAL_SEED_FILE" "$LOCAL_SEED_FILE.backup.$count"
+    fi
+    entropy="$GRAND_SALT"
+    entropy="$entropy:$(sha512sum /etc/fstab)"
+    entropy="$entropy:$(sha512sum /proc/config.gz)"
+    entropy="$entropy:$(sha512sum /etc/shadow)"
+    entropy="$entropy:$(dd if=/dev/urandom of=/dev/stdout bs=8192 count=1 | sha512sum)"
+    sha512sum <<< "$entropy" | cut -c1-128 > "$LOCAL_SEED_FILE"
+}
+
+function show_help() {
+echo -e "seeder (version $APPVER)\n"
+echo -e "Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.\n"
+echo -e "USAGE:\n"
+echo -e "   $ seeder INIT"
+echo -e "           Force initialize local seed.\n"
+echo -e "   $ seeder DICT"
+echo -e "           Show historically used input terms.\n"
+echo -e "   $ seeder 23 github/alice"
+echo -e "           Generate a hash for term '23 github/alice'.\n"
+}
+
+
+case $1 in
+    '')
+        show_help
+        exit 0
+        ;;
+    DICT)
+        cat "$TERMS_DICT"
+        exit 0
+        ;;
+    INIT)
+        init_local_seed
+        exit 0
+        ;;
+esac
+
+
+if [[ ! -e "$LOCAL_SEED_FILE" ]]; then
+    init_local_seed
+fi
+
+MIDDLE_STR="$(sha512sum <<< "$GRAND_SALT:$(cat "$LOCAL_SEED_FILE"):$@" | cut -c1-128 | base64 | head -n1 | cut -c1-24)"
+echo "${MIDDLE_STR:0:5}-${MIDDLE_STR:5:5}=${MIDDLE_STR:10:5}"
+
+echo "$@" >> "$TERMS_DICT"
