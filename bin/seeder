@@ -13,6 +13,10 @@ GRAND_SALT="yKY++LvDgAe5m7i8K6CRORZ9mzETc7URglKHiBwIoDWwwtuGz1q5fabNeRfeg3L0Fo"
 LOCAL_SEED_FILE="$HOME/.config/seeder-local-seed"
 TERMS_DICT="$HOME/.config/seeder-terms.txt"
 
+RT_PREFIX="$XDG_RUNTIME_DIR"
+[[ -z "$RT_PREFIX" ]] && RT_PREFIX="/run/user/$(grep "^$USER:x:" /etc/passwd | cut -d: -f3)"
+RUNTIME_KEY_FILE="$RT_PREFIX/seeder-runtime-key"
+
 function init_local_seed() {
     if [[ -e "$LOCAL_SEED_FILE" ]]; then
         count="$(ls $LOCAL_SEED_FILE.backup.* 2>/dev/null | wc -l)"
@@ -29,6 +33,7 @@ function init_local_seed() {
 function show_help() {
 echo -e "seeder (version $APPVER)\n"
 echo -e "Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.\n"
+echo -e "Password manager built over seed and hash, no actual storing.\n"
 echo -e "USAGE:\n"
 echo -e "   $ seeder INIT"
 echo -e "           Force initialize local seed.\n"
@@ -59,7 +64,40 @@ if [[ ! -e "$LOCAL_SEED_FILE" ]]; then
     init_local_seed
 fi
 
-MIDDLE_STR="$(sha512sum <<< "$GRAND_SALT:$(cat "$LOCAL_SEED_FILE"):$@" | cut -c1-128 | base64 | head -n1 | cut -c1-24)"
-echo "${MIDDLE_STR:0:5}-${MIDDLE_STR:5:5}=${MIDDLE_STR:10:5}"
+
+
+if [[ ! -e "$RUNTIME_KEY_FILE" ]]; then
+    echo "[INFO] Please declare your special password. Do not use it beyond this CLI tool."
+    read -s seeder_spec_passwd
+    sha512sum <<< "$seeder_spec_passwd;;$GRAND_SALT;;$(sha512sum "$LOCAL_SEED_FILE")" | cut -c1-128 > "$RUNTIME_KEY_FILE.request"
+    expected_verif="$(sha512sum <<< "$seeder_spec_passwd Zjk3Yjc0ZGEtOTZjMS00YzQzLTgyZmQtM2Rj/$USER/$GRAND_SALT" | cut -c1-128)"
+    VER_FILE="$HOME/.config/seeder-passwd-verif"
+    ### Verification file exists?
+    if [[ -e "$VER_FILE" ]]; then
+        ### Values matching?
+        if [[ "$expected_verif" == "$(cat "$VER_FILE")" ]]; then
+            ### Great!
+            echo "[INFO] Password matches with the salted hash in disk."
+        else
+            ### Not matching!
+            echo "[ERROR] Wrong password? If you insist it is correct, delete '$VER_FILE' to avoid this error message."
+            rm "$RUNTIME_KEY_FILE.request"
+            exit 0
+        fi
+    else
+        ### Verification file does not exist
+        ### Create one now
+        cat <<< "$expected_verif" > "$VER_FILE"
+    fi
+    unset seeder_spec_passwd
+    mv "$RUNTIME_KEY_FILE.request" "$RUNTIME_KEY_FILE"
+    chmod 600 "$RUNTIME_KEY_FILE"
+fi
+
+
+
+
+MIDDLE_STR="$(sha512sum <<< "$(sha512sum "$RUNTIME_KEY_FILE"):$GRAND_SALT:$(sha512sum "$LOCAL_SEED_FILE"):$@" | cut -c1-128 | base64 | head -n1 | cut -c1-40)"
+echo "${MIDDLE_STR:0:4}+${MIDDLE_STR:4:4}=${MIDDLE_STR:8:3}/${MIDDLE_STR:12:3}"
 
 echo "$@" >> "$TERMS_DICT"
