@@ -50,6 +50,7 @@ case $1 in
         exit 0
         ;;
     DICT)
+        echo "[INFO] The terms dictionary is located at: $TERMS_DICT">&2
         cat "$TERMS_DICT"
         exit 0
         ;;
@@ -101,3 +102,5 @@ MIDDLE_STR="$(sha512sum <<< "$(sha512sum "$RUNTIME_KEY_FILE"):$GRAND_SALT:$(sha5
 echo "${MIDDLE_STR:0:4}+${MIDDLE_STR:4:4}=${MIDDLE_STR:8:3}/${MIDDLE_STR:12:3}"
 
 echo "$@" >> "$TERMS_DICT"
+sort -u "$TERMS_DICT" -o "$TERMS_DICT.new"
+mv "$TERMS_DICT.new" "$TERMS_DICT"
