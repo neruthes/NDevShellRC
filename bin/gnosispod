@@ -1,0 +1,112 @@
+#!/bin/bash
+
+APPVER="0.1.0"
+
+
+function show_help() {
+echo -e "gnosispod (v$APPVER)\n"
+echo -e "Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.\n"
+echo -e "USAGE:\n"
+echo -e "       $  gnosispod  {a|add}  /path/to/file"
+echo -e "               Encrypt file and add to repo.\n"
+echo -e "       $  gnosispod  {r|receive}  'https://.../123456.env {key} {class}:{raw_filename}'"
+echo -e "               Download the file and try decrypting it.\n"
+}
+
+function upload_file_print_url() {
+echo "[INFO] You may define function 'upload_file_print_url' in $CONF to enable automatic uploading and automatic URL generation.
+The function shall take the absolute path as the only argument and shall print the final URL.">&2
+echo "$1"
+}
+
+CONF="$HOME/.config/gnosispod.conf"
+touch $CONF
+source $CONF
+[[ -z "$REPODIR" ]] && export REPODIR="/tmp/gnosispod-playground.$USER"
+mkdir -p "$REPODIR"/{distdir,listdir,workdir,inbox}
+
+
+
+
+function make_encryption() {
+    TARGET_FILE="$1"
+    if [[ ! -e "$TARGET_FILE" ]]; then
+        echo "[ERROR] Target file does not exist."
+        exit 1
+    fi
+    RAWFN="$(basename "$TARGET_FILE")"
+    CLASS="$(basename "$PWD")"
+    LIST_FILE="$REPODIR/listdir/$CLASS.txt"
+    ### Step: Initialize workdir and entropy
+    cd "$REPODIR"
+    INPUT_FILE_HASH="$(sha256sum "$TARGET_FILE" | cut -d' ' -f1)"
+    INPUT_FILE_HASH_SHORT="$(sha256sum "$TARGET_FILE" | cut -c1-30 | xxd -r -p - | base32)"
+    ### Step: Produce OpenSSL parameters
+    RANDOM_KEY="$(dd if=/dev/urandom of=/dev/stdout bs=20 count=1 2>/dev/null | hexdump -v -e '/1 "%02x" ')"
+    HF_KEY="$(xxd -r -p - <<< "$RANDOM_KEY" | base32)"
+    REVERSED_KEY="$(base32 --decode <<< $HF_KEY | hexdump -v -e '/1 "%02x" ')"
+    REAL_KEY="42d5bae72043e8a4f694455a$RANDOM_KEY"
+    KEYID="$(sha256sum <<< "913f988c622b4d4a954ded435ca0bd06:$REAL_KEY" | cut -c1-4)"
+    REAL_IV="$(sha256sum <<< "WrBMbMG0M2esLRAbhrSdYUkYAaUgnxXacUPnwcwW:$INPUT_FILE_HASH_SHORT" | cut -c1-32)"
+    OUTPUT_FILE_PATH="distdir/${INPUT_FILE_HASH_SHORT:0:2}/$INPUT_FILE_HASH_SHORT.enc"
+    OUTFN_BASE="$(basename "$OUTPUT_FILE_PATH")"
+    mkdir -p "$(dirname "$OUTPUT_FILE_PATH")"
+    ### Step: Encrypt input file
+    echo openssl enc -aes-256-cbc -nosalt -e -in "$TARGET_FILE" -out "$OUTPUT_FILE_PATH" -K "$REAL_KEY" -iv "$REAL_IV" >&2
+    openssl enc -aes-256-cbc -nosalt -e -in "$TARGET_FILE" -out "$OUTPUT_FILE_PATH" -K "$REAL_KEY" -iv "$REAL_IV"
+    # echo "short_hash                    enc_key                          file_metadata"
+    # echo "$OUTFN_BASE $HF_KEY $CLASS:$RAWFN"
+    echo "[INFO] The following line may be passed to gnosispod as 'gnosispod r {_the_magic_line}' to receive and decrypt the file."
+    magic_line="$(upload_file_print_url "$OUTPUT_FILE_PATH") $HF_KEY $CLASS:$RAWFN"
+    echo "$magic_line" >> "$LIST_FILE"
+}
+
+function receive_encrypted_file() {
+    magic_line="$1"
+    cd "$REPODIR"
+    echo "$magic_line" >> inbox/receive-1log.txt
+    dld_url="$(cut -d' ' -f1 <<< "$magic_line")"
+    HF_KEY="$(cut -d' ' -f2 <<< "$magic_line")"
+    file_metadata="$(cut -d' ' -f3- <<< "$magic_line")"
+    CLASS="$(cut -d: -f1 <<< "$file_metadata")"
+    RAWFN="$(cut -d: -f2 <<< "$file_metadata")"
+    mkdir -p "inbox/$CLASS"
+    final_file="inbox/$CLASS/$RAWFN"
+    curl "$dld_url" > "workdir/$HF_KEY.bin"
+    RANDOM_KEY="$(base32 --decode <<< $HF_KEY | hexdump -v -e '/1 "%02x" ')"
+    REAL_KEY="42d5bae72043e8a4f694455a$RANDOM_KEY"
+    INPUT_FILE_HASH_SHORT="$(grep -oE '[0-9A-Z]{24}' <<< "$dld_url")"
+    REAL_IV="$(sha256sum <<< "WrBMbMG0M2esLRAbhrSdYUkYAaUgnxXacUPnwcwW:$INPUT_FILE_HASH_SHORT" | cut -c1-32)"
+    openssl enc -aes-256-cbc -nosalt -d -in "workdir/$HF_KEY.bin" -out "$final_file" -K "$REAL_KEY" -iv "$REAL_IV" || exit 1
+    echo "[INFO] File is ready at '$(realpath "$final_file")'"
+    sha256sum "$final_file"
+    file "$final_file"
+    du -h "$final_file"
+}
+
+
+case $1 in
+    a | add)
+        shift
+        for i in "$@"; do
+            make_encryption "$(realpath "$i")"
+        done
+        ;;
+    d | decrypt)
+        TARGET_FILE="$(realpath "$2")"
+        ### Do the reading
+        ;;
+    r | receive)
+        magic_line="$2"
+        receive_encrypted_file "$magic_line"
+        ;;
+    rl | receive-list)
+        IFS=$'\n'
+        for magic_line in $(cat "$2"); do
+            receive_encrypted_file "$magic_line"
+        done
+        ;;
+    *)
+        show_help
+        ;;
+esac
