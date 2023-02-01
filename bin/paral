@@ -24,10 +24,15 @@ function gc_stale_tcf() {
 }
 
 function dojob() {
-    "$@" >>"$STDOUT_FDPATH" 2>>"$STDERR_FDPATH"
+    tmp_log_file_stdout=/tmp/.paral.tmp_log_file.$$.$RANDOM.stdout.txt
+    tmp_log_file_stderr=/tmp/.paral.tmp_log_file.$$.$RANDOM.stderr.txt
+    "$@" >>"$tmp_log_file_stdout" 2>>"$tmp_log_file_stderr"
     heap="$(cat "$PARAL_TCF")"
     echo $((heap-1)) > "$PARAL_TCF"
-    #gc_stale_tcf
+    if [[ -e "$STDOUT_FDPATH" ]]; then
+        cat "$tmp_log_file_stdout" >> "$STDOUT_FDPATH"
+        cat "$tmp_log_file_stderr" >> "$STDERR_FDPATH"
+    fi
 }
 
 

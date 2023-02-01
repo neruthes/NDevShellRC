@@ -1,0 +1,36 @@
+#!/bin/bash
+
+
+if [[ -z "$1" ]]; then
+    echo "Usage:  dldgfont 'Font Family Name'"
+    exit 0
+fi
+
+RAW_FAM="$1"
+FAM_URL="$(sed 's| |%20|g' <<< "$RAW_FAM")"
+FAM_LOCAL="$(sed 's| |_|g' <<< "$RAW_FAM")"
+
+ZIP_URL="https://fonts.google.com/download?family=$FAM_URL"
+echo "$ZIP_URL"
+
+
+DLDDIR="$HOME/DLD/Latest"
+[[ ! -d $DLDDIR ]] && DLDDIR="$HOME/Downloads"
+
+workdir="$DLDDIR/google-fonts-download/$FAM_LOCAL"
+distdir="$workdir/gfdld-$FAM_LOCAL"
+mkdir -p "$workdir" "$distdir"
+
+
+cd "$workdir"
+wget "$ZIP_URL" -O dld.zip
+unzip dld.zip
+for fn in $(find "$workdir" -name '*.otf'; find "$workdir" -name '*.ttf'); do
+    cp -a "$fn" "$distdir/"
+done
+
+tree "$distdir"
+
+[[ ! -e "$HOME/.fonts/gfdld-$FAM_LOCAL" ]] && mv -v "$distdir" "$HOME/.fonts/"
+
+
