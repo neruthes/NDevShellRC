@@ -32,7 +32,7 @@ function buildMyKernelNow() {
     sudo genkernel initramfs
     sudo rm /boot/*.old 2>/dev/null
     sudo grub-mkconfig -o /boot/grub/grub.cfg
-    sudo eclean-kernel -n 7
+    sudo eclean-kernel -n 4
     KERNEL_LOCAL_VER="$(basename $(dirname $(realpath /usr/src/linux/.config)))"
     KERNELCONFDIR="$DEV_HOME_DIR/NDevShellRC/dev-local/$HOSTNAME/kernel-config"
     cat /usr/src/linux/.config > "$KERNELCONFDIR/$KERNEL_LOCAL_VER"

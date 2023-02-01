@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APPVER="0.1.0"
+APPVER="0.1.1"
 
 
 function show_help() {
@@ -20,8 +20,8 @@ echo "$1"
 }
 
 CONF="$HOME/.config/gnosispod.conf"
-touch $CONF
-source $CONF
+touch "$CONF"
+source "$CONF"
 [[ -z "$REPODIR" ]] && export REPODIR="/tmp/gnosispod-playground.$USER"
 mkdir -p "$REPODIR"/{distdir,listdir,workdir,inbox}
 
@@ -39,23 +39,21 @@ function make_encryption() {
     LIST_FILE="$REPODIR/listdir/$CLASS.txt"
     ### Step: Initialize workdir and entropy
     cd "$REPODIR"
-    INPUT_FILE_HASH="$(sha256sum "$TARGET_FILE" | cut -d' ' -f1)"
+    # INPUT_FILE_HASH="$(sha256sum "$TARGET_FILE" | cut -d' ' -f1)"
     INPUT_FILE_HASH_SHORT="$(sha256sum "$TARGET_FILE" | cut -c1-30 | xxd -r -p - | base32)"
     ### Step: Produce OpenSSL parameters
     RANDOM_KEY="$(dd if=/dev/urandom of=/dev/stdout bs=20 count=1 2>/dev/null | hexdump -v -e '/1 "%02x" ')"
     HF_KEY="$(xxd -r -p - <<< "$RANDOM_KEY" | base32)"
-    REVERSED_KEY="$(base32 --decode <<< $HF_KEY | hexdump -v -e '/1 "%02x" ')"
+    # REVERSED_KEY="$(base32 --decode <<< $HF_KEY | hexdump -v -e '/1 "%02x" ')"
     REAL_KEY="42d5bae72043e8a4f694455a$RANDOM_KEY"
-    KEYID="$(sha256sum <<< "913f988c622b4d4a954ded435ca0bd06:$REAL_KEY" | cut -c1-4)"
+    # KEYID="$(sha256sum <<< "913f988c622b4d4a954ded435ca0bd06:$REAL_KEY" | cut -c1-4)"
     REAL_IV="$(sha256sum <<< "WrBMbMG0M2esLRAbhrSdYUkYAaUgnxXacUPnwcwW:$INPUT_FILE_HASH_SHORT" | cut -c1-32)"
     OUTPUT_FILE_PATH="distdir/${INPUT_FILE_HASH_SHORT:0:2}/$INPUT_FILE_HASH_SHORT.enc"
-    OUTFN_BASE="$(basename "$OUTPUT_FILE_PATH")"
+    # OUTFN_BASE="$(basename "$OUTPUT_FILE_PATH")"
     mkdir -p "$(dirname "$OUTPUT_FILE_PATH")"
     ### Step: Encrypt input file
     echo openssl enc -aes-256-cbc -nosalt -e -in "$TARGET_FILE" -out "$OUTPUT_FILE_PATH" -K "$REAL_KEY" -iv "$REAL_IV" >&2
     openssl enc -aes-256-cbc -nosalt -e -in "$TARGET_FILE" -out "$OUTPUT_FILE_PATH" -K "$REAL_KEY" -iv "$REAL_IV"
-    # echo "short_hash                    enc_key                          file_metadata"
-    # echo "$OUTFN_BASE $HF_KEY $CLASS:$RAWFN"
     echo "[INFO] The following line may be passed to gnosispod as 'gnosispod r {_the_magic_line}' to receive and decrypt the file."
     magic_line="$(upload_file_print_url "$OUTPUT_FILE_PATH") $HF_KEY $CLASS:$RAWFN"
     echo "$magic_line" >> "$LIST_FILE"
@@ -63,7 +61,7 @@ function make_encryption() {
 
 function receive_encrypted_file() {
     magic_line="$1"
-    cd "$REPODIR"
+    cd "$REPODIR" || exit 1
     echo "$magic_line" >> inbox/receive-1log.txt
     dld_url="$(cut -d' ' -f1 <<< "$magic_line")"
     HF_KEY="$(cut -d' ' -f2 <<< "$magic_line")"
@@ -79,9 +77,9 @@ function receive_encrypted_file() {
     REAL_IV="$(sha256sum <<< "WrBMbMG0M2esLRAbhrSdYUkYAaUgnxXacUPnwcwW:$INPUT_FILE_HASH_SHORT" | cut -c1-32)"
     openssl enc -aes-256-cbc -nosalt -d -in "workdir/$HF_KEY.bin" -out "$final_file" -K "$REAL_KEY" -iv "$REAL_IV" || exit 1
     echo "[INFO] File is ready at '$(realpath "$final_file")'"
-    sha256sum "$final_file"
-    file "$final_file"
-    du -h "$final_file"
+    # sha256sum "$final_file"
+    # file "$final_file"
+    du -h "$(realpath "$final_file")"
 }
 
 
@@ -94,17 +92,17 @@ case $1 in
         ;;
     d | decrypt)
         TARGET_FILE="$(realpath "$2")"
-        ### Do the reading
         ;;
     r | receive)
         magic_line="$2"
         receive_encrypted_file "$magic_line"
         ;;
     rl | receive-list)
-        IFS=$'\n'
-        for magic_line in $(cat "$2"); do
+        input_file="$2"
+        [[ -z "$input_file" ]] && input_file=/dev/stdin
+        while read -r magic_line; do
             receive_encrypted_file "$magic_line"
-        done
+        done < "$(realpath "$input_file")"
         ;;
     *)
         show_help
