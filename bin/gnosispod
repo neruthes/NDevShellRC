@@ -54,6 +54,7 @@ function make_encryption() {
     magic_line="$(upload_file_print_url "$OUTPUT_FILE_PATH") $HF_KEY $CLASS:$RAWFN"
     echo "$magic_line"
     echo "$magic_line" >> "$LIST_FILE"
+    echo "The line above has been recorded in: $LIST_FILE"
 }
 
 function receive_encrypted_file() {
