@@ -1,9 +1,9 @@
 #!/bin/bash
 
-APPVER="0.1.0"
+APPVER="0.1.1"
 
 #
-# seeder (version 0.1.0)
+# seeder (version 0.1.1)
 #
 # Copyright (c) 2023 Neruthes. Published with GNU GPL 2.0.
 #
@@ -19,7 +19,7 @@ RUNTIME_KEY_FILE="$RT_PREFIX/seeder-runtime-key"
 
 function init_local_seed() {
     if [[ -e "$LOCAL_SEED_FILE" ]]; then
-        count="$(ls $LOCAL_SEED_FILE.backup.* 2>/dev/null | wc -l)"
+        count="$(find "$LOCAL_SEED_FILE.backup."* 2>/dev/null | wc -l)"
         mv -v "$LOCAL_SEED_FILE" "$LOCAL_SEED_FILE.backup.$count"
     fi
     entropy="$GRAND_SALT"
@@ -98,8 +98,8 @@ fi
 
 
 
-MIDDLE_STR="$(sha512sum <<< "$(sha512sum "$RUNTIME_KEY_FILE"):$GRAND_SALT:$(sha512sum "$LOCAL_SEED_FILE"):$@" | cut -c1-128 | base64 | head -n1 | cut -c1-40)"
-echo "${MIDDLE_STR:0:4}+${MIDDLE_STR:4:4}=${MIDDLE_STR:8:3}/${MIDDLE_STR:12:3}"
+MIDDLE_STR="$(sha512sum <<< "$(sha512sum "$RUNTIME_KEY_FILE"):$GRAND_SALT:$(sha512sum "$LOCAL_SEED_FILE"):$*" | cut -c1-128 | base64 | head -n1 | cut -c1-40)"
+echo "${MIDDLE_STR:0:4}+${MIDDLE_STR:4:4}3${MIDDLE_STR:8:3}5${MIDDLE_STR:12:3}"
 
 echo "$@" >> "$TERMS_DICT"
 sort -u "$TERMS_DICT" -o "$TERMS_DICT.new"
