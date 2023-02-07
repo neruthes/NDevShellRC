@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#
+# safepandoc
+#
+# Copyright (c) 2023 Neruthes.
+# This script is free software, published with GNU GPL 2.0 license.
+#
+
+DEST_FORMAT="$1"
+if [[ -z "$1" ]]; then
+    echo -e "safepandoc (version 0.1.0)
+Copyright (c) 2023 Neruthes.
+This script is free software, published with GNU GPL 2.0 license.\n
+Usage:
+    safepandoc {dest_format} <<< 'your input text'
+    safepandoc {dest_format} plain-input.txt\n
+    This script finds a way to safely convert your input text as plaintext when feeding into Pandoc.
+    The list of valid destination formats are availble in Pandoc manual:
+        <https://pandoc.org/MANUAL.html#general-options>
+">&2
+    exit 0
+fi
+
+TMP="/tmp/$(uuidgen v4)"
+
+input_fn="$2"
+if [[ -z "$2" ]]; then
+    input_fn="/dev/stdin"
+fi
+cat "$input_fn" > "$TMP.stdin"
+
+FORMATS_LIST="markdown gfm csv tsv org rst jira html latex"
+
+for fmt in $FORMATS_LIST; do
+    out_fn="$TMP.$fmt"
+    pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain
+    if [[ -z "$(diff "$TMP.stdin" "$out_fn")" ]]; then
+        good_fmt="$fmt"
+        echo "debug: good_fmt=$good_fmt">&2
+        break
+    fi
+done
+
+if [[ -n "$good_fmt" ]]; then
+    pandoc --wrap=none -f "$good_fmt" -t "$DEST_FORMAT" -i "$TMP.stdin" && rm "$TMP".*
+else
+    echo "-----------------------------------------" >&2
+    echo "[ERROR] The input is too tricky. Cannot find any possible format.">&2
+    cat "$TMP.stdin" >&2
+    echo "-----------------------------------------" >&2
+    exit 1
+fi
