@@ -15,7 +15,7 @@ This script is free software, published with GNU GPL 2.0 license.\n
 Usage:
     safepandoc {dest_format} <<< 'your input text'
     safepandoc {dest_format} plain-input.txt\n
-    This script finds a way to safely convert your input text as plaintext when feeding into Pandoc.
+    This script persuades Pandoc to treat your input as genuine plaintext.
     The list of valid destination formats are availble in Pandoc manual:
         <https://pandoc.org/MANUAL.html#general-options>
 ">&2
