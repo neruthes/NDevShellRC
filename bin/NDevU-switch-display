@@ -16,9 +16,9 @@ fi
 if [[ $1 = "" ]]; then
     case $CurrentCase in
         "Native")
-            CurrentCase="DP1"
+            CurrentCase="HDMI1"
             ;;
-        "DP1")
+        "HDMI1")
             CurrentCase="Mirror"
             ;;
         *)

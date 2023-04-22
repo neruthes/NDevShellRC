@@ -12,13 +12,14 @@ function _select() {
     LIST="$(find $DIRS -maxdepth 1 -type f -name '*.png'| grep -v '/\.')"
     COUNT="$(wc -l <<< "$LIST")"
     SEED="$RANDOM$RANDOM"
-    INDEX="$((SEED%COUNT))"
+    INDEX="$((SEED%COUNT+1))"
     echo "$(head -n$INDEX <<< "$LIST" | tail -n1)"
 }
 
 
 WPPATH="$(_select)"
+echo "WPPATH=$WPPATH"
+
 wpset "$WPPATH"
 
 
-echo "$WPPATH"
