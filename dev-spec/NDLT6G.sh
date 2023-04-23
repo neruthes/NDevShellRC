@@ -17,6 +17,14 @@ export BROWSER="firefox-bin"
 alias ttermusic="termusic ~/AUD/music"
 
 
+if [[ "$(tty)" == "/dev/tty1" ]]; then
+    FORK=y psman-init
+    daemonize /usr/bin/sudo /sbin/rc-service ntp-client start
+fi
+
+
+
+
 ####################################################
 # NAS Management
 ####################################################
