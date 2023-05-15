@@ -78,21 +78,23 @@ if [[ $f_SENDALL_with_hidden != y ]]; then
     RSYNC_ARGS="$RSYNC_ARGS --exclude '.*'"
 fi
 
-RSYNC_DEST="NDLT6G:/mnt/NEPd3_Caster/LS/NAS_public/$RDIRNAME/"
-
-if [[ $f_NOSYNC != y ]]; then # Should run rsync
-    if [[ $f_EMPTY == y ]]; then # 
-        EMPTYDIR="/tmp/emptydir.$USER.$RANDOM$RANDOM$RANDOM$RANDOM"
-        mkdir -p "$EMPTYDIR"
-        rsync $RSYNC_ARGS \
-            "$EMPTYDIR/" \
-            "$RSYNC_DEST"
-        rm -rf "$EMPTYDIR"
+for RSYNC_DEST in "NDLT6G:/mnt/NEPd3_Caster/LS/NAS_public/$RDIRNAME/" "NDLT7:/var/www/ndlt7-nas-public/$RDIRNAME/"; do
+    if [[ $f_NOSYNC != y ]]; then # Should run rsync
+        if [[ $f_EMPTY == y ]]; then # 
+            EMPTYDIR="/tmp/emptydir.$USER.$RANDOM$RANDOM$RANDOM$RANDOM"
+            mkdir -p "$EMPTYDIR"
+            rsync $RSYNC_ARGS \
+                "$EMPTYDIR/" \
+                "$RSYNC_DEST"
+            rm -rf "$EMPTYDIR"
+        fi
+        rsync $RSYNC_ARGS "$INDIRPATH/" "$RSYNC_DEST" \
+            --include-from=- <<< "$RSYNC_INCLUDE_LIST"
+        # echo "$RSYNC_INCLUDE_LIST"
     fi
-    rsync $RSYNC_ARGS "$INDIRPATH/" "$RSYNC_DEST" \
-        --include-from=- <<< "$RSYNC_INCLUDE_LIST"
-    # echo "$RSYNC_INCLUDE_LIST"
-fi
+done
+
 
 
 echo "https://nas-public.neruthes.xyz/$RDIRNAME/"
+echo "https://ndlt7-nas-public.neruthes.xyz/$RDIRNAME/"

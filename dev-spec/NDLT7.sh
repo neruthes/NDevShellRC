@@ -182,6 +182,13 @@ function _checkMortalityAlert() {
         cd "$RealPWD"
         return 0
     fi
+    echo "[INFO] Remember to run '_do_postpone_mortality_alert_date' command to postpone mortality alert date.">&2
+    cd "$RealPWD"
+}
+_checkMortalityAlert
+function _do_postpone_mortality_alert_date() {
+    RealPWD="$PWD"
+    cd /home/neruthes/DEV/neruthes.github.io
     NEED_UPDATE=n
     echo "$DELTAHOURS hours since last postpone mortality alert. Update now? (y/n)">&2
     printf "> ">&2
@@ -192,12 +199,11 @@ function _checkMortalityAlert() {
     fi
     cd "$RealPWD"
 }
-_checkMortalityAlert
 
 alias pa_Z420="PULSE_SERVER=10.0.233.20"
 alias pa_NDLT6G="PULSE_SERVER=NDLT6G"
 function ttermusic() {
-    sed -i 's|playlist_display_symbol = true|playlist_display_symbol = false|' $HOME/.config/termusic/config.toml
+    sed -i 's|playlist_display_symbol = true|playlist_display_symbol = false|' "$HOME/.config/termusic/config.toml"
     termusic $HOME/AUD/music
 }
 
@@ -231,3 +237,7 @@ function sync-chroot-jail-data() {
         rsync -avpx $prefix_src/$d/ $prefix_dest/$d/
     done
 }
+
+
+### Python venv
+alias usepyvenv="source ~/.python-venv/bin/activate"
