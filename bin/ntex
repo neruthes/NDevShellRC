@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function die() {
+    echo "$1"
+    exit 1
+}
 ### If multiple input files are given, build each
 if [[ -e "$2" ]]; then
     ITEMS_LIST=()
@@ -13,7 +17,7 @@ if [[ -e "$2" ]]; then
         shift
     done
     for i in ${ITEMS_LIST[@]}; do
-        ntex $i ${PARAMS_LIST[@]}
+        ntex $i ${PARAMS_LIST[@]} || die "[ERROR] Failed building $i"
     done
     exit 0
 fi

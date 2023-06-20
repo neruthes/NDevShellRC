@@ -61,8 +61,7 @@ RDIRNAME="$DIRNAME_PREFIX$(basename "$INDIRPATH")-$FINAL_HASH"
 if [[ -z "$RSYNC_INCLUDE_LIST" ]]; then
     RSYNC_INCLUDE_LIST="+ /_dist
 - /_dist/tex-tmp
-- /*
-- /.git"
+- /*"
 fi
 if [[ -e ".rsync_include_list" ]]; then
     RSYNC_INCLUDE_LIST="$(cat .rsync_include_list)"

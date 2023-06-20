@@ -1,4 +1,14 @@
 ### ----------------------------------------------------------------------------
+### Misc
+function pyvenv-init() {
+    python -m venv "$HOME/.python-venv"
+}
+function pyvenv-activate() {
+    source "$HOME/.python-venv/bin/activate"
+}
+
+
+### ----------------------------------------------------------------------------
 ### Portage
 function fullupdate() {
     sudo emerge --sync

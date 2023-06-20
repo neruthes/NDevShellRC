@@ -22,7 +22,8 @@ source $(dirname $0)/libossupload-core.lib.sh
 S3_ARGS="--endpoint-url $S3_ENDPOINT --bucket oss"
 
 if [[ -e "$1" ]]; then
-    aws s3api put-object  --body "$1"  --key "$FIANL_OBJ_KEY"  $S3_ARGS
+    # aws s3api put-object  --body "$1"  --key "$FIANL_OBJ_KEY"  $S3_ARGS
+    wrangler2 r2 object put oss/"$FIANL_OBJ_KEY" -f "$1"
 else
     echo "[ERROR] Cannot find the input file."
 fi
