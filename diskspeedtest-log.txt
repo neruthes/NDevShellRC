@@ -1,4 +1,0 @@
-[INFO] PWD: /home/neruthes/DEV/NDevShellRC
-[INFO] Block device: /dev/dm-0
-[INFO] Running Test 01: Stream write
-[INFO] Timer ended: 1 seconds 
