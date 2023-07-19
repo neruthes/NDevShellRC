@@ -22,7 +22,7 @@ if [[ -e "$2" ]]; then
     exit 0
 fi
 
-XELATEXARGS=""
+XELATEXARGS="-interaction=nonstopmode"
 
 SYNC_HTTPTMP=y
 #####################################################################
@@ -98,7 +98,6 @@ mkdir -p ".tmp" "_dist/$TYPE_SLASH"
 
 function _realBuild() {
     xelatex $XELATEXARGS \
-        -interaction=scrollmode \
         -output-directory=.tmp \
         -shell-escape \
         "$FilePath"

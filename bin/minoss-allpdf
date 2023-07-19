@@ -1,0 +1,5 @@
+#!/bin/bash
+
+find _dist -name "*.pdf" | while read -r fn; do
+    WRITE_OSSLIST=y minoss "$fn"
+done
