@@ -1,0 +1,5 @@
+#!/bin/bash
+
+token="$(pasm p token.github.major)"
+
+git clone https://neruthes:$token@github.com/"$1"
