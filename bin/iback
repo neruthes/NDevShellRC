@@ -6,5 +6,6 @@ case $HOSTNAME in
         ir telegram-desktop
         ir uxplay
         vscodium
+        discordd
         ;;
 esac

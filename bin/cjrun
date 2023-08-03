@@ -38,6 +38,13 @@ for mp in $MOUNT_POINTS; do
     fi
 done
 
+### Mount realhome
+if ! grep -qs "$JAILROOT/realhome" /proc/mounts; then
+    ### Is NOT already a mount point
+    sudo mkdir -p "$JAILROOT/realhome"
+    sudo mount --bind /home "$JAILROOT/realhome"
+fi
+
 ### Other stuff before chroot
 sudo rm "$JAILROOT/etc/resolv.conf"
 sudo cp "/etc/resolv.conf" "$JAILROOT/etc/resolv.conf"
