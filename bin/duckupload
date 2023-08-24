@@ -38,7 +38,7 @@ LISTFILE="$HOME/.local/duckupload-list--$CAT.txt"
 
 RAW_FILE_PATH="$(realpath "$1")"
 FN="$RAW_FILE_PATH"
-srv="https://chevqsecii.duckdns.org"
+srv="https://jxjwjixzbi.duckdns.org"
 
 
 
