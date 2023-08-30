@@ -14,7 +14,8 @@ function _processfile() {
     if [[ ! -e "$TBCACHEPATH" ]]; then
         # echo "     no thunbnail found"
         echo "[INFO] Generating $TBCACHEPATH"
-        paral convert "$FILEPATH" -resize x700 -quality 70 "$TBCACHEPATH"
+        # paral
+        convert "$FILEPATH" -resize x700 -quality 70 "$TBCACHEPATH" &
         COUNT=$((COUNT+1))
     fi
 }
@@ -28,12 +29,14 @@ for FN in $(find -name '*.png') $(find -name '*.jpg'); do
     _processfile "$FN"
 done
 
+wait
+
 echo "[INFO] Generated thumbnail cache for $COUNT images."
 
-for tbdir in $(find $PWD -type d -name '.tbcache'); do
+find "$PWD" -type d -name '.tbcache' | while read -r tbdir; do
     # echo "  tbdir = $tbdir"
     cd "$tbdir"
-    for tbpath in $(ls); do
+    ls | while read -r tbpath; do
         rawimgpath="../$tbpath"
         if [[ ! -e $rawimgpath ]]; then
             echo "[WARNING] Raw file '$rawimgpath' no longer exists. Deleting thumbnail '$tbpath'."

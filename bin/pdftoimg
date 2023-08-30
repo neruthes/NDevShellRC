@@ -24,5 +24,5 @@ if [[ -z "$OUTFN" ]]; then
 fi
 outputPath="$outFileDir/$OUTFN.$TYPE"
 
-convert -units PixelsPerInch -density $DPI -quality $QUALITY $inFilePath  $CONVERT_ARGS  "$outputPath"
+convert -units PixelsPerInch -density $DPI -quality $QUALITY $inFilePath -background white -alpha remove -alpha off  $CONVERT_ARGS  "$outputPath"
 echo "$(realpath "$outputPath")"
