@@ -4,7 +4,7 @@ fi
 
 function NEPd3-mount() {
     MOUNTOPTS="-o noatime"
-    if [[ -e /dev/disk/by-partlabel/Pd3Pv1 ]]; then
+    if [[ -e /dev/disk/by-partlabel/NEPd3_LS2 ]]; then
         ### LS2: Another Linux Storage
         sudo cryptsetup open /dev/disk/by-partuuid/0a7edafe-53d3-41c7-ac05-ef8630f0c353 NEPd3_LS2 --key-file $HOME/.MyLuksKey
         sudo mount $MOUNTOPTS /dev/mapper/NEPd3_LS2 /mnt/NEPd3_Caster/LS
