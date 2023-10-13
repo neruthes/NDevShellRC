@@ -10,10 +10,7 @@ source "$HOME/.config/cfoss.conf"
 
 [[ "$AltDomain" == y ]] && OSS_URL_PREFIX="https://oss-r2.neruthes.xyz"
 
-#######################################################################################
-### What to expect from config:
-# S3_ENDPOINT=https://xxxxxxxxxxxxxxxx.r2.cloudflarestorage.com
-#######################################################################################
+### Now we use wrangler and not aws cli so no config-reading
 
 
 source $(dirname $0)/libossupload-core.lib.sh

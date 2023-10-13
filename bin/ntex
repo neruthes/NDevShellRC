@@ -144,12 +144,12 @@ case "$TOIMG" in
         # mkdir -p /tmp/http/nteximg
         # chmod 777 /tmp/http/nteximg
         FHASH1="$(echo "$REALPATH" | sha256sum)"
-        IMGPATH="$(basename "$REALPATH")-${FHASH1:0:12}.%d.$TOIMG"
+        IMGPATH="$(basename "$REALPATH").$TOIMG"
         if [[ -e "$IMGPATH" ]]; then
             rm "$IMGPATH" 2>/dev/null
         fi
         # pdftoimg "$REALPATH" /tmp/http/nteximg $TOIMG
-        pdftoimg "$REALPATH" '' $TOIMG
+        pdftoimg "$REALPATH" '' "$TOIMG"
         if [[ $TOCFOSS == y ]]; then
             echo -e "\nImage URLs:"
             OSS_SUBDIR="$REPOID-img" cfoss "$IMGPATH"
