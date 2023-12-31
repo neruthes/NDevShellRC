@@ -20,10 +20,6 @@ export BROWSER="firefox-bin"
 ### ----------------------------------------------------------------------------
 ### System dev and maintain
 function importOverlayPkg() {
-    if [[ ! -e $PWD/.git ]]; then
-        echo "You must be inside a git repo"
-        return 0
-    fi
     PKGSPEC="$1"                # Example: "sys-apps/sysvinit/"
     if [[ ! -e ${PKGSPEC}metadata.xml ]]; then
         echo "Inavlid argument"

@@ -10,8 +10,8 @@ APPVER="0.1.1"
 
 
 GRAND_SALT="yKY++LvDgAe5m7i8K6CRORZ9mzETc7URglKHiBwIoDWwwtuGz1q5fabNeRfeg3L0Fo"
-LOCAL_SEED_FILE="$HOME/.config/seeder-local-seed"
-TERMS_DICT="$HOME/.config/seeder-terms.txt"
+LOCAL_SEED_FILE="$HOME/.config/seeder/local-seed"
+TERMS_DICT="$HOME/.config/seeder/terms.txt"
 
 RT_PREFIX="$XDG_RUNTIME_DIR"
 [[ -z "$RT_PREFIX" ]] && RT_PREFIX="/run/user/$(grep "^$USER:x:" /etc/passwd | cut -d: -f3)"
@@ -72,7 +72,7 @@ if [[ ! -e "$RUNTIME_KEY_FILE" ]]; then
     read -s seeder_spec_passwd
     sha512sum <<< "$seeder_spec_passwd;;$GRAND_SALT;;$(sha512sum "$LOCAL_SEED_FILE")" | cut -c1-128 > "$RUNTIME_KEY_FILE.request"
     expected_verif="$(sha512sum <<< "$seeder_spec_passwd Zjk3Yjc0ZGEtOTZjMS00YzQzLTgyZmQtM2Rj/$USER/$GRAND_SALT" | cut -c1-128)"
-    VER_FILE="$HOME/.config/seeder-passwd-verif"
+    VER_FILE="$HOME/.config/seeder/passwd-verif"
     ### Verification file exists?
     if [[ -e "$VER_FILE" ]]; then
         ### Values matching?
