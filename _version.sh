@@ -1,2 +1,2 @@
-export NDEVSHELLRC_VERSION="1.0.25-1"
-export NDEVSHELLRC_VERSION_MSGLOG="Release tcrypt v0.1.4"
+export NDEVSHELLRC_VERSION="1.0.26"
+export NDEVSHELLRC_VERSION_MSGLOG="Add ffshare and ffshare-gc"
