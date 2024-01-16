@@ -1,0 +1,35 @@
+#!/bin/bash
+
+
+################################################
+# Fast file sharing
+################################################
+
+tmp_file="/tmp/$(uuidgen v4)"
+
+TMP=y minoss "$1" | tee "$tmp_file"
+
+oss_key="$(grep FIANL_OBJ_KEY "$tmp_file" | cut -d= -f2-)"
+oss_url="$(grep FINAL_HTTP_URL "$tmp_file" | cut -d= -f2-)"
+
+
+
+list_file="$HOME/.cache/ffshare-listforgc.txt"
+
+echo "$(date +%Y-%m-%d)!$oss_key" >> "$list_file"
+
+echo ""
+echo ""
+echo ""
+echo "File URL:"
+echo ""
+echo "$oss_url"
+
+rm "$tmp_file"
+
+
+sort -u "$list_file" -o "$list_file.2"
+mv "$list_file.2" "$list_file"
+
+
+

@@ -4,7 +4,6 @@ case $HOSTNAME in
     NDLT7)
         ir firefox-bin
         ir telegram-desktop
-        ir uxplay
         vscodium
         discordd
         ;;

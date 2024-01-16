@@ -3,17 +3,12 @@
 tnow="$(date +%s)"
 max_delta=$((3600*24*7))
 
-TMP=/tmp/.findstale-$RANDOM$RANDOM$RANDOM$RANDOM
-
-for fp in /tmp/*; do
+find /tmp -maxdepth 1 -type f | while read -r fp; do
     tfile="$(date -r "$fp" +%s)"
     delta=$((tnow-tfile))
     delta_hf="$((delta/3600/24))d $((delta/3600%24))h"
     if [[ $delta -gt $max_delta ]]; then
         echo "Suspected stale file:  (${delta_hf}h)  $fp"
-        echo "$fp" >> $TMP
+        [[ "$DEL" == y ]] && rm "$fp"
     fi
 done
-
-cat $TMP
-rm $TMP
