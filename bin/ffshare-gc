@@ -2,8 +2,15 @@
 
 echo "Initiating GC for files uploaded via ffshare..."
 
+### Constants
 list_file="$HOME/.cache/ffshare-listforgc.txt"
-touch "$list_file"
+
+### Make sure some files exist
+touch "$list_file" 
+
+### Make temporary empty files
+rm "$list_file.retain" 2>/dev/null
+touch "$list_file.retain"
 
 cat "$list_file" | while read -r line; do
     now_ts="$(date +%s)"
@@ -11,8 +18,8 @@ cat "$list_file" | while read -r line; do
     obj_key="$(cut -d! -f2- <<< "$line")"
     upload_date_ts="$(date --date"=$date_str" +%s)"
     delta_sec="$((now_ts - upload_date_ts))"
-    threshold="$((7 * 24 * 3600))"
-    threshold="3600" # Debug only
+    threshold="$((7 * 24 * 3600))" # Retain 7 days
+    # threshold="3600" # Debug only
     # echo "date_str=$date_str"
     # echo "upload_date_ts=$upload_date_ts"
     # echo "now_ts=$now_ts"
@@ -20,7 +27,11 @@ cat "$list_file" | while read -r line; do
     if [[ "$delta_sec" -gt "$threshold" ]]; then
         echo "Should remove old file: $obj_key"
         mc rm "NDLT6G/oss/$obj_key" 
+    else
+        echo "Should retain this file: $obj_key"
+        echo "$line" >> "$list_file.retain"
     fi
 done
 
-
+### Overwrite list with retained list
+mv "$list_file.retain" "$list_file"
