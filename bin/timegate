@@ -1,0 +1,29 @@
+#!/bin/bash
+
+function require_env() {
+    if [[ -z "$2" ]]; then
+        echo "[ERROR] You must supply '$1' environment variable!"
+        exit 1
+    fi
+}
+
+require_env 'src' "$src"
+require_env 'dst' "$dst"
+
+date_src="$(date +%s -r "$src")"
+date_dst="$(date +%s -r "$dst")"
+
+if [[ -z "$1" ]]; then
+    echo "timegate
+
+Usage:
+    src=FILE.tex dst=FILE.pdf timegate xelatex FILE.tex
+"
+fi
+
+if [[ "$date_src" -gt "$date_dst" ]]; then
+    command "$@"
+else
+    echo "[INFO] Skipping the following command because '$dst' is newer than '$src'" > /dev/stderr
+    echo "       $ $@" > /dev/stderr
+fi

@@ -19,6 +19,9 @@ fi
 
 if [[ $TMP == y ]]; then
     OUTPUT_SUBDIR=tmp
+    if [[ -n $TMPDIR ]]; then
+        OUTPUT_SUBDIR="$OUTPUT_SUBDIR/$TMPDIR"
+    fi
 fi
 
 

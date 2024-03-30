@@ -1,0 +1,13 @@
+#!/bin/bash
+
+TMP="/tmp/$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM.txt"
+git log --shortstat | grep -E '(insertion|deletion)' > "$TMP"
+insertions="$(cat "$TMP" | grep -oP '\d+(?= insertion)' | awk 'NF' | paste -sd+ | bc)"
+deletions="$(cat "$TMP" | grep -oP '\d+(?= deletion)' | awk 'NF' | paste -sd+ | bc)"
+
+
+
+echo "insertions: $insertions"
+echo "deletions: $deletions"
+
+rm "$TMP"

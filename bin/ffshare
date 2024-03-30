@@ -7,7 +7,7 @@
 
 tmp_file="/tmp/$(uuidgen v4)"
 
-TMP=y minoss "$1" | tee "$tmp_file"
+TMPDIR=ffshare TMP=y minoss "$1" | tee "$tmp_file"
 
 oss_key="$(grep FIANL_OBJ_KEY "$tmp_file" | cut -d= -f2-)"
 oss_url="$(grep FINAL_HTTP_URL "$tmp_file" | cut -d= -f2-)"
