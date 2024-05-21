@@ -28,12 +28,12 @@ function loadKernelConfig() {
     sudo cp -v /usr/src/.kernel-config /usr/src/linux/.config
 }
 function buildMyKernelNow() {
+    source /etc/portage/make.conf
     cd /usr/src/linux
     loadKernelConfig
     sudo make oldconfig
     saveKernelConfig
-    source /etc/portage/make.conf
-    sudo make -j7 all
+    sudo make -j4 all
     sudo make modules_install
     sudo make install
     sudo emerge @module-rebuild --ask=n
@@ -41,8 +41,8 @@ function buildMyKernelNow() {
     sudo genkernel initramfs
     sudo rm /boot/*.old 2>/dev/null
     sudo grub-mkconfig -o /boot/grub/grub.cfg
-    sudo eclean-kernel -n 4
-    KERNEL_LOCAL_VER="$(basename $(dirname $(realpath /usr/src/linux/.config)))"
+    sudo eclean-kernel -n 7
+    KERNEL_LOCAL_VER="$(basename "$(dirname "$(realpath /usr/src/linux/.config)")")"
     KERNELCONFDIR="$DEV_HOME_DIR/NDevShellRC/dev-local/$HOSTNAME/kernel-config"
     cat /usr/src/linux/.config > "$KERNELCONFDIR/$KERNEL_LOCAL_VER"
 }

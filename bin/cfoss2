@@ -1,0 +1,39 @@
+#!/bin/bash
+
+### Common lib functions
+function get_remote_path() {
+    echo "$(get_category_prefix)/$(get_filepath_hash)/$(basename "$filepath")"
+}
+function get_filepath_hash() {
+    local hash_1="$(sha256sum /etc/fstab | cut -c1-60)"
+    local hash_2="$(sha256sum <<< "$filepath" | cut -c1-60)"
+    sha256sum <<< "$hash_1$hash_2" | cut -c1-24
+}
+function get_category_prefix() {
+    if [[ "$TMP" == y ]]; then
+        echo "tmp"
+    else
+        basename "$PWD"
+    fi
+}
+
+
+### Common lib constants
+OSS_URL_PREFIX="https://pub-714f8d634e8f451d9f2fe91a4debfa23.r2.dev"
+
+
+### Local functions
+function oss_upload_file() {
+    filepath="$(realpath "$1")"
+    remote_file_key="$(get_remote_path)"
+    wrangler2 r2 object put oss/"$remote_file_key" -f "$1"
+    echo "$OSS_URL_PREFIX/$remote_file_key"
+}
+
+if [[ -e "$2" ]]; then
+    for fp in "$@"; do
+        bash "$0" "$fp"
+    done
+else
+    oss_upload_file "$1"
+fi

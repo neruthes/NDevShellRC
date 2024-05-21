@@ -11,7 +11,7 @@ require_env 'src' "$src"
 require_env 'dst' "$dst"
 
 date_src="$(date +%s -r "$src")"
-date_dst="$(date +%s -r "$dst")"
+date_dst="$(date +%s -r "$dst" || echo 0)" # Destination file does not have to exist!
 
 if [[ -z "$1" ]]; then
     echo "timegate

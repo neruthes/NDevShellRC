@@ -1,7 +1,14 @@
 #!/bin/bash
 
 TMP="/tmp/$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM.txt"
-git log --shortstat | grep -E '(insertion|deletion)' > "$TMP"
+
+if [[ -z "$1" ]]; then
+    git log --shortstat | grep -E '(insertion|deletion)' > "$TMP"
+else
+    git log --shortstat -- . ':(exclude)*[!'"$1"']' | grep -E '(insertion|deletion)' > "$TMP"
+fi
+
+
 insertions="$(cat "$TMP" | grep -oP '\d+(?= insertion)' | awk 'NF' | paste -sd+ | bc)"
 deletions="$(cat "$TMP" | grep -oP '\d+(?= deletion)' | awk 'NF' | paste -sd+ | bc)"
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+USE_POPPLER=y # Can this work well?
+
 inFilePath="$1"
 outFileDir="$2"
 TYPE="$3"
@@ -24,5 +26,10 @@ if [[ -z "$OUTFN" ]]; then
 fi
 outputPath="$outFileDir/$OUTFN.$TYPE"
 
-convert -units PixelsPerInch -density $DPI -quality $QUALITY $inFilePath -background white -alpha remove -alpha off  $CONVERT_ARGS  "$outputPath"
-echo "$(realpath "$outputPath")"
+if [[ "$USE_POPPLER" == y ]]; then
+    pdftoppm -"$TYPE" -r "$DPI" "$inFilePath" "$outFileDir/$OUTFN"
+    realpath "$outFileDir/$OUTFN"*".$TYPE"
+else
+    convert -units PixelsPerInch -density "$DPI" -quality "$QUALITY" "$inFilePath" -background white -alpha remove -alpha off  $CONVERT_ARGS  "$outputPath"
+    realpath "$outputPath"
+fi

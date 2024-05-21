@@ -23,17 +23,17 @@
 # DEBUG         | "y"               | Show debug messages.
 
 ### Hardcoded constants
-_VER="0.1.0-pre2"
+_VER="0.1.0-pre3"
 _PHUUID="20467ba2d6da4dd59bcb83fbf410aa6f"
 
 ### Constants
 
 
 ### Arguments
-SUBCOMMAND=$1
-ARG0=$2
-ARG1=$3
-ARG2=$4
+SUBCOMMAND="$1"
+ARG0="$2"
+ARG1="$3"
+ARG2="$4"
 
 
 ### Lib functions
