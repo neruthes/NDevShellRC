@@ -239,3 +239,7 @@ function sync-chroot-jail-data() {
 
 ### Python venv
 alias usepyvenv="source ~/.python-venv/bin/activate"
+
+
+
+export PRINTER_DEST="10.0.233.126:/mnt/NEPd3_Caster/LS/NAS/etc/printer-queue/_dist/FILE.pdf"

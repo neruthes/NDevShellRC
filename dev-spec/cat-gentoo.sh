@@ -39,7 +39,7 @@ function buildMyKernelNow() {
     sudo emerge @module-rebuild --ask=n
     pregenkernel
     sudo genkernel initramfs
-    sudo rm /boot/*.old 2>/dev/null
+    # sudo rm /boot/*.old 2>/dev/null
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo eclean-kernel -n 7
     KERNEL_LOCAL_VER="$(basename "$(dirname "$(realpath /usr/src/linux/.config)")")"

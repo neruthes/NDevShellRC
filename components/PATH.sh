@@ -6,3 +6,7 @@ export PATH="$PATH:/opt/local/bin"
 # Rust & Cargo
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
+
+
+export GOPATH="$HOME/.go"
+export PATH="$GOPATH/bin:$PATH"
