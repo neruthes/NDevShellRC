@@ -1,5 +1,5 @@
 function start() {
-    daemonize -p "$PIDFILE" -o $LOGFILE -e $LOGFILE -- /usr/bin/node $HOME/DEV/nodecgid/nodecgid.js
+    daemonize -p "$PIDFILE" -o "$LOGFILE" -e "$LOGFILE" -- /usr/bin/node "$HOME/DEV/nodecgid/nodecgid.js"
 }
 function stop() {
     start-stop-daemon --stop --pidfile "$PIDFILE" --user "$USER" --verbose
