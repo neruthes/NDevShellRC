@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#sudo tail -f /var/tmp/portage/$1/temp/build.log
+rawfind="$(sudo find /var/tmp/portage -name "build.log")"
+echo "$rawfind" >/dev/stderr
+logfile="$(grep "$1" <<< "$rawfind" | head -n1)"
+sudo tail -f "$logfile"

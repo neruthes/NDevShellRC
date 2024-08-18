@@ -3,7 +3,7 @@
 // Perform arbitrary functions in a chain onto the string fed from stdin
 
 // nodefunc  '.split(" / ")'  '.slice(2,3)'  '.index(0)'  'encodeURIComponent' <<< '0 / hello world / hallo welt / 333 / 4444'
-// nodefunc  'parseInt' 'Math.floor' <<< 114514.1919810
+// nodefunc  'parseFloat' 'Math.floor' <<< 114514.1919810
 
 
 const functionsList = process.argv.slice(2);

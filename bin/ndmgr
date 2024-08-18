@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#######################################################################
+# ndmgr - Neutral Depdency Manager
+# Copyright (c) 2024 Neruthes. Released with GNU GPL 2.0.
+#######################################################################
+
+function show_help() {
+echo "ndmgr - Neutral Depdency Manager
+Copyright (c) 2024 Neruthes. Released with GNU GPL 2.0.
+
+
+Usage:
+
+    ndmgr add
+    ndmgr a                 Add a dependency via git URL.
+
+    ndmgr pull
+    ndmgr pl                Pull all dependencies
+"
+}
+
+function pull_repo_url() {
+    url="$1"
+    dir="ndeps/$(basename "$url")"
+    if [[ -d "$dir" ]]; then
+        cd "$dir"
+        git fetch --all --depth=1
+        git reset --hard "origin/$(git branch --show-current)"
+        git pull origin -f --depth=1
+        # cd "$OLDPWD"
+    else
+        mkdir -p "$dir"
+        git clone --depth=1 "$url" "$dir"
+    fi
+}
+
+function pull_all() {
+    while read -r url; do
+        [[ -n "$url" ]] && pull_repo_url "$url"
+    done < .ndmgr
+}
+function pull_single() {
+    depid="$1"
+    while read -r url; do
+        if [[ -n "$url" ]] && [[ "$(basename "$url")" == "$depid" ]]; then
+            pull_repo_url "$url"
+        fi
+    done < .ndmgr
+}
+
+
+
+case $1 in
+    initxxxxxxxxxxxxxxx)
+        touch .ndmgr
+        ;;
+    add|a)
+        ### Add
+        echo "$2" >> .ndmgr
+        pull_repo_url "$2"
+        ;;
+    pull|pl)
+        ### Pull
+        [[ -e .ndmgr ]] || exit 1
+        pull_all
+        # if [[ -z "$2" ]]; then
+        #     pull_all
+        # else
+        #     pull_single "$2"
+        # fi
+        ;;
+    backport|bp)
+        ### Backport changes to local src repo
+        [[ -e ndmgr-local.toml ]] || exit 1
+        depid="$(basename "$2")"
+        dist_path="$PWD/ndeps/$depid"
+        src_path="$(tomlq -r ".backport.$depid" ndmgr-local.toml)"
+        rsync -av --exclude=".git" "$dist_path/" "$src_path/"
+        # --dry-run
+        ;;
+    '' | help | h | -h | --help)
+        show_help
+        ;;
+esac

@@ -10,7 +10,7 @@ fi
 while true; do
     if [[ -z "$(ip -6 route get 240e::1)" ]]; then
         echo "ipv6watchdog: Cannot find valid global IPv6 address. Restarting dhcpcd."
-        sudo rc-service dhcpcd restart
+        # sudo rc-service dhcpcd restart
         cfddnsd-commit
         sleep 60
     else
