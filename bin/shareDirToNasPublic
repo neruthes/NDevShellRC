@@ -23,22 +23,22 @@ RSYNC_ARGS="-axW --delete --mkpath --safe-links"
 
 
 ### Parse argv
-if [[ " $@ " == *' -e '* ]] || [[ " $@ " == *' --empty '* ]]; then
+if [[ " $* " == *' -e '* ]] || [[ " $* " == *' --empty '* ]]; then
     f_EMPTY=y
 fi
-if [[ " $@ " == *' -d '* ]] || [[ " $@ " == *' --dry-run '* ]]; then
+if [[ " $* " == *' -d '* ]] || [[ " $* " == *' --dry-run '* ]]; then
     f_NOSYNC=y
 fi
-if [[ " $@ " == *' -t '* ]] || [[ " $@ " == *' --tmp '* ]]; then
+if [[ " $* " == *' -t '* ]] || [[ " $* " == *' --tmp '* ]]; then
     f_TMP=y
 fi
-if [[ " $@ " == *' -a '* ]] || [[ " $@ " == *' --all '* ]]; then
+if [[ " $* " == *' -a '* ]] || [[ " $* " == *' --all '* ]]; then
     f_SENDALL=y
 fi
-if [[ " $@ " == *' -A '* ]] || [[ " $@ " == *' --ALL '* ]]; then
+if [[ " $* " == *' -A '* ]] || [[ " $* " == *' --ALL '* ]]; then
     f_SENDALL_with_hidden=y
 fi
-if [[ " $@ " == *' -v '* ]] || [[ " $@ " == *' --verbose '* ]]; then
+if [[ " $* " == *' -v '* ]] || [[ " $* " == *' --verbose '* ]]; then
     RSYNC_ARGS="$RSYNC_ARGS -v"
 fi
 
