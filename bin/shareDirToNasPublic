@@ -80,7 +80,8 @@ fi
 
 dests_list="NDLT6G:/mnt/NEPd3_Caster/LS/NAS_public/$RDIRNAME/
 NDLT7:/mnt/NEPd4_Intel660p/LS/neruthes/ndlt7-nas-public/$RDIRNAME/"
-IFS=$'\n' for RSYNC_DEST in $dests_list; do
+# for RSYNC_DEST in $dests_list; do
+while read -r RSYNC_DEST; do
     if [[ $f_NOSYNC != y ]]; then # Should run rsync
         if [[ $f_EMPTY == y ]]; then # 
             EMPTYDIR="/tmp/emptydir.$USER.$RANDOM$RANDOM$RANDOM$RANDOM"
@@ -94,7 +95,7 @@ IFS=$'\n' for RSYNC_DEST in $dests_list; do
             --include-from=- <<< "$RSYNC_INCLUDE_LIST"
         # echo "$RSYNC_INCLUDE_LIST"
     fi
-done
+done <<< "$dests_list"
 
 
 
