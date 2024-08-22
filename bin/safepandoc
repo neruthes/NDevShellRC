@@ -30,17 +30,23 @@ if [[ -z "$2" ]]; then
 fi
 cat "$input_fn" > "$TMP.stdin"
 
-FORMATS_LIST="markdown gfm csv tsv org rst jira html latex"
+# FORMATS_LIST="markdown gfm csv tsv org rst jira html latex"
+# FORMATS_LIST="$(pandoc --list-input-formats)"
 
-for fmt in $FORMATS_LIST; do
+# for fmt in $FORMATS_LIST; do
+while read -r fmt; do
     out_fn="$TMP.$fmt"
-    pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain
-    if [[ -z "$(diff "$TMP.stdin" "$out_fn")" ]]; then
+    # pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain
+    ### Note: The conversion it self must be successful!
+    if pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain && [[ -e "$out_fn" ]] && [[ -z "$(diff "$TMP.stdin" "$out_fn")" ]]; then
         good_fmt="$fmt"
         echo "debug: good_fmt=$good_fmt">&2
         break
+    else
+        echo "debug: '$fmt' is not good enough">&2
+        diff "$TMP.stdin" "$out_fn" >&2
     fi
-done
+done <<< "$(pandoc --list-input-formats)"
 
 if [[ -n "$good_fmt" ]]; then
     pandoc --wrap=none -f "$good_fmt" -t "$DEST_FORMAT" -i "$TMP.stdin" && rm "$TMP".*
