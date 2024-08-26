@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .env
+
 ### Common lib functions
 function get_remote_path() {
     echo "$(get_category_prefix)/$(get_filepath_hash)/$(basename "$filepath")"
@@ -12,9 +14,13 @@ function get_filepath_hash() {
 function get_category_prefix() {
     if [[ "$TMP" == y ]]; then
         echo "tmp"
-    else
-        basename "$PWD"
+        return 0
     fi
+    if [[ -n "$cfoss2_prefix" ]]; then
+        echo "$cfoss2_prefix"
+        return 0
+    fi
+    basename "$PWD"
 }
 
 
