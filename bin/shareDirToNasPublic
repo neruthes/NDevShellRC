@@ -19,7 +19,7 @@ fi
 
 
 
-RSYNC_ARGS="-axW --delete --mkpath --safe-links"
+RSYNC_ARGS="-avxW --delete --mkpath --safe-links --exclude .git"
 
 
 ### Parse argv
@@ -61,6 +61,7 @@ RDIRNAME="$DIRNAME_PREFIX$(basename "$INDIRPATH")-$FINAL_HASH"
 if [[ -z "$RSYNC_INCLUDE_LIST" ]]; then
     RSYNC_INCLUDE_LIST="+ /_dist
 - /_dist/tex-tmp
+- /.git
 - /*"
 fi
 if [[ -e ".rsync_include_list" ]]; then
@@ -92,7 +93,7 @@ while read -r RSYNC_DEST; do
             rm -rf "$EMPTYDIR"
         fi
         rsync $RSYNC_ARGS "$INDIRPATH/" "$RSYNC_DEST" \
-            --include-from=- <<< "$RSYNC_INCLUDE_LIST"
+            --include-from=- <<< "$RSYNC_INCLUDE_LIST" &
         # echo "$RSYNC_INCLUDE_LIST"
     fi
 done <<< "$dests_list"
@@ -101,3 +102,4 @@ done <<< "$dests_list"
 
 echo "https://nas-public.neruthes.xyz/$RDIRNAME/"
 echo "https://ndlt7-nas-public.neruthes.xyz/$RDIRNAME/"
+wait

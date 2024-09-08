@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source .env
+[[ -e .env ]] && source .env
+
 
 ### Common lib functions
 function get_remote_path() {
