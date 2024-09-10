@@ -33,8 +33,8 @@ OSS_URL_PREFIX="https://pub-714f8d634e8f451d9f2fe91a4debfa23.r2.dev"
 function oss_upload_file() {
     filepath="$(realpath "$1")"
     remote_file_key="$(get_remote_path)"
-    wrangler2 r2 object put oss/"$remote_file_key" -f "$1"
     echo "$OSS_URL_PREFIX/$remote_file_key"
+    wrangler2 r2 object put oss/"$remote_file_key" -f "$1"
 }
 
 if [[ -e "$2" ]]; then
