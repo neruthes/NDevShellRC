@@ -2,6 +2,6 @@
 
 stderr_path="/proc/$$/fd/1"
 
-daemonize $(which bash) -c "cd '$PWD';"'echo DAEMON_PID=$$ > '"$stderr_path; exec $@"
+daemonize "$(which bash)" -c "cd '$PWD';"'echo DAEMON_PID=$$ > '"$stderr_path; exec $@"
 sleep 0.05
 
