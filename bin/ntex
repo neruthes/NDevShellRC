@@ -24,7 +24,7 @@ if [[ -e "$2" ]]; then
     exit 0
 fi
 
-XELATEXARGS="-interaction=nonstopmode"
+XELATEXARGS="$XELATEXARGS -interaction=nonstopmode"
 
 SYNC_HTTPTMP=y
 #####################################################################
