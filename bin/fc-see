@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+# Copyright (c) 2024 Neruthes.
+# This program <fc-see> is a free software.
+# Released with GNU GPL 2.0.
+
+font_path="$1"
+
+
+
+# outfn="fc-see.$(uuidgen v4 | tr -d - | cut -c1-10).png"
+outfn="/tmp/fc-see-29b47c76c4.$RANDOM$RANDOM.png"
+
+text1="FONT PREVIEW  Font Preview"
+text2="I can jump over the lazy doge; it does not hurt me."
+text3="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+text4="This program <fc-see> is released with GNU GPL 2.0."
+
+### More scripts
+if fc-query "$font_path" | grep 'lang:' | tail -n1 | grep -qs '|zh'; then
+    text3="我能吞下玻璃而不伤身体"
+fi
+if fc-query "$font_path" | grep 'lang:' | tail -n1 | grep -qs '|ja'; then
+    text4="後一度だけ奇￿は起こるだろう￿しい声で描く歪んだ未来"
+fi
+
+magick -size '2000x1000' xc:White -gravity NorthWest \
+    -font "$font_path" -fill "Black" \
+    -pointsize 100 -draw "text 50,50 '$text1'" \
+    -pointsize 100 -draw "text 50,150 '$(basename "$font_path")'" \
+    -pointsize 40 -draw "text 50,300 '$text2'" \
+    -pointsize 40 -draw "text 50,350 '$text3'" \
+    -pointsize 40 -draw "text 50,400 '$text4'" \
+    -trim \
+    -bordercolor White -border 200 "$outfn"
+
+feh "$outfn"
+rm "$outfn"
