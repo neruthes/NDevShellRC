@@ -41,12 +41,12 @@ function _checkExpiry() {
 
 
 ### Initialize
-mkdir -p $REAL_PWD/.tbcache/img
-IMG_LIST_SRC_RAW="$(ls $REAL_PWD/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2>/dev/null)"
+mkdir -p "$REAL_PWD"/.tbcache/img
+IMG_LIST_SRC_RAW="$(ls "$REAL_PWD"/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2>/dev/null)"
 IMG_LIST_SRC=""
 echo "List of images:"
 for FN_RAW in $IMG_LIST_SRC_RAW; do
-    FN="$(basename $FN_RAW)"
+    FN="$(basename "$FN_RAW")"
     if [[ "$(file "$FN")" == *"image data, "* ]]; then
         IMG_LIST_SRC="$IMG_LIST_SRC $FN"
     fi
@@ -62,7 +62,7 @@ echo "$IMG_LIST_CACHED"
 echo ""
 echo "Finding expired caches"
 for FN_RAW in $IMG_LIST_CACHED; do
-    FN="$(basename $FN_RAW)"
+    FN="$(basename "$FN_RAW")"
     _checkExpiry "$FN"
 done
 

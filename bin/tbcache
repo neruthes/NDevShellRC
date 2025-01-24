@@ -3,9 +3,7 @@
 function _processfile() {
     FN="$1"
     FILEPATH="$(realpath "$FN")"
-    if [[ "$FILEPATH" == *"/.tbcache/"* ]]; then
-        return 0
-    fi
+    grep -qs '/.tbcache/' <<< "$FILEPATH" && return 0
     FILEDIR="$(dirname "$FILEPATH")"
     FILEBASENAME="$(basename "$FILEPATH")"
     TBCACHEPATH="$FILEDIR/.tbcache/$FILEBASENAME"
@@ -23,11 +21,11 @@ function _processfile() {
 REPODIR="$1"
 cd "$REPODIR"
 
-IFS=$'\n'
+
 COUNT=0
-for FN in $(find -name '*.png') $(find -name '*.jpg'); do
+while read -r FN; do
     _processfile "$FN"
-done
+done < <(find . -name '*.png' -o -name '*.jpg')
 
 wait
 
