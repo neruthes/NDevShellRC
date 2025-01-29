@@ -28,7 +28,7 @@ function loadKernelConfig() {
     sudo cp -v /usr/src/.kernel-config /usr/src/linux/.config
 }
 function buildMyKernelNow() {
-    source /etc/portage/make.conf
+    # source /etc/portage/make.conf
     cd /usr/src/linux
     loadKernelConfig
     sudo make oldconfig
