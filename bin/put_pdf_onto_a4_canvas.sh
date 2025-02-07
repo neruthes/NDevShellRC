@@ -51,7 +51,7 @@ offset_x=0
 # offset_y=0
 
 scale=1
-scale="$(echo "$input_width / $a4_width" | bc -l)"
+scale="$(echo "$input_height / $a4_height" | bc -l)"
 
 echo "input_size=$input_size"
 echo "input_width=$input_width"

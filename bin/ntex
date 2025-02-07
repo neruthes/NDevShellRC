@@ -36,6 +36,10 @@ while [[ $# -gt 0 ]]; do
         BUILD_TWICE="y"
         shift # past argument
         ;;
+    --embed)
+        EMBED_TEX_TO_PDF="y"
+        shift # past argument
+        ;;
     --png)
         TOIMG="png"
         shift # past argument
@@ -87,12 +91,12 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 
 
-FilePath="$1"
-BaseName="$(basename "$FilePath")"
+InputTexFilePath="$1"
+BaseName="$(basename "$InputTexFilePath")"
 REPOID="$(basename "$PWD")"
-TYPE_SLASH="${FilePath/$BaseName/}"
+TYPE_SLASH="${InputTexFilePath/$BaseName/}"
 
-# echo "FilePath=$FilePath"
+# echo "InputTexFilePath=$InputTexFilePath"
 # echo "BaseName=$BaseName"
 # echo "TYPE_SLASH=$TYPE_SLASH"
 
@@ -102,7 +106,7 @@ function _realBuild() {
     $XELATEX_CMDNAME $XELATEXARGS \
         -output-directory=.tmp \
         -shell-escape \
-        "$FilePath"
+        "$InputTexFilePath"
 }
 _realBuild
 if [[ $BUILD_TWICE == y ]]; then ### Build twice
@@ -117,10 +121,18 @@ if [[ ! -e "$PDF_TMP_PATH" ]]; then
 fi
 mv "$PDF_TMP_PATH" "_dist/$TYPE_SLASH"
 
-REALPATH=$(realpath "_dist/${FilePath/.tex/.pdf}")
+REALPATH=$(realpath "_dist/${InputTexFilePath/.tex/.pdf}")
 PDFFN="$(basename "$REALPATH")"
 PDF_RELATIVE_PATH="$(sed "s|$PWD/||" <<< "$REALPATH")"
 echo "PDF_RELATIVE_PATH=$PDF_RELATIVE_PATH"
+echo "PDFFN=$PDFFN"
+
+### --embed
+if [[ $EMBED_TEX_TO_PDF == y ]]; then
+    # pdf_add_attachment.sh "$REALPATH" "$InputTexFilePath"
+    pdftk "$REALPATH" attach_files "$InputTexFilePath" output "$REALPATH.tmp_attachment.pdf"
+    mv "$REALPATH.tmp_attachment.pdf" "$REALPATH"
+fi
 
 echo -e "\nDocument Size:"
 du -h "$REALPATH"
