@@ -1,5 +1,15 @@
 #!/bin/bash
 
+#########################################################################################
+# The 'ntex' script
+#
+# Copyright 2021-2025 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
+# Published with the MIT license (https://mit-license.org/).
+#########################################################################################
+
+
+
+
 [[ -z "$XELATEX_CMDNAME" ]] && XELATEX_CMDNAME=xelatex
 
 function die() {
@@ -18,8 +28,8 @@ if [[ -e "$2" ]]; then
         fi
         shift
     done
-    for i in ${ITEMS_LIST[@]}; do
-        ntex $i ${PARAMS_LIST[@]} || die "[ERROR] Failed building $i"
+    for i in "${ITEMS_LIST[@]}"; do
+        ntex $i "${PARAMS_LIST[@]}" || die "[ERROR] Failed building $i"
     done
     exit 0
 fi
