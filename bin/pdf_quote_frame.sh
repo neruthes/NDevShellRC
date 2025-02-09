@@ -3,7 +3,7 @@
 #########################################################################################
 # The 'pdf_quote_frame.sh' script
 #
-# Copyright 2021-2025 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
+# Copyright 2025 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
 # Published with the MIT license (https://mit-license.org/).
 #########################################################################################
 
