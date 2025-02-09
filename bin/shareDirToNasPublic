@@ -101,3 +101,6 @@ done <<< "$dests_list"
 echo "https://nas-public.neruthes.xyz/$RDIRNAME/"
 echo "https://ndlt7-nas-public.neruthes.xyz/$RDIRNAME/"
 wait
+
+echo "https://nas-public.neruthes.xyz/$RDIRNAME/"
+echo "https://ndlt7-nas-public.neruthes.xyz/$RDIRNAME/"

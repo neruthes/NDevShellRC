@@ -20,7 +20,7 @@ function die() {
 if [[ -e "$2" ]]; then
     ITEMS_LIST=()
     PARAMS_LIST=()
-    for i in $@; do
+    for i in "$@"; do
         if [[ -e "$1" ]]; then
             ITEMS_LIST+=("$1")
         else
@@ -29,7 +29,7 @@ if [[ -e "$2" ]]; then
         shift
     done
     for i in "${ITEMS_LIST[@]}"; do
-        ntex $i "${PARAMS_LIST[@]}" || die "[ERROR] Failed building $i"
+        ntex "$i" "${PARAMS_LIST[@]}" || die "[ERROR] Failed building $i"
     done
     exit 0
 fi
@@ -86,7 +86,7 @@ while [[ $# -gt 0 ]]; do
         SYNC_HTTPTMP=n
         shift # past argument
         ;;
-    -*|--*)
+    -*)
         echo "Unknown option $1"
         exit 1
         ;;
@@ -138,7 +138,7 @@ echo "PDF_RELATIVE_PATH=$PDF_RELATIVE_PATH"
 echo "PDFFN=$PDFFN"
 
 ### --embed
-if [[ $EMBED_TEX_TO_PDF == y ]]; then
+if [[ "$EMBED_TEX_TO_PDF" == y ]]; then
     # pdf_add_attachment.sh "$REALPATH" "$InputTexFilePath"
     pdftk "$REALPATH" attach_files "$InputTexFilePath" output "$REALPATH.tmp_attachment.pdf"
     mv "$REALPATH.tmp_attachment.pdf" "$REALPATH"
@@ -148,12 +148,12 @@ echo -e "\nDocument Size:"
 du -h "$REALPATH"
 
 ### --http
-if [[ $PUT_TO_HTTPTMP == y ]]; then
+if [[ "$PUT_TO_HTTPTMP" == y ]]; then
     CLASSNAME="$(basename "$PWD")" ALTFN="$INPUT_ALTFN" cptmphttp "$REALPATH"
 fi
 
 ### --oss
-if [[ $TOCFOSS == y ]]; then
+if [[ "$TOCFOSS" == y ]]; then
     ### New oss (Cloudflare R2):
     touch .osslist
     echo minoss "$PDF_RELATIVE_PATH"
@@ -182,7 +182,7 @@ case "$TOIMG" in
 esac
 
 ### --range
-if [[ ! -z "$PAGES_RANGE" ]]; then
+if [[ -n "$PAGES_RANGE" ]]; then
     echo "Generating ranged subset."
     # RANGED_PDF_PATH="/tmp/${PDFFN/.pdf/}_page$PAGES_RANGE.pdf"
     # pdftk "$REALPATH" cat $PAGES_RANGE output "$RANGED_PDF_PATH"
