@@ -129,7 +129,7 @@ if [[ ! -e "$PDF_TMP_PATH" ]]; then
     echo "[ERROR] XeLaTeX build failed. Aborting."
     exit 1
 fi
-mv "$PDF_TMP_PATH" "_dist/$TYPE_SLASH"
+mv -f "$PDF_TMP_PATH" "_dist/$TYPE_SLASH"
 
 REALPATH=$(realpath "_dist/${InputTexFilePath/.tex/.pdf}")
 PDFFN="$(basename "$REALPATH")"
@@ -141,7 +141,7 @@ echo "PDFFN=$PDFFN"
 if [[ "$EMBED_TEX_TO_PDF" == y ]]; then
     # pdf_add_attachment.sh "$REALPATH" "$InputTexFilePath"
     pdftk "$REALPATH" attach_files "$InputTexFilePath" output "$REALPATH.tmp_attachment.pdf"
-    mv "$REALPATH.tmp_attachment.pdf" "$REALPATH"
+    mv -f "$REALPATH.tmp_attachment.pdf" "$REALPATH"
 fi
 
 echo -e "\nDocument Size:"
