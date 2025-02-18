@@ -19,7 +19,7 @@ fi
 
 
 
-RSYNC_ARGS="-avxW --delete --mkpath --safe-links --exclude .git"
+RSYNC_ARGS="-avxW --delete --mkpath --safe-links -i --partial --progress --exclude .git"
 
 
 ### Parse argv

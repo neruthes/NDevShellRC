@@ -92,7 +92,7 @@ function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
     #fi
 }
 function rsyncBackupNDev--NDLT7--NEPd3--home() {
-    sudo rsync -avp --one-file-system --delete --progress /home/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
+    sudo rsync -avp --update --one-file-system --delete --progress /home/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
 }
 # From and to NDLT6
 function ndrsyncpush() {
@@ -212,10 +212,10 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
 fi
 
 # For OSS
-OSS_SERVERS_LIST='
-{"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.udon.pw:2096"}
-{"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.udon.pw:2087"}
-'
+# OSS_SERVERS_LIST='
+# {"host":"NDLT6G","path":"/mnt/NEPd3_Caster/LS/OSS","web":"https://oss.udon.pw:2096"}
+# {"host":"Z420","path":"/opt/storage/disk2/ossroot","web":"https://oss2.udon.pw:2087"}
+# '
 
 
 
