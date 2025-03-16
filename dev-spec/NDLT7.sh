@@ -102,21 +102,19 @@ function ndrsyncpush() {
 }
 function ndrsyncpull() {
     rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
-        neruthes@10.0.233.126:/Users/Neruthes/Music/GarageBand/ \
+        neruthes@NDLT6G:/Users/Neruthes/Music/GarageBand/ \
         /home/neruthes/AUD/GarageBand/
     rsync -av --exclude={'*/.git','**/.git','*/*/.git','*/*/*/.git','.*'} \
-        neruthes@10.0.233.126:/Users/Neruthes/Documents/Design/ \
+        neruthes@NDLT6G:/Users/Neruthes/Documents/Design/ \
         /home/neruthes/DOC/Design/
 }
 # NAS on NDLT6G
 function NAS_push-music() {
-    rsync -av --delete --progress $HOME/AUD/music/ $USER@NDLT6G:/home/neruthes/AUD/music/
-    rsync -av --delete --progress $HOME/AUD/music.alt/ $USER@NDLT6G:/home/neruthes/AUD/music.alt/
-    ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music/ /mnt/NEPd3_Caster/LS/NAS/Music/Base/'
-    ssh NDLT6G 'rsync -av --delete --progress /home/neruthes/AUD/music.alt/ /mnt/NEPd3_Caster/LS/NAS/Music/Alt/'
+    rsync -auv --delete --progress "$HOME"/AUD/music/ "$USER"@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/Music/Base/
+    rsync -auv --delete --progress "$HOME"/AUD/music.alt/ "$USER"@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/Music/Alt/
 }
 function NAS_push-local() {
-    rsync -av --delete $HOME/DLD/.nas/ $USER@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_local/NDLT7/
+    rsync -av --delete "$HOME"/DLD/.nas/ "$USER"@NDLT6G:/mnt/NEPd3_Caster/LS/NAS/_local/NDLT7/
 }
 
 
@@ -242,4 +240,4 @@ alias usepyvenv="source ~/.python-venv/bin/activate"
 
 
 
-export PRINTER_DEST="10.0.233.126:/mnt/NEPd3_Caster/LS/NAS/etc/printer-queue/_dist/FILE.pdf"
+export PRINTER_DEST="NDLT6G:/mnt/NEPd3_Caster/LS/NAS/etc/printer-queue/_dist/FILE.pdf"
