@@ -1,0 +1,12 @@
+#!/bin/bash
+
+### dnasup: Directory NAS upload
+
+dirname="$(basename "$PWD")"
+
+rsync -avpx --delete "./" "NDLT6G:/mnt/NEPd3_Caster/LS/dNAS/$dirname/" --exclude .git
+
+
+
+echo "https://dnas6.neruthes.xyz/$dirname/"
+echo "http://dnas6-lan.neruthes.xyz/$dirname/"
