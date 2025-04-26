@@ -19,6 +19,6 @@ fi
 for host in $REMOTE_HOSTS; do
     if [[ ${host:0:1} != '#' ]]; then
         echo "[INFO] Deploying to '$host' ..."
-        rsync -apx "$PWD/" "$host:$PWD/"
+        rsync -auvpx --mkpath "$PWD/" "$host:$PWD/"
     fi
 done

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+in_fn="$1"
+
+mode=encrypt
+
+if [[ "$in_fn" == *".cpt" ]]; then
+    mode=decrypt
+fi
+
+
+case "$mode" in
+    encrypt )
+        ccrypt -e < "$in_fn" > "$in_fn.cpt"
+        ;;
+    decrypt )
+        new_out="$(sed 's|.cpt.out$||' <<< "$in_fn.out" )"
+        real_out="$new_out"
+        [[ -e "$new_out" ]] && real_out="$in_fn.decrypted"
+        echo "[INFO] Decryption mode, writing to '$real_out'"
+        echo "[INFO] Really ready to proceed?"
+        ccrypt -d < "$in_fn" > "$real_out"
+        ;;
+esac

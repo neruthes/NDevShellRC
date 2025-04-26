@@ -13,7 +13,7 @@ if [[ "$FORK" == "y" ]]; then
     daemonize /usr/bin/env FORK=n $(which psman-init)
     exit 0
 fi
-date -Is > /tmp/.psman-init.${USER}.hitmark
+date -Is > "/tmp/.psman-init.$USER.hitmark"
 
 mkdir -p "$HOME/.config/psman"
 
@@ -44,7 +44,7 @@ function _color_green() {
 }
 function _lsrunlevels() {
     RUNLEVELS=""
-    for FN in $(ls "$RUNLEVELDIR/"*); do
+    (cd "$RUNLEVELDIR" && find -type f) | while read -r FN; do
         RUNLEVEL_NAME="$(basename $FN)"
         RUNLEVELS="${RUNLEVELS}${RUNLEVEL_NAME} "
     done
@@ -78,7 +78,7 @@ function _markrunlevelfinished() {
 
 touch "$ALLFINISHMARK"
 for RUNLEVEL in $(_lsrunlevels); do
-    _startrunlevel $RUNLEVEL
+    _startrunlevel "$RUNLEVEL"
 done
 
 ### Prevent executing again

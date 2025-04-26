@@ -34,7 +34,7 @@ function oss_upload_file() {
     filepath="$(realpath "$1")"
     remote_file_key="$(get_remote_path)"
     echo "$OSS_URL_PREFIX/$remote_file_key"
-    wrangler2 r2 object put oss/"$remote_file_key" -f "$1"
+    wrangler2 r2 object put oss/"$remote_file_key" -f "$1" --remote
 }
 
 if [[ -e "$2" ]]; then

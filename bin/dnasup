@@ -2,11 +2,52 @@
 
 ### dnasup: Directory NAS upload
 
+
+single_dir="$1"
+required_suffix="$2"
+
 dirname="$(basename "$PWD")"
 
-rsync -avpx --delete "./" "NDLT6G:/mnt/NEPd3_Caster/LS/dNAS/$dirname/" --exclude .git
+DESTINATIONS="NDLT6G:/mnt/NEPd3_Caster/LS/dNAS
+NDLT6G:/mnt/NEPd3_Caster/LS/dNAS.nekostein
+"
+
+srcdirspec="./"
+if [[ -n "$single_dir" ]] && [[ "$single_dir" != . ]]; then
+    singledirsuffix="$(realpath "$single_dir" --relative-to "$PWD")/"
+    srcdirspec="./$singledirsuffix"
+fi
+
+function _try_upload() {
+    # prefix="$1"
+    if [[ -z "$required_suffix" ]] || [[ "$prefix" == *"$required_suffix" ]]; then
+        rsync -auvpxL --delete  "$srcdirspec"  "$prefix/$dirname/$singledirsuffix" --exclude .git
+    else
+        echo "[INFO] Skipping  '$prefix'  because you required  '$required_suffix' "
+    fi
+}
+
+echo -n "$DESTINATIONS"| while read -r prefix; do
+    _try_upload "$prefix"
+done
 
 
 
-echo "https://dnas6.neruthes.xyz/$dirname/"
-echo "http://dnas6-lan.neruthes.xyz/$dirname/"
+url_host_id=default
+[[ -n "$required_suffix" ]] && url_host_id="$required_suffix"
+
+URL_LIST="default=https://dnas6.neruthes.xyz
+default=http://dnas6-lan.neruthes.xyz
+nekostein=https://dnas.nekostein.com
+"
+
+echo -n "$URL_LIST" | while read -r url_host_prefix; do
+    item_id="$(cut -d= -f1 <<< "$url_host_prefix")"
+    item_url="$(cut -d= -f2- <<< "$url_host_prefix")"
+    if [[ "$url_host_id" == "$item_id" ]]; then
+        echo "$item_url/$dirname/"
+    # else
+    #     echo "Not to:  $item_url/$dirname/"
+    fi
+done
+

@@ -92,7 +92,7 @@ function rsyncBackupNDev--NDLT7--NEPd3--baselayout() {
     #fi
 }
 function rsyncBackupNDev--NDLT7--NEPd3--home() {
-    sudo rsync -avp --update --one-file-system --delete --progress /home/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/
+    sudo rsync -av --update --one-file-system --delete --progress /home/neruthes/ root@NDLT6G:/mnt/NEPd3_Caster/LS/BackupCenter/NDLT7/home/neruthes/ --exclude .cache
 }
 # From and to NDLT6
 function ndrsyncpush() {
