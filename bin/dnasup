@@ -4,13 +4,28 @@
 
 
 single_dir="$1"
-required_suffix="$2"
+target_dest="$2"
+[[ -z "$target_dest" ]] && target_dest=default
+
 
 dirname="$(basename "$PWD")"
 
-DESTINATIONS="NDLT6G:/mnt/NEPd3_Caster/LS/dNAS
-NDLT6G:/mnt/NEPd3_Caster/LS/dNAS.nekostein
+
+
+
+DESTINATIONS="default=NDLT6G:/mnt/NEPd3_Caster/LS/dNAS
+nekostein=NDLT6G:/mnt/NEPd3_Caster/LS/dNAS.nekostein
 "
+
+
+URL_LIST="default=https://dnas6.neruthes.xyz
+default=http://dnas6-lan.neruthes.xyz
+nekostein=https://dnas.nekostein.com
+"
+
+
+
+
 
 srcdirspec="./"
 if [[ -n "$single_dir" ]] && [[ "$single_dir" != . ]]; then
@@ -19,32 +34,28 @@ if [[ -n "$single_dir" ]] && [[ "$single_dir" != . ]]; then
 fi
 
 function _try_upload() {
-    # prefix="$1"
-    if [[ -z "$required_suffix" ]] || [[ "$prefix" == *"$required_suffix" ]]; then
-        rsync -auvpxL --delete  "$srcdirspec"  "$prefix/$dirname/$singledirsuffix" --exclude .git
+    destination_spec_row="$1"
+    destination_name="$(cut -d= -f1 <<< "$destination_spec_row")"
+    destination_rsync_path="$(cut -d= -f2- <<< "$destination_spec_row")"
+    if [[ "$target_dest" == "$destination_name" ]]; then
+        rsync -auvpxL --delete  "$srcdirspec"  "$destination_rsync_path/$dirname/$singledirsuffix" --exclude .git
     else
-        echo "[INFO] Skipping  '$prefix'  because you required  '$required_suffix' "
+        echo "Not Sending to '$destination_name'"
     fi
 }
 
-echo -n "$DESTINATIONS"| while read -r prefix; do
-    _try_upload "$prefix"
+# echo "target_dest=$target_dest"
+
+echo -n "$DESTINATIONS"| while read -r destination_spec_row; do
+    _try_upload "$destination_spec_row"
 done
 
 
 
-url_host_id=default
-[[ -n "$required_suffix" ]] && url_host_id="$required_suffix"
-
-URL_LIST="default=https://dnas6.neruthes.xyz
-default=http://dnas6-lan.neruthes.xyz
-nekostein=https://dnas.nekostein.com
-"
-
 echo -n "$URL_LIST" | while read -r url_host_prefix; do
     item_id="$(cut -d= -f1 <<< "$url_host_prefix")"
     item_url="$(cut -d= -f2- <<< "$url_host_prefix")"
-    if [[ "$url_host_id" == "$item_id" ]]; then
+    if [[ "$target_dest" == "$item_id" ]]; then
         echo "$item_url/$dirname/"
     # else
     #     echo "Not to:  $item_url/$dirname/"

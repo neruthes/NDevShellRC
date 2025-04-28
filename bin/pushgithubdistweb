@@ -24,11 +24,11 @@ fi
 function _uploadTarball() {
     echo "[INFO] Creating tarball..."
     TARBALL_PATH="$GDIR/_dist/githubdist.tar"
-    rm $TARBALL_PATH 2>/dev/null
-    cd $WEBDIR
+    rm "$TARBALL_PATH" 2>/dev/null
+    cd "$WEBDIR"
     cd ..
     tar -cvf $TARBALL_PATH --exclude 'dist.tar' githubdist
-    cfoss $TARBALL_PATH
+    cfoss "$TARBALL_PATH"
     cd $GDIR
     shareDirToNasPublic
     cd "$MAINPWD"
@@ -36,7 +36,7 @@ function _uploadTarball() {
 
 ### Push to Vercel only if last commit was old enough
 function _pushnow() {
-    if [[ $ALREADY_PUSHED == y ]]; then
+    if [[ "$ALREADY_PUSHED" == y ]]; then
         return 0
     fi
     _uploadTarball
@@ -58,7 +58,7 @@ function _attemptPush() {
     DELTAMINS="$((DELTASECS/60))"
     DELTAHOURS="$((DELTASECS/3600))"
     echo "[INFO] $DELTAHOURS hours ($DELTAMINS minutes) since last push to GitHub + Vercel."
-    if [[ "$DELTAHOURS" -lt "12" ]]; then
+    if [[ "$DELTAHOURS" -lt "12" ]] && [[ $FORCE != y ]]; then
         echo "[INFO] Less than 12 hours; not pushing."
         return 0
     else
@@ -71,19 +71,19 @@ function _attemptPush() {
 }
 
 ### Sync out files
-rsync -av --delete      _dist/      $WEBDIR/$REPONAME/      --exclude={'tex-tmp','.*','private','.git','*.tar'}
-rsync -av --delete      $WEBDIR/    NDLT6G:/mnt/NEPd3_Caster/LS/NAS/githubdistweb/
-date -Is > $GDIR/trigger
-pwd >> $GDIR/trigger
+rsync -av --delete      _dist/          "$WEBDIR/$REPONAME/"        --exclude={'tex-tmp','.*','private','.git','*.tar'}
+rsync -av --delete      "$WEBDIR/"      NDLT6G:/mnt/NEPd3_Caster/LS/NAS/githubdistweb/
+date -Is > "$GDIR"/trigger
+pwd >> "$GDIR"/trigger
 
 
-if [[ "  $@  " == *" --wait "* ]]; then
+if [[ "  $*  " == *" --wait "* ]]; then
     ifWAIT=y
 fi
 _attemptPush
 
 
-if [[ "  $@  " == *" --now "* ]]; then
+if [[ "  $*  " == *" --now "* ]]; then
     echo "[INFO] Manually forced pushing."
     _pushnow
 fi
