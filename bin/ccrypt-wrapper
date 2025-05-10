@@ -12,6 +12,7 @@ fi
 case "$mode" in
     encrypt )
         ccrypt -e < "$in_fn" > "$in_fn.cpt"
+        [[ "$TMP" == y ]] && mv "$in_fn.cpt" /tmp/"$in_fn.cpt"
         ;;
     decrypt )
         new_out="$(sed 's|.cpt.out$||' <<< "$in_fn.out" )"
