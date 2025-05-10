@@ -194,7 +194,6 @@ function _do_postpone_mortality_alert_date() {
     cd "$RealPWD"
 }
 
-# export PATH="$HOME/.local/texlive/2023/bin/x86_64-linux:$PATH"
 export PATH="$HOME/.local/texlive/2025/bin/x86_64-linux:$PATH"
 alias pa_Z420="PULSE_SERVER=10.0.233.20"
 alias pa_NDLT6G="PULSE_SERVER=NDLT6G"
