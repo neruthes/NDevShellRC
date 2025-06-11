@@ -33,14 +33,14 @@ function buildMyKernelNow() {
     loadKernelConfig
     sudo make oldconfig
     saveKernelConfig
-    sudo make -j4 all
-    sudo make modules_install
-    sudo make install
+    sudo make -j4 all || return 1
+    sudo make modules_install || return 1
+    sudo make install || return 1
     sudo emerge @module-rebuild --ask=n
     pregenkernel
-    sudo genkernel initramfs
+    sudo genkernel initramfs || return 1
     # sudo rm /boot/*.old 2>/dev/null
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
+    sudo grub-mkconfig -o /boot/grub/grub.cfg || return 1
     # sudo eclean-kernel -n 7
     KERNEL_LOCAL_VER="$(basename "$(dirname "$(realpath /usr/src/linux/.config)")")"
     KERNELCONFDIR="$DEV_HOME_DIR/NDevShellRC/dev-local/$HOSTNAME/kernel-config"

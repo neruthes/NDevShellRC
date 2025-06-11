@@ -1,1 +1,1 @@
-export NDEVSHELLRC_VERSION="Snapshot 2025-05-18"
+export NDEVSHELLRC_VERSION="Snapshot 2025-06-11"
