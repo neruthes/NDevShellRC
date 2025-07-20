@@ -6,7 +6,10 @@
 # Released with GNU GPL 2.0.
 
 font_path="$1"
-
+### If not a valid path, treat as name, and find first matching font
+[[ ! -e "$font_path" ]] && font_path="$(fc-list | grep "$font_path" | head -n1 | cut -d: -f1)"
+### If no matching font is found, exit with failure
+[[ ! -e "$font_path" ]] && { echo NO SUCH FONT; exit 1; }
 
 
 # outfn="fc-see.$(uuidgen v4 | tr -d - | cut -c1-10).png"
