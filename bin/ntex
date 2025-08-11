@@ -174,10 +174,6 @@ case "$TOIMG" in
         fi
         # pdftoimg "$REALPATH" /tmp/http/nteximg $TOIMG
         pdftoimg "$REALPATH" '' "$TOIMG"
-        if [[ $TOCFOSS == y ]]; then
-            echo -e "\nImage URLs:"
-            OSS_SUBDIR="$REPOID-img" cfoss "$IMGPATH"
-        fi
         ;;
 esac
 

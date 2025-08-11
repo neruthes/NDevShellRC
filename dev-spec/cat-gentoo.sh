@@ -33,7 +33,7 @@ function buildMyKernelNow() {
     loadKernelConfig
     sudo make oldconfig
     saveKernelConfig
-    sudo make -j4 all || return 1
+    sudo make -j2 all || return 1
     sudo make modules_install || return 1
     sudo make install || return 1
     sudo emerge @module-rebuild --ask=n
