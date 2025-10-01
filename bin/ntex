@@ -8,6 +8,11 @@
 #########################################################################################
 
 
+### Utilities
+function __tex_fn_to_pdf() {
+    # sed 's|.tex$|.pdf|' <<< "$1"
+    echo "${1/%tex/pdf}"
+}
 
 
 [[ -z "$XELATEX_CMDNAME" ]] && XELATEX_CMDNAME=xelatex
@@ -123,7 +128,7 @@ if [[ $BUILD_TWICE == y ]]; then ### Build twice
     _realBuild
 fi
 
-PDF_TMP_PATH=".tmp/${BaseName/.tex/.pdf}"
+PDF_TMP_PATH=".tmp/$(__tex_fn_to_pdf "$BaseName")"
 ls "$PDF_TMP_PATH"
 if [[ ! -e "$PDF_TMP_PATH" ]]; then
     echo "[ERROR] XeLaTeX build failed. Aborting."
@@ -131,7 +136,7 @@ if [[ ! -e "$PDF_TMP_PATH" ]]; then
 fi
 mv -f "$PDF_TMP_PATH" "_dist/$TYPE_SLASH"
 
-REALPATH=$(realpath "_dist/${InputTexFilePath/.tex/.pdf}")
+REALPATH="$(realpath "$(__tex_fn_to_pdf "_dist/$InputTexFilePath" )")"
 PDFFN="$(basename "$REALPATH")"
 PDF_RELATIVE_PATH="$(sed "s|$PWD/||" <<< "$REALPATH")"
 echo "PDF_RELATIVE_PATH=$PDF_RELATIVE_PATH"
@@ -173,7 +178,8 @@ case "$TOIMG" in
             rm "$IMGPATH" 2>/dev/null
         fi
         # pdftoimg "$REALPATH" /tmp/http/nteximg $TOIMG
-        pdftoimg "$REALPATH" '' "$TOIMG"
+        # pdftoimg "$REALPATH" '' "$TOIMG"
+        gspdftoimg "$REALPATH"
         ;;
 esac
 

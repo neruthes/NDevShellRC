@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[[ -z $DPI ]] && DPI=300
+
+
+pdf="$1"
+
+gs -sDEVICE=png16m -r"$DPI" -o "$pdf"-%d.png "$pdf"

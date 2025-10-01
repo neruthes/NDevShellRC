@@ -19,6 +19,7 @@ fi
 for host in $REMOTE_HOSTS; do
     if [[ ${host:0:1} != '#' ]]; then
         echo "[INFO] Deploying to '$host' ..."
-        rsync -auvpx --mkpath "$PWD/" "$host:$PWD/" --exclude .git
+        rsync -auvpx --mkpath "$PWD/" "$host:$PWD/" --exclude .git ||
+        echo rsync -auvpx --mkpath "$PWD/" "$host:$PWD/" --exclude .git
     fi
 done

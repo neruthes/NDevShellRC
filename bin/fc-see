@@ -25,7 +25,7 @@ if fc-query "$font_path" | grep 'lang:' | tail -n1 | grep -qs '|zh'; then
     text3="我能吞下玻璃而不伤身体"
 fi
 if fc-query "$font_path" | grep 'lang:' | tail -n1 | grep -qs '|ja'; then
-    text4="後一度だけ奇￿は起こるだろう￿しい声で描く歪んだ未来"
+    text4="後一度だけ奇跡は起こるだろう優しい声で描く歪んだ未来"
 fi
 
 magick -size '2000x1000' xc:White -gravity NorthWest \
