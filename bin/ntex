@@ -179,7 +179,7 @@ case "$TOIMG" in
         fi
         # pdftoimg "$REALPATH" /tmp/http/nteximg $TOIMG
         # pdftoimg "$REALPATH" '' "$TOIMG"
-        gspdftoimg "$REALPATH"
+        gspdftopng "$REALPATH"
         ;;
 esac
 
