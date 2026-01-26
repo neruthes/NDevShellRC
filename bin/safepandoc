@@ -1,59 +1,71 @@
 #!/bin/bash
 
-#
-# safepandoc
-#
-# Copyright (c) 2023 Neruthes.
-# This script is free software, published with GNU GPL 2.0 license.
-#
+# safepandoc (version 0.2.0)
+# A wrapper to treat input as plain text by finding a transparent intermediate format.
 
 DEST_FORMAT="$1"
-if [[ -z "$1" ]]; then
-    echo -e "safepandoc (version 0.1.0)
-Copyright (c) 2023 Neruthes.
-This script is free software, published with GNU GPL 2.0 license.\n
+INPUT_FILE="$2"
+
+# 1. Usage & Help
+if [[ -z "$DEST_FORMAT" ]]; then
+    cat <<EOF >&2
+safepandoc (version 0.2.0)
 Usage:
-    safepandoc {dest_format} <<< 'your input text'
-    safepandoc {dest_format} plain-input.txt\n
-    This script persuades Pandoc to treat your input as genuine plaintext.
-    The list of valid destination formats are availble in Pandoc manual:
-        <https://pandoc.org/MANUAL.html#general-options>
-">&2
+    safepandoc {dest_format} [input_file]
+    echo "text" | safepandoc {dest_format}
+
+This script finds a Pandoc input format that treats your text as raw content
+by comparing stripped versions of the input and the output.
+EOF
     exit 0
 fi
 
-TMP="/tmp/$(uuidgen v4)"
+# 2. Setup Temporary Files
+TMP_DIR=$(mktemp -d)
+# Ensure cleanup on exit (normal or error)
+trap 'rm -rf "$TMP_DIR"' EXIT
 
-input_fn="$2"
-if [[ -z "$2" ]]; then
-    input_fn="/dev/stdin"
+STDIN_DATA="$TMP_DIR/source.txt"
+STRIPPED_SOURCE="$TMP_DIR/source.stripped"
+
+# Capture input
+if [[ -n "$INPUT_FILE" ]] && [[ -f "$INPUT_FILE" ]]; then
+    cat "$INPUT_FILE" > "$STDIN_DATA"
+else
+    cat /dev/stdin > "$STDIN_DATA"
 fi
-cat "$input_fn" > "$TMP.stdin"
 
-# FORMATS_LIST="markdown gfm csv tsv org rst jira html latex"
-# FORMATS_LIST="$(pandoc --list-input-formats)"
+# Create a version with NO whitespace/tabs/newlines for comparison
+tr -d '[:space:]' < "$STDIN_DATA" > "$STRIPPED_SOURCE"
 
-# for fmt in $FORMATS_LIST; do
+# 3. Iterate through Pandoc formats
+GOOD_FMT=""
+
 while read -r fmt; do
-    out_fn="$TMP.$fmt"
-    # pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain
-    ### Note: The conversion it self must be successful!
-    if pandoc --wrap=none -i "$TMP.stdin" -o "$out_fn" -f "$fmt" -t plain && [[ -e "$out_fn" ]] && [[ -z "$(diff "$TMP.stdin" "$out_fn")" ]]; then
-        good_fmt="$fmt"
-        echo "debug: good_fmt=$good_fmt">&2
-        break
-    else
-        echo "debug: '$fmt' is not good enough">&2
-        diff "$TMP.stdin" "$out_fn" >&2
+    # Skip output-only formats or problematic ones if necessary
+    OUT_FILE="$TMP_DIR/out.$fmt"
+    STRIPPED_OUT="$TMP_DIR/out.stripped.$fmt"
+
+    # Attempt conversion to 'plain' to see if format 'fmt' is transparent
+    if pandoc --wrap=none -f "$fmt" -t plain "$STDIN_DATA" -o "$OUT_FILE" 2>/dev/null; then
+        # Strip whitespace from the output for comparison
+        tr -d '[:space:]' < "$OUT_FILE" > "$STRIPPED_OUT"
+        
+        # Compare stripped versions
+        if cmp -s "$STRIPPED_SOURCE" "$STRIPPED_OUT"; then
+            GOOD_FMT="$fmt"
+            echo "debug: Found transparent format: $GOOD_FMT" >&2
+            break
+        fi
     fi
 done <<< "$(pandoc --list-input-formats)"
 
-if [[ -n "$good_fmt" ]]; then
-    pandoc --wrap=none -f "$good_fmt" -t "$DEST_FORMAT" -i "$TMP.stdin" && rm "$TMP".*
+# 4. Final Conversion
+if [[ -n "$GOOD_FMT" ]]; then
+    pandoc --wrap=none -f "$GOOD_FMT" -t "$DEST_FORMAT" "$STDIN_DATA"
 else
     echo "-----------------------------------------" >&2
-    echo "[ERROR] The input is too tricky. Cannot find any possible format.">&2
-    cat "$TMP.stdin" >&2
+    echo "[ERROR] Input contains markup characters for all known Pandoc formats.">&2
     echo "-----------------------------------------" >&2
     exit 1
 fi

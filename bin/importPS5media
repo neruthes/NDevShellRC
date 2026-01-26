@@ -19,7 +19,7 @@ if [[ ! -d "$MEDIADIR" ]]; then
     exit 1
 fi
 
-rsync -av "$MEDIADIR/" "$DESTDIR/"
+rsync -auv "$MEDIADIR/" "$DESTDIR/"
 
 echo "[INFO] If you want to delete after importing..."
 echo '  $ rm -rf "./PS5/CREATE/Screenshots" "./PS5/CREATE/Video Clips"'
