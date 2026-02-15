@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# ==========================================================
+# Copyright (c) 2026 Neruthes.
+# Released with the MIT license.
+# ==========================================================
+
+# ==========================================================
+# Usage: 
+#       $ refetchw path/to/file
+#
+#
+# If file contains `refetchw=` substring, this script will
+# fetch the latest online version and overwrite local file.
+# Non-alphanumerical leading characters are allowed.
+# ==========================================================
+
+
+
+
+[[ -z "$ENABLE_DATE_CHECK" ]] && ENABLE_DATE_CHECK=n
+
+
+
+
+function _die() {
+    echo "$2" > /dev/stderr
+    exit "$1"
+}
+
+echo "$1"
+[[ -n "$1" ]] || _die 1 "[FATAL] Must supply file path!"
+[[ -e "$1" ]] || _die 2 "[FATAL] File not found at path!"
+
+if ! grep -qs "refetchw=" "$1"; then
+    _die 3 "[FATAL] File does not contain upstream link"
+fi
+
+
+if [[ "$ENABLE_DATE_CHECK" != n ]]; then
+    if [[ -n "$(find "$0" -mtime +7)" ]]; then ### Old enough
+        echo "[INFO] File is old enough; refetching..."
+    else
+        _die 4 "Not old enough!"
+    fi
+else
+    echo "[INFO] Skipping date check..."
+fi
+
+# TODO: Ignore lines with alphanumerical leading characters
+
+
+
+function _get_upstream_url() {
+    local file_path="$1"
+    grep "refetchw=" "$file_path" | head -n1 | cut -d= -f2-
+}
+upstream_url="$(_get_upstream_url "$1")"
+
+
+
+
+### Refetching now!
+echo "[INFO] Refetching now!"
+echo "[INFO] upstream_url=$upstream_url"
+
+curl --retry 20 "$upstream_url" > "$1.tmp" || _die 25 "[FATAL] Cannot download updated self"
+
+echo mv "$1.tmp" "$1"

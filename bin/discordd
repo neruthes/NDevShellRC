@@ -3,11 +3,11 @@
 if [[ "$HTTP_PROXY" == "" ]]; then
     # MY_PROXY="socks5://10.104.22.1:8080"
     # MY_PROXY="socks5://10.0.233.3:7891"
-    MY_PROXY="socks5://10.0.233.20:7891"
+    MY_PROXY="socks5://10.0.233.45:7891"
 else
     MY_PROXY="$HTTP_PROXY"
 fi
 
 if [[ `uname` == Linux ]]; then
-    daemonize $(which discord) --proxy-server="$MY_PROXY"
+    daemonize "$(which discord)" --proxy-server="$MY_PROXY"
 fi

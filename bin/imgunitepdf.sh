@@ -1,17 +1,27 @@
 #!/bin/bash
 
-# Use this script to convert every page of PDF to PNG then aggregate back to PDF.
+### Use this script to convert every page of PDF to PNG then aggregate back to PDF.
 
 input_pdf_path="$1"
+output_pdf_path="$2"
+if [[ -z "$output_pdf_path" ]]; then
+    output_pdf_path=/tmp/OUTPUT.pdf
+else
+    output_pdf_path="$(realpath "$output_pdf_path")"
+fi
 
-TMPDIR="/tmp/$USER.$(date +%s)"
-mkdir -p "$TMPDIR"
+
+
+TMPDIR="$(mktemp -d)"
+# Ensure cleanup on exit (normal or error)
+trap "rm -r '$TMPDIR'" EXIT
+
 
 cp "$input_pdf_path" "$TMPDIR/INPUT.pdf"
 
 cd "$TMPDIR"
 
-DPI=600 gspdftopng INPUT.pdf
+DPI=1200 gspdftopng INPUT.pdf
 
 ls
 
@@ -30,12 +40,12 @@ cat OUTPUT.typ
 typst c OUTPUT.typ
 
 
-cp OUTPUT.pdf /tmp/OUTPUT.pdf
+cp OUTPUT.pdf "$output_pdf_path"
 
 
 
 cd .. &&
-rm -r "$TMPDIR"
+echo rm -r "$TMPDIR"
 
 
-du -h /tmp/OUTPUT.pdf
+du -h "$output_pdf_path"
