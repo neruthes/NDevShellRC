@@ -66,4 +66,4 @@ echo "[INFO] upstream_url=$upstream_url"
 
 curl --retry 20 "$upstream_url" > "$1.tmp" || _die 25 "[FATAL] Cannot download updated self"
 
-echo mv "$1.tmp" "$1"
+mv -v "$1.tmp" "$1"
