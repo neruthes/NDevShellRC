@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/svg-text-to-outline.sh
+
 # ===============================================
 # SVG Text to Path Converter using Inkscape
 # Author: Gemini
