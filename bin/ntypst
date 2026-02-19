@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/ntypst
+
+#########################################################################################
+# The 'ntypst' script
+#
+# Copyright (c) 2026 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
+# Published with the MIT license (https://mit-license.org/).
+#
+# This script is a wrapper for the 'typst' binary, providing some additional data.
+#########################################################################################
+
+
+typst "$@" \
+    --input ray="$(uuidgen v4)" \
+    --input cmdline="$*" \
+    --input pwd="$PWD" \
+    --input hostname="$HOSTNAME" \
+    --input user="$USER" \
+    --input TZ="$(date +%Z)" \
+    --input tz="$(date +%z)" \
+    --input date="$(date -Is)" \
+    --input time="$(date +%s)" \
+    --input date_utc="$(TZ=UTC date -Is)" \
+    --input time_utc="$(TZ=UTC date +%s)" \
+    --input env="$(env)" \
+    

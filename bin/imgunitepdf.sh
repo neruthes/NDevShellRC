@@ -37,7 +37,7 @@ rm INPUT.pdf
 ) > OUTPUT.typ
 
 cat OUTPUT.typ
-typst c OUTPUT.typ
+typst c OUTPUT.typ $TYPST_EXTRA_ARGS
 
 
 cp OUTPUT.pdf "$output_pdf_path"
