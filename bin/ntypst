@@ -12,6 +12,33 @@
 #########################################################################################
 
 
+### Find file name
+found_path=""
+for arg in "$@"; do
+    # Skip anything that starts with a hyphen
+    if [[ "$arg" == -* ]]; then
+        continue
+    fi
+    # Check if the path exists (file, dir, symlink, etc.)
+    if [[ -e "$arg" ]]; then
+        found_path="$arg"
+        break
+    fi
+done
+if [[ -n "$found_path" ]]; then
+    # echo "Found path: $found_path"
+    sha256sum="$(sha256sum "$found_path" | cut -d' ' -f1)"
+    sha1sum="$(sha1sum "$found_path" | cut -d' ' -f1)"
+else
+    # echo "No valid path argument found."
+    sha256sum="NOT/AVAILABLE"
+    sha1sum="NOT/AVAILABLE"
+fi
+
+
+
+
+### Real work
 typst "$@" \
     --input ray="$(uuidgen v4)" \
     --input cmdline="$*" \
@@ -25,4 +52,6 @@ typst "$@" \
     --input date_utc="$(TZ=UTC date -Is)" \
     --input time_utc="$(TZ=UTC date +%s)" \
     --input env="$(env)" \
+    --input sha256sum="$sha256sum" \
+    --input sha1sum="$sha1sum"
     
