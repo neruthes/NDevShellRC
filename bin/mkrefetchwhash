@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo -n "refetchw:$(realpath "$1")" | sha256sum | cut -c1-32

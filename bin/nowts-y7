@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# 4e6e21a18a72124be105640c8cdabea7
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/nowts-y7
+
+#########################################################################################
+# The 'ntypst' script
+#
+# Copyright (c) 2026 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
+# Published with the MIT license (https://mit-license.org/).
+#########################################################################################
+
+
+year=$(date -u +%Y)
+now=$(date -u +%s)
+
+start_of_year=$(date -u -d "$year-01-01 00:00:00" +%s)
+seconds_in_year=$((now - start_of_year))
+
+result=$((seconds_in_year / 4 + year * 10000000))
+
+echo "$result"
+

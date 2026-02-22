@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 18617a36be389e7cf8778a3ec5a45829
 # refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/ntypst
 
 #########################################################################################
@@ -19,6 +20,9 @@ for arg in "$@"; do
     if [[ "$arg" == -* ]]; then
         continue
     fi
+    if [[ "$arg" == . ]]; then
+        continue
+    fi
     # Check if the path exists (file, dir, symlink, etc.)
     if [[ -e "$arg" ]]; then
         found_path="$arg"
@@ -29,6 +33,7 @@ if [[ -n "$found_path" ]]; then
     # echo "Found path: $found_path"
     sha256sum="$(sha256sum "$found_path" | cut -d' ' -f1)"
     sha1sum="$(sha1sum "$found_path" | cut -d' ' -f1)"
+    realpath "$found_path"
 else
     # echo "No valid path argument found."
     sha256sum="NOT/AVAILABLE"
@@ -53,5 +58,6 @@ typst "$@" \
     --input time_utc="$(TZ=UTC date +%s)" \
     --input env="$(env)" \
     --input sha256sum="$sha256sum" \
-    --input sha1sum="$sha1sum"
+    --input sha1sum="$sha1sum" \
+    --input src="$(realpath --relative-to . "$found_path")"
     

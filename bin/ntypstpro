@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# 82f5536ba2c66e90f635634efc9bcc72
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/ntypstpro
+
+#########################################################################################
+# The 'ntypstpro' script
+#
+# Copyright (c) 2026 Neruthes (https://neruthes.xyz) (https://github.com/neruthes).
+# Published with the MIT license (https://mit-license.org/).
+#
+# This script is a wrapper for the 'typst' binary, providing some additional data.
+#########################################################################################
+
+
+
+TYPST_ACT=c
+[[ "$WATCH" == "y" ]] && TYPST_ACT=w
+[[ "$w" == "y" ]] && TYPST_ACT=w
+
+final_pdf_path="_dist/${1/.typ/.pdf}"
+realpath "$final_pdf_path"
+
+dirname "$final_pdf_path" | xargs mkdir -p &&
+PPI=600 TYPST_FONT_PATHS=. ntypst "$TYPST_ACT" --root . "$1" "$final_pdf_path" --input USE_NOTO=1
+
+realpath "$final_pdf_path" | xargs du -h

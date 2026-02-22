@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# f566b006cbcffc12dfd9035bb44d287261ef59b126ed89a3de35c925cab2f40d
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/refetchw
+
 # ==========================================================
 # Copyright (c) 2026 Neruthes.
 # Released with the MIT license.
@@ -32,8 +35,18 @@ echo "$1"
 [[ -n "$1" ]] || _die 1 "[FATAL] Must supply file path!"
 [[ -e "$1" ]] || _die 2 "[FATAL] File not found at path!"
 
+
+
+### Early exit if is canonical
+magic_hash="$(echo -n "refetchw:$(realpath "$1")" | sha256sum | cut -c1-32)"
+if grep -qs "$magic_hash" "$1"; then
+    _die 4 "[FATAL] File local path is canonical!"
+fi
+
+
+### Get upstream URL
 if ! grep -qs "refetchw=" "$1"; then
-    _die 3 "[FATAL] File does not contain upstream link"
+    _die 3 "[FATAL] File does not contain upstream URL!"
 fi
 
 
