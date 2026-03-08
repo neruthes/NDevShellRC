@@ -13,15 +13,17 @@
 #########################################################################################
 
 
-
+### Compile or watch?
 TYPST_ACT=c
 [[ "$WATCH" == "y" ]] && TYPST_ACT=w
 [[ "$w" == "y" ]] && TYPST_ACT=w
 
-final_pdf_path="_dist/${1/.typ/.pdf}"
+
+normalized=$(realpath --relative-to=. -m -- "$1")
+final_pdf_path="_dist/${normalized%.typ}.pdf"
 realpath "$final_pdf_path"
 
 dirname "$final_pdf_path" | xargs mkdir -p &&
-PPI=600 TYPST_FONT_PATHS=. ntypst "$TYPST_ACT" --root . "$1" "$final_pdf_path" --input USE_NOTO=1
+PPI=900 TYPST_FONT_PATHS=. ntypst "$TYPST_ACT" --root . "$1" "$final_pdf_path" --input USE_NOTO=1 --font-path . --font-path /usr/local/texlive
 
 realpath "$final_pdf_path" | xargs du -h

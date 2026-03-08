@@ -21,7 +21,7 @@ cp "$input_pdf_path" "$TMPDIR/INPUT.pdf"
 
 cd "$TMPDIR"
 
-DPI=1200 gspdftopng INPUT.pdf
+DPI=600 gspdftopng INPUT.pdf
 
 ls
 

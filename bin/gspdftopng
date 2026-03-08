@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[[ -z $DPI ]] && DPI=300
+[[ -z "$DPI" ]] && DPI=300
 
 
 pdf="$1"

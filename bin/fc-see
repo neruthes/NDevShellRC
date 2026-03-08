@@ -28,6 +28,8 @@ if fc-query "$font_path" | grep 'lang:' | tail -n1 | grep -qs '|ja'; then
     text4="後一度だけ奇跡は起こるだろう優しい声で描く歪んだ未来"
 fi
 
+[[ -z "$TEXT_EXTRA" ]] && TEXT_EXTRA="Set TEXT_EXTRA env to overwrite this line"
+
 magick -size '2000x1000' xc:White -gravity NorthWest \
     -font "$font_path" -fill "Black" \
     -pointsize 100 -draw "text 50,50 '$text1'" \
@@ -35,7 +37,8 @@ magick -size '2000x1000' xc:White -gravity NorthWest \
     -pointsize 40 -draw "text 50,300 '$text2'" \
     -pointsize 40 -draw "text 50,350 '$text3'" \
     -pointsize 40 -draw "text 50,400 '$text4'" \
-    -trim \
+    -pointsize 40 -draw "text 50,450 '$TEXT_EXTRA'" \
+    -trim +repage \
     -bordercolor White -border 200 "$outfn"
 
 feh "$outfn"
