@@ -1,15 +1,19 @@
 #!/bin/bash
 
-# f566b006cbcffc12dfd9035bb44d287261ef59b126ed89a3de35c925cab2f40d
-# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/refetchw
+# ==========================================================
+# INSTALLATION: 
+#       curl https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/refetchw > ~/.local/bin/refetchw
+# ==========================================================
+
 
 # ==========================================================
 # Copyright (c) 2026 Neruthes.
 # Released with the MIT license.
 # ==========================================================
 
+
 # ==========================================================
-# Usage: 
+# USAGE: 
 #       $ refetchw path/to/file
 #
 #
@@ -80,3 +84,9 @@ echo "[INFO] upstream_url=$upstream_url"
 curl --retry 20 "$upstream_url" > "$1.tmp" || _die 25 "[FATAL] Cannot download updated self"
 
 mv -v "$1.tmp" "$1"
+
+
+
+
+# f566b006cbcffc12dfd9035bb44d287261ef59b126ed89a3de35c925cab2f40d
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/refetchw
