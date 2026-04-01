@@ -2,8 +2,15 @@
 
 ### Turn any file to a self-decrypting HTML
 
+# Copyright (c) 2026 Neruthes. Released with the MIT license.
+
+# d840d2d1c83424ef0f993ff3a3d7b4e4
+# refetchw=https://raw.githubusercontent.com/neruthes/NDevShellRC/refs/heads/master/bin/encryptfileaudodechtml.sh
+
+
+
 if [ -z "$1" ] || [ ! -f "$1" ]; then
-    echo "Usage: ./encrypt_file.sh <filename>"
+    echo "Usage:  encryptfileaudodechtml.sh <filename>"
     exit 1
 fi
 
