@@ -44,7 +44,7 @@ fi
 
 
 ### Real work
-typst "$@" \
+exec typst "$@" \
     --input ray="$(uuidgen v4)" \
     --input cmdline="$*" \
     --input pwd="$PWD" \
